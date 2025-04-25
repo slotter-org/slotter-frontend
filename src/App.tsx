@@ -22,15 +22,15 @@ export default function App() {
     <ViewportProvider>
       <ThemeProvider>
         <AuthProvider>
-          <MaybeMeProvider>
-            <WebSocketProvider>
+          <WebSocketProvider>
+            <MaybeMeProvider>
               <MyEntityProvider>
                 <SearchProvider>
                   <AppRouter />
                 </SearchProvider>
               </MyEntityProvider>
-            </WebSocketProvider>
-          </MaybeMeProvider>
+            </MaybeMeProvider>
+          </WebSocketProvider>
         </AuthProvider>
       </ThemeProvider>
     </ViewportProvider>
