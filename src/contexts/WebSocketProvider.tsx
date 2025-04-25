@@ -65,7 +65,7 @@ export function WebSocketProvider({ children }: { children: React.ReactNode }) {
       setConnected(false)
       return
     }
-    const httpBase = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080"
+    const httpBase = import.meta.env.VITE_API_BASE_URL || "https://www.slotter.ai/api"
     const wsScheme = httpBase.startsWith("https") ? "wss" : "ws"
     const fullUrl = httpBase.replace(/^https?:/, wsScheme + ":") + "/ws"
     const finalUrl = `${fullUrl}?token=${encodeURIComponent(token)}`

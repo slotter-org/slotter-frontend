@@ -17,3 +17,5 @@ export interface Company {
   createdAt?: string;
   updatedAt?: string;
 }
+
+

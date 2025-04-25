@@ -10,6 +10,7 @@ import { User } from '@/types/user';
 import { Company } from '@/types/company';
 import { Wms } from '@/types/wms';
 import { Role } from '@/types/role';
+import { useWebSocketContext } from '@/contexts/WebSocketProvider';
 
 interface MeContextType {
   me: User | null;
@@ -44,6 +45,11 @@ export function MeProvider({ children }: { children: ReactNode }) {
   const [myRole, setRole] = useState<Role | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const {
+    lastMessage,
+    subscribeChannel,
+    unsubscribeChannel,
+  } = useWebSocketContext();
 
   const fetchMeData = useCallback(async () => {
     setLoading(true);
@@ -156,6 +162,56 @@ export function MeProvider({ children }: { children: ReactNode }) {
       setRole(null);
     }
   }, [me, fetchMyCompany, fetchMyWms, fetchMyRole]);
+
+  //Subscribe/Unsubscribe to user/company/wms channels
+  useEffect(() => {
+    if (me?.id) {
+      const userChan = 'user:' + me.id;
+      subscribeChannel(userChan);
+      if (me.companyID) {
+        const companyChan = 'company:' + me.companyID;
+        subscribeChannel(companyChan);
+      }
+      if (me.wmsID) {
+        const wmsChan = 'wms:' + me.wmsID;
+        subscribeChannel(wmsChan);
+      }
+      return () => {
+        unsubscribeChannel(userChan);
+        if (me.companyID) {
+          unsubscribeChannel('company:' + me.companyID);
+        }
+        if (me.wmsID) {
+          unsubscribeChannel('wms' + me.wmsID);
+        }
+      };
+    }
+  }, [me?.id, me?.companyID, me?.wmsID]);
+
+  useEffect(() => {
+    if (!lastMessage) return;
+    const { channel, data } = lastMessage;
+    const action = data?.action;
+    if (me?.id && channel === 'user:' + me.id) {
+      if (action === 'user_updated') {
+        fetchMeData();
+      }
+      if (action === 'role_updated') {
+        fetchMeData();
+        fetchMyRole();
+      }
+    }
+    if (me?.companyID && channel === 'company:' + me.companyID) {
+      if (action === 'company_updated') {
+        fetchMyCompany();
+      }
+    }
+    if (me?.wmsID && channel === 'wms:' + me.wmsID) {
+      if (action === 'wms_updated') {
+        fetchMyWms();
+      }
+    }
+  }, [lastMessage, me?.id, me?.companyID, fetchMeData, fetchMyCompany, fetchMyWms, fetchMyRole]);
 
   return (
     <MeContext.Provider
