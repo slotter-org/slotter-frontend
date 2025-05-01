@@ -36,3 +36,21 @@ export default function App() {
     </ViewportProvider>
   );
 }
+
+
+import React, { useEffect } from 'react'
+import { AppRouter } from '@/router/AppRouter'
+import { useAppSelector, useAppDispatch } from '@/store/hooks'
+import { RootState } from '@/store/store'
+import { setViewport } from '@/store/slices/viewportSlice'
+import { setConnected, setLastMessage } from '@/store/slices/websocketSlice'
+import { getToken } from '@/services/StorageService'
+import { setTheme } from '@/store/slices/themeSlice'
+import type { WsMessage } from '@/store/slices/websocketSlice'
+
+let ws: WebSocket | null = null
+
+export default function App() {
+  const dispatch = useAppDispatch()
+
+}

@@ -4,232 +4,116 @@ import React, {
   useEffect,
   useCallback,
   ReactNode,
-} from 'react';
-import { getMe, getMyCompany, getMyWms, getMyRole } from '@/api/MeService';
-import { User } from '@/types/user';
-import { Company } from '@/types/company';
-import { Wms } from '@/types/wms';
-import { Role } from '@/types/role';
-import { useWebSocketContext } from '@/contexts/WebSocketProvider';
+} from 'react'
+import { getMe, getMyRole } from '@/api/MeService'
+import { User } from '@/types/user'
+import { Role } from '@/types/role'
+import { useWebSocketContext } from '@/contexts/WebSocketProvider'
 
 interface MeContextType {
-  me: User | null;
-  myCompany: Company | null;
-  myWms: Wms | null;
-  myRole: Role | null;
-  loading: boolean;
-  error: string | null;
-  fetchMeData: () => Promise<void>;
-  fetchMyCompany: () => Promise<void>;
-  fetchMyWms: () => Promise<void>;
-  fetchMyRole: () => Promise<void>;
+  me: User | null
+  myRole: Role | null
+  loading: boolean
+  error: string | null
+  fetchMeData: () => Promise<void>
+  fetchMyRole: () => Promise<void>
 }
 
 export const MeContext = createContext<MeContextType>({
   me: null,
-  myCompany: null,
-  myWms: null,
   myRole: null,
   loading: false,
   error: null,
   fetchMeData: async () => {},
-  fetchMyCompany: async () => {},
-  fetchMyWms: async () => {},
   fetchMyRole: async () => {},
-});
+})
 
 export function MeProvider({ children }: { children: ReactNode }) {
-  const [me, setMe] = useState<User | null>(null);
-  const [myCompany, setCompany] = useState<Company | null>(null);
-  const [myWms, setWms] = useState<Wms | null>(null);
-  const [myRole, setRole] = useState<Role | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const {
-    lastMessage,
-    subscribeChannel,
-    unsubscribeChannel,
-  } = useWebSocketContext();
-
+  const [me, setMe] = useState<User | null>(null)
+  const [myRole, setRole] = useState<Role | null>(null)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const { lastMessage, subscribeChannel, unsubscribeChannel } = useWebSocketContext()
   const fetchMeData = useCallback(async () => {
-    setLoading(true);
-    setError(null);
+    setLoading(true)
+    setError(null)
     try {
-      const resp = await getMe();
-      setMe(resp.me);
+      const resp = await getMe()
+      setMe(resp.me)
     } catch (err: any) {
-      console.error('[MeProvider] fetchMe error:', err);
-      setError(err?.message || 'Failed to load user');
-      setMe(null);
+      console.error('[MeProvider] fetchMeData error:', err)
+      setError(err?.message || 'Failed to load user')
+      setMe(null)
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  }, []);
-
-  const fetchMyCompany = useCallback(async () => {
-    if (!me?.companyID) {
-      setCompany(null);
-      return;
-    }
-    setLoading(true);
-    setError(null);
-    try {
-      const resp = await getMyCompany();
-      setCompany(resp.myCompany);
-    } catch (err: any) {
-      console.error('[MeProvider] fetchMyCompany error:', err);
-      setError(err?.message || 'Failed to load company');
-      setCompany(null);
-    } finally {
-      setLoading(false);
-    }
-  }, [me]);
-
-  const fetchMyWms = useCallback(async () => {
-    if (!me?.wmsID) {
-      setWms(null);
-      return;
-    }
-    setLoading(true);
-    setError(null);
-    try {
-      const resp = await getMyWms();
-      // Expecting { myWms: { ...Wms } }
-      setWms(resp.myWms);
-    } catch (err: any) {
-      console.error('[MeProvider] fetchMyWms error:', err);
-      setError(err?.message || 'Failed to load wms');
-      setWms(null);
-    } finally {
-      setLoading(false);
-    }
-  }, [me]);
-
+  }, [])
   const fetchMyRole = useCallback(async () => {
     if (!me?.roleID) {
-      setRole(null);
-      return;
+      setRole(null)
+      return
     }
-    setLoading(true);
-    setError(null);
+    setLoading(true)
+    setError(null)
     try {
-      const resp = await getMyRole();
-      // Expecting { myRole: { ...Role } }
-      setRole(resp.myRole || null);
+      const resp = await getMyRole()
+      setRole(resp.myRole || null)
     } catch (err: any) {
-      console.error('[MeProvider] fetchMyRole error:', err);
-      setError(err?.message || 'Failed to load role');
-      setRole(null);
+      console.error('[MeProvider] fetchMyRole error:', err)
+      setError(err?.message || 'Failed to load role')
+      setRole(null)
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  }, [me]);
-
-  // On mount => fetch me & related
+  }, [me?.roleID])
   useEffect(() => {
     (async () => {
-      await fetchMeData();
-    })();
-  }, [fetchMeData]);
-
+      await fetchMeData()
+    })()
+  }, [fetchMeData])
   useEffect(() => {
-    (async () => {
-      await fetchMyCompany();
-    })();
-  }, [fetchMyCompany]);
-
-  useEffect(() => {
-    (async () => {
-      await fetchMyWms();
-    })();
-  }, [fetchMyWms]);
-
-  useEffect(() => {
-    (async () => {
-      await fetchMyRole();
-    })();
-  }, [fetchMyRole]);
-
-  // Whenever "me" changes, we can auto-fetch company/wms/role if needed
-  useEffect(() => {
-    if (me) {
-      fetchMyCompany();
-      fetchMyWms();
-      fetchMyRole();
+    if (me?.roleID) {
+      fetchMyRole()
     } else {
-      setCompany(null);
-      setWms(null);
-      setRole(null);
+      setRole(null)
     }
-  }, [me, fetchMyCompany, fetchMyWms, fetchMyRole]);
-
-  //Subscribe/Unsubscribe to user/company/wms channels
+  }, [me?.roleID, fetchMyRole])
   useEffect(() => {
-    if (me?.id) {
-      const userChan = 'user:' + me.id;
-      subscribeChannel(userChan);
-      if (me.companyID) {
-        const companyChan = 'company:' + me.companyID;
-        subscribeChannel(companyChan);
-      }
-      if (me.wmsID) {
-        const wmsChan = 'wms:' + me.wmsID;
-        subscribeChannel(wmsChan);
-      }
-      return () => {
-        unsubscribeChannel(userChan);
-        if (me.companyID) {
-          unsubscribeChannel('company:' + me.companyID);
-        }
-        if (me.wmsID) {
-          unsubscribeChannel('wms' + me.wmsID);
-        }
-      };
+    if (!me?.id) return
+    const userChan = 'user:' + me.id
+    subscribeChannel(userChan)
+    return () => {
+      unsubscribeChannel(userChan)
     }
-  }, [me?.id, me?.companyID, me?.wmsID]);
-
+  }, [me?.id, subscribeChannel, unsubscribeChannel])
   useEffect(() => {
-    if (!lastMessage) return;
-    const { channel, data } = lastMessage;
-    const action = data?.action;
-    if (me?.id && channel === 'user:' + me.id) {
+    if (!lastMessage) return
+    const { channel, data } = lastMessage
+    if (!me?.id) return
+    const userChan = 'user:' + me.id
+    if (channel === userChan) {
+      const action = data?.action
       if (action === 'user_updated') {
-        fetchMeData();
-      }
-      if (action === 'role_updated') {
-        fetchMeData();
-        fetchMyRole();
-      }
-    }
-    if (me?.companyID && channel === 'company:' + me.companyID) {
-      if (action === 'company_updated') {
-        fetchMyCompany();
+        fetchMeData()
+      } else if (action === 'role_updated') {
+        fetchMeData()
+        fetchMyRole()
       }
     }
-    if (me?.wmsID && channel === 'wms:' + me.wmsID) {
-      if (action === 'wms_updated') {
-        fetchMyWms();
-      }
-    }
-  }, [lastMessage, me?.id, me?.companyID, fetchMeData, fetchMyCompany, fetchMyWms, fetchMyRole]);
-
+  }, [lastMessage, me?.id, fetchMeData, fetchMyRole])
+  
   return (
     <MeContext.Provider
       value={{
         me,
-        myCompany,
-        myWms,
         myRole,
         loading,
         error,
         fetchMeData,
-        fetchMyCompany,
-        fetchMyWms,
         fetchMyRole,
       }}
     >
       {children}
     </MeContext.Provider>
-  );
+  )
 }
-
