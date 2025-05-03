@@ -80,7 +80,7 @@ export function AuthLayout({
       <div
         className={cn(
           showLeftSide ? "w-1/2" : "w-full",
-          "relative flex flex-col items-center justify-center px-8 py-10",
+          "relative flex-1 flex flex-col items-center justify-center px-8 py-10",
           rightSideBgClass
         )}
       >
