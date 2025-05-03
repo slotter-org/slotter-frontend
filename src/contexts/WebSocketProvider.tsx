@@ -26,7 +26,7 @@ const WebSocketContext = createContext<WebSocketContextValue>({
   lastMessage: null,
   sendMessage: () => {},
   subscribeChannel: () => {},
-  unsubscribeChanne: () => {},
+  unsubscribeChannel: () => {},
 })
 
 export function useWebSocketContext() {
@@ -38,8 +38,8 @@ export function WebSocketProvider({ children }: { children: React.ReactNode }) {
   const [lastMessage, setLastMessage] = useState<WsMessage | null>(null)
   const wsRef = useRef<WebSocket | null>(null)
   const reconnectAttemptRef = useRef<number>(0)
-  const reconnectTimerRef = useRef<NodeJS.Timeout | null>(null)
-  const maxReconnectAttempts = 0
+  const reconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const maxReconnectAttempts = Infinity
   const clearReconnectTimer = useCallback(() => {
     if (reconnectTimerRef.current) {
       clearTimeout(reconnectTimerRef.current)
@@ -69,7 +69,7 @@ export function WebSocketProvider({ children }: { children: React.ReactNode }) {
       return
     }
     const httpBase = import.meta.env.VITE_API_BASE_URL || 'https://www.slotter.ai/api'
-    const wsScheme = httpBase.startsWith('https') ? 'ws' : 'ws'
+    const wsScheme = httpBase.startsWith('https') ? 'wss' : 'ws'
     const fullUrl = httpBase.replace(/^https?:/, wsScheme + ':') + '/ws'
     const finalUrl = `${fullUrl}?token=${encodeURIComponent(token)}`
     console.log('[WS] Attempting to connect =>', finalUrl)
