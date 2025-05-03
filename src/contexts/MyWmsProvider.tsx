@@ -52,7 +52,7 @@ export function MyWmsProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const fetchMyCompany = useCallback(async () => {
+  const fetchMyWms = useCallback(async () => {
     if (!me?.wmsID) {
       setMyWms(null)
       return
