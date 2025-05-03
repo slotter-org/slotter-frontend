@@ -28,7 +28,7 @@ interface MyCompanyContextValue {
   fetchMyUsers: () => Promise<void>
 }
 
-const MyCompanyContext = createContext<MyCompanyContextValye>({
+const MyCompanyContext = createContext<MyCompanyContextValue>({
   myCompany: null,
   myWarehouses: null,
   myUsers: null,
@@ -149,6 +149,7 @@ export function MyCompanyProvider({ children }: { children: ReactNode }) {
   const value: MyCompanyContextValue = {
     myCompany,
     myWarehouses,
+    myUsers,
     loading,
     error,
     fetchMyCompany,
@@ -159,6 +160,6 @@ export function MyCompanyProvider({ children }: { children: ReactNode }) {
   return (
     <MyCompanyContext.Provider value={value}>
       {children}
-    <MyCompanyContext.Provider>
-  )
+    </MyCompanyContext.Provider>
+  );
 }

@@ -3,7 +3,7 @@ import { getToken } from '@/services/StorageService';
 
 // Base URL is set from docker-compose (VITE_API_BASE_URL) or fallback to localhost
 const axiosClient = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || '/api',
+  baseURL: 'http://localhost:8080/api', //import.meta.env.VITE_API_BASE_URL || '/api',
   timeout: 5000,
 });
 

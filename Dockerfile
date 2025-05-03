@@ -10,7 +10,7 @@ COPY package*.json ./
 RUN npm ci
 
 # Copy the rest of your frontend source
-COPY . ./
+COPY . .
 RUN npm run build  # This outputs files to /app/dist
 
 # ---------- 2) Runtime stage -------------------------------------------------
