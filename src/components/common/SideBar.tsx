@@ -25,6 +25,8 @@ import { CompanyAvatar, WmsAvatar } from "@/components/common/avatars/Avatar"
 import { mainNav } from '@/types/navitem'
 import { NavItems } from '@/components/common/NavItems'
 import { AiChatToggleButton } from '@/components/common/buttons/AiChatToggleButton'
+import { CompanyAvatarDropdown } from '@/components/common/dropdowns/CompanyAvatarDropdown'
+import { WmsAvatarDropdown } from '@/components/common/dropdowns/WmsAvatarDropdown'
 
 export function SideBar() {
   const { state } = useSidebar()
@@ -89,17 +91,30 @@ export function SideBar() {
 
         <div className="flex items-center justify-center h-16">
           <SidebarHeader className="justify-center">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild className="cursor-pointer">
-                <div>
-                  {avatar}
-                </div>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent side="right" align="start" className="w-48" sideOffset={8}>
-                <DropdownMenuLabel>{displayName}</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-              </DropdownMenuContent>
-            </DropdownMenu>
+            {me?.userType === 'company' ? (
+              <CompanyAvatarDropdown
+                trigger={avatar}
+                onAddWarehouse={() => {
+                  console.log('Add Warehouse Clicked')
+                }}
+                onSelectWarehouse={(id) => {
+                  console.log('Select Warehouse Clicked')
+                }}
+                onSelectUser={(id) => {
+                  console.log('Select User Clicked')
+                }}
+              />
+            ) : (
+              <WmsAvatarDropdown
+                trigger={avatar}
+                onSelectCompany={(id) => {
+                  console.log('Select Company Clicked')
+                }}
+                onSelectUser{(id) => {
+                  console.log('Select User Clicked')
+                }}
+              />
+            )}
           </SidebarHeader>
         </div>
         
