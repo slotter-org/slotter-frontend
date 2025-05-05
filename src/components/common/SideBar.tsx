@@ -110,7 +110,7 @@ export function SideBar() {
                 onSelectCompany={(id) => {
                   console.log('Select Company Clicked')
                 }}
-                onSelectUser{(id) => {
+                onSelectUser={(id) => {
                   console.log('Select User Clicked')
                 }}
               />
