@@ -63,7 +63,7 @@ function NavBarWithSidebar() {
   const location = useLocation();
   const navigate = useNavigate();
   const { logout } = useAuth();
-  const { me, myCompany, myWms } = useContext(MeContext);
+  const { me } = useContext(MeContext);
   const { isOffCanvas, state } = useSidebar();
   const { isBelowMd, isBelowLg } = useViewport();
   const avatarRef = useRef<HTMLButtonElement>(null)

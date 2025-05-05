@@ -31,19 +31,19 @@ export function SideBar() {
   const navigate = useNavigate()
   const location = useLocation()
   const { me } = useContext(MeContext)
-  const myEntity;
+  const { myWms } = useMyWms();
+  const { myCompany } = useMyCompany();
   const avatarRef = useRef<HTMLButtonElement>(null)
   function focusAvatar() {
     avatarRef.current?.focus()
   }
+  const myEntity = me?.userType === 'wms' ? myWms : me?.userType === 'company' ? myCompany : null;
 
   
   let avatar: React.ReactNode = null
   let displayName = ""
   if (me) {
     if (me?.userType === "wms") {
-      const { myWms } = useMyWms();
-      myEntity = myWms;
       displayName = myEntity?.name[0].toUpperCase() + myEntity?.name.split(1)
     } else if (me?.userType === "company") {
       const { myCompany } = useMyCompany();
