@@ -3,6 +3,7 @@ import { Plus, Warehouse, Users } from 'lucide-react';
 import { CompanyAvatar, UserAvatar } from '@/components/common/avatars/Avatar';
 import { useMyCompany } from '@/contexts/MyCompanyProvider';
 import { getMyCompanyRoles } from '@/api/MyCompanyService';
+import { UserSubDropdown } from '@/components/common/sub-dropdowns/UserSubDropdown';
 import type { Role } from '@/types/role';
 import {
   DropdownMenu,
@@ -96,33 +97,12 @@ export function CompanyAvatarDropdown({
         </DropdownMenuSub>
 
         {/* Users Submenu */}
-        <DropdownMenuSub>
-          <DropdownMenuSubTrigger className="flex items-center gap-2">
-            <Users size={16} />
-            <span>Users</span>
-          </DropdownMenuSubTrigger>
-          <DropdownMenuSubContent>
-            {myUsers && myUsers.length > 0 ? (
-              myUsers.map((user) => (
-                <DropdownMenuItem key={user.id} onClick={() => onSelectUser(user.id)}>
-                  <div className="flex items-center gap-2">
-                    <UserAvatar
-                      user={user}
-                      mine={false}
-                      withName={false}
-                      variant="ghost"
-                      size={16}
-                      className="p-0"
-                    />
-                    <span className="capitalized">{user.firstName} {user.lastName}</span>
-                  </div>
-                </DropdownMenuItem>
-              ))
-            ) : (
-              <DropdownMenuItem disabled>No Users</DropdownMenuItem>
-            )}
-          </DropdownMenuSubContent>
-        </DropdownMenuSub>
+        {myUsers && (
+          <UserSubDropdown
+            users={myUsers}
+            onSelectedUser={onSelectUser}
+          />
+        )}
 
         {/* Roles Submenu */}
         <DropdownMenuSub>
