@@ -97,15 +97,15 @@ function NavBarWithSidebar() {
   if (me) {
     if (isOffCanvas) {
       if (isBelowMd) {
-        if (me.userType === "wms" && myWms) {
+        if (me.userType === "wms") {
           entityAvatar = <WmsAvatar ref={avatarRef} mine withName={false} variant="ghost" size={24} />;
-        } else if (me.userType === "company" && myCompany) {
+        } else if (me.userType === "company") {
           entityAvatar = <CompanyAvatar ref={avatarRef} mine withName={false} variant="ghost" size={24} />;
         }
       } else {
-        if (me.userType === "wms" && myWms) {
+        if (me.userType === "wms") {
           entityAvatar = <WmsAvatar ref={avatarRef} mine withName={true} variant="outline" size={20} className="shadow-sm" />;
-        } else if (me.userType === "company" && myCompany) {
+        } else if (me.userType === "company") {
           entityAvatar = <CompanyAvatar ref={avatarRef} mine withName={true} variant="outline" size={20} className="shadow-sm"/>;
         }
       }

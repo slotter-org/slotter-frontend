@@ -18,6 +18,8 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Button } from "@/components/ui/button"
 import { MeContext } from "@/contexts/MeProvider"
+import { useMyWms } from "@/contexts/MyWmsProvider"
+import { useMyCompany } from "@/contexts/MyCompanyProvider"
 import { ThemeToggle } from "@/components/common/ThemeToggle"
 import { CompanyAvatar, WmsAvatar } from "@/components/common/avatars/Avatar"
 import { mainNav } from '@/types/navitem'
@@ -28,34 +30,40 @@ export function SideBar() {
   const { state } = useSidebar()
   const navigate = useNavigate()
   const location = useLocation()
-  const { me, myCompany, myWms } = useContext(MeContext)
+  const { me } = useContext(MeContext)
+  const myEntity;
   const avatarRef = useRef<HTMLButtonElement>(null)
   function focusAvatar() {
     avatarRef.current?.focus()
   }
+
   
   let avatar: React.ReactNode = null
   let displayName = ""
   if (me) {
-    if (me?.userType === "wms" && myWms) {
-      displayName = myWms?.name[0].toUpperCase() + myWms?.name.split(1)
-    } else if (me?.userType === "company" && myCompany) {
-      displayName = myCompany?.name[0].toUpperCase() + myCompany?.name.split(1)
+    if (me?.userType === "wms") {
+      const { myWms } = useMyWms();
+      myEntity = myWms;
+      displayName = myEntity?.name[0].toUpperCase() + myEntity?.name.split(1)
+    } else if (me?.userType === "company") {
+      const { myCompany } = useMyCompany();
+      myEntity = myCompany;
+      displayName = myEntity?.name[0].toUpperCase() + myEntity?.name.split(1)
     } else {
       displayName = "Unnamed Entity"
     }
   }
   
   if (state === "expanded") {
-    if (me?.userType === "wms" && myWms) {
+    if (me?.userType === "wms") {
       avatar = <WmsAvatar ref={avatarRef} mine withName={true} variant="outline" size={20} className="shadow-sm bg-sidebar-background" />
-    } else if (me?.userType === "company" && myCompany) {
+    } else if (me?.userType === "company") {
       avatar = <CompanyAvatar ref={avatarRef} mine withName={true} variant="outline" size={20} className="shadow-sm bg-sidebar-background" />
     }
   } else {
-    if (me?.userType === "wms" && myWms) {
+    if (me?.userType === "wms") {
       avatar = <WmsAvatar ref={avatarRef} mine withName={false} variant="ghost" size={24} />
-    } else if (me?.userType === "company" && myCompany) {
+    } else if (me?.userType === "company") {
       avatar = <CompanyAvatar ref={avatarRef} mine withName={false} variant="ghost" size={24} />
     }
   }
