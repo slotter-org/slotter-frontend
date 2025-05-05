@@ -7,7 +7,7 @@ import React, {
   useState,
 } from 'react';
 import { getToken } from '@/services/StorageService';
-import SSEService from '@/services/SSEService';
+import SSEService from '@/api/SSEService';
 
 export interface SSEMessage {
   event: string;
