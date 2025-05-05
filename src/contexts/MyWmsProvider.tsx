@@ -110,6 +110,18 @@ export function MyWmsProvider({ children }: { children: ReactNode }) {
   }, [me?.wmsID]);
 
   useEffect(() => {
+    if (me?.userType === 'wms' && me.wmsID) {
+      fetchMyWms();
+      fetchMyCompanies();
+      fetchMyUsers();
+    } else {
+      setMyWms(null);
+      setMyCompanies(null);
+      setMyUsers(null);
+    }
+  }, [me?.userType, me?.wmsID, fetchMyWms, fetchMyCompanies, fetchMyUsers]);
+
+  useEffect(() => {
     if (!connected) return;
     if (me?.userType === 'wms' && me.wmsID) {
       const wmsChan = 'wms:' + me.wmsID;
