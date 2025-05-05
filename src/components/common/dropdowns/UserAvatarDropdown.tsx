@@ -47,7 +47,7 @@ export function UserAvatarDropdown({
 
         {/* ThemeToggle */}
         <DropdownMenuItem asChild>
-          <ThemeToggle iconSize={16} extended={true} />
+          <ThemeToggle iconSize={16} extended={true} className="px-2 py-1"/>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
 
