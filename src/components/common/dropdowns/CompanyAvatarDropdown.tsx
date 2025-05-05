@@ -111,10 +111,10 @@ export function CompanyAvatarDropdown({
                       mine={false}
                       withName={false}
                       variant="ghost"
-                      size={24}
+                      size={16}
                       className="p-0"
                     />
-                    <span>{user.firstName} {user.lastName}</span>
+                    <span className="capitalized">{user.firstName} {user.lastName}</span>
                   </div>
                 </DropdownMenuItem>
               ))
