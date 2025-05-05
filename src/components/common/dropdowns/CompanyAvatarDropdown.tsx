@@ -69,7 +69,7 @@ export function CompanyAvatarDropdown({
         {/* Users Submenu */}
         <DropdownMenuSub>
           <DropdownMenuSubTrigger>Users</DropdownMenuSubTrigger>
-          <DropdownMenySubContent>
+          <DropdownMenuSubContent>
             {myUsers && myUsers.length > 0 ? (
               myUsers.map((user) => (
                 <DropdownMenuItem key={user.id} onClick={() => onSelectUser(user.id)}>
