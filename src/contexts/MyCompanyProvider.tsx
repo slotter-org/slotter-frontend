@@ -99,7 +99,7 @@ export function MyCompanyProvider({ children }: { children: ReactNode }) {
     setError(null);
     try {
       const resp = await getMyCompanyUsers();
-      setMyUsers(resp.myCompanyUsers);
+      setMyUsers(resp.myUsers);
     } catch (err: any) {
       console.error('[MyCompanyProvider] fetchMyUsers error:', err)
       setError(err.message || 'Failed to fetch my company users');
