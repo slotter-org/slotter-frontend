@@ -23,6 +23,7 @@ import { mainNav } from "@/types/navitem";
 import { NavItems } from "@/components/common/NavItems";
 import { CompanyAvatarDropdown } from '@/components/common/dropdowns/CompanyAvatarDropdown';
 import { WmsAvatarDropdown } from '@/components/common/dropdowns/WmsAvatarDropdown';
+import { UserAvatarDropdown } from '@/components/common/dropdowns/UserAvatarDropdown';
 
 export function NavBar() {
   const location = useLocation();
@@ -217,18 +218,13 @@ function NavBarWithSidebar() {
       {/*Right Side*/}
       <div className={`${rightMost} gap-2`}>
         {!isBelowMd &&<SearchBar />}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <div>
-              {myAvatar}
-            </div>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent>
-            <DropdownMenuLabel>Profile</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={handleLogout}>Log out</DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <UserAvatarDropdown
+          trigger={myAvatar}
+          onSettings={() => {
+            console.log('Selected User Settings')
+          }}
+          onLogout={handleLogout}
+        />
       </div>
     </nav>
   );
