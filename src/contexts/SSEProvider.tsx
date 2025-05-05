@@ -36,21 +36,33 @@ export function SSEProvider({ children }: { children: React.ReactNode }) {
   const [connected, setConnected] = useState(false);
   const [lastMessage, setLastMessage] = useState<SSEMessage | null>(null);
   const initializedRef = useRef(false);
+  const retryTimer = useRef<number | null>(null);
+
+  const scheduleRetry = useCallback((delay = 1000) => {
+    if (retryTimer.current) window.clearTimeout(retryTimer.current);
+    retryTimer.current = window.setTimeout(() => connect(), delay);
+  }, []);
+
   const connect = useCallback(() => {
     const token = getToken();
     if (!token) {
-      console.warn('[SSEProvider] No token found, skipping SSE connect.')
+      console.warn('[SSEProvider] No token found, retrying SSE connect...');
       setConnected(false);
+      scheduleRetry();            // <── retry until token exists
       return;
     }
+
     SSEService.connect();
     SSEService.onOpen(() => {
       console.log('[SSEProvider] onopen => connected!');
+      if (retryTimer.current) window.clearTimeout(retryTimer.current);
       setConnected(true);
     });
     SSEService.onError((err) => {
       console.error('[SSEProvider] onerror =>', err);
       setConnected(false);
+      SSEService.close();
+      scheduleRetry(2000);        // <── retry on stream error
     });
     SSEService.onMessage((evt) => {
       try {
@@ -63,7 +75,7 @@ export function SSEProvider({ children }: { children: React.ReactNode }) {
         console.warn('[SSEProvider] Failed to parse SSE data =>', evt.data, error);
       }
     });
-  }, []);
+  }, [scheduleRetry]);
 
   useEffect(() => {
     if (!initializedRef.current) {
@@ -71,6 +83,7 @@ export function SSEProvider({ children }: { children: React.ReactNode }) {
       connect();
     }
     return () => {
+      if (retryTimer.current) window.clearTimeout(retryTimer.current);
       SSEService.close();
     };
   }, [connect]);
@@ -104,3 +117,4 @@ export function SSEProvider({ children }: { children: React.ReactNode }) {
     </SSEContext.Provider>
   );
 }
+
