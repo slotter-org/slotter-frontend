@@ -10,15 +10,15 @@ export interface GetMyCompanyResponse {
 }
 
 export interface GetMyCompanyUsersResponse {
-  users: User[]
+  myUsers: User[]
 }
 
 export interface GetMyCompanyRolesResponse {
-  roles: Role[]
+  myRoles: Role[]
 }
 
 export interface GetMyCompanyWarehousesResponse {
-  warehouses: Warehouse[]
+  myWarehouses: Warehouse[]
 }
 
 export async function getMyCompany(): Promise<GetMyCompanyResponse> {

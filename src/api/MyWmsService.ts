@@ -9,15 +9,15 @@ export interface GetMyWmsResponse {
 }
 
 export interface GetMyWmsUsersResponse {
-  users: User[]
+  myUsers: User[]
 }
 
 export interface GetMyWmsRolesResponse {
-  roles: Role[]
+  myRoles: Role[]
 }
 
 export interface GetMyWmsCompaniesResponse {
-  companies: Company[]
+  myCompanies: Company[]
 }
 
 export async function getMyWms(): Promise<GetMyWmsResponse> {

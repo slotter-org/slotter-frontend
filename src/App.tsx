@@ -4,7 +4,7 @@ import { ThemeProvider } from '@/contexts/ThemeProvider';
 import { AuthProvider } from '@/contexts/AuthProvider';
 import { MeProvider } from '@/contexts/MeProvider';
 import { MyEntityProvider } from '@/contexts/MyEntityProvider';
-import { WebSocketProvider} from '@/contexts/WebSocketProvider';
+import { SSEProvider } from '@/contexts/SSEProvider';
 import { SearchProvider } from '@/contexts/SearchProvider';
 import { AppRouter } from '@/router/AppRouter';
 import { useAuth } from '@/hooks/useAuth';
@@ -22,7 +22,7 @@ export default function App() {
     <ViewportProvider>
       <ThemeProvider>
         <AuthProvider>
-          <WebSocketProvider>
+          <SSEProvider>
             <MaybeMeProvider>
               <MyEntityProvider>
                 <SearchProvider>
@@ -30,7 +30,7 @@ export default function App() {
                 </SearchProvider>
               </MyEntityProvider>
             </MaybeMeProvider>
-          </WebSocketProvider>
+          </SSEProvider>
         </AuthProvider>
       </ThemeProvider>
     </ViewportProvider>
