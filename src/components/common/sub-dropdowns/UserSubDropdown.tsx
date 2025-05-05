@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { Users } from 'lucide-react';
 import { UserAvatar } from '@/components/common/avatars/Avatar';
 import { User } from '@/types/user';
+import { SearchBar } from '@/components/common/SearchBar';
 import {
   DropdownMenuSub,
   DropdownMenuSubTrigger,
@@ -35,12 +36,11 @@ export function UserSubDropdown({
       <DropdownMenuSubContent className="p-0 w-60">
         {/* Sticky Search Header */}
         <div className="sticky top-0 bg-background px-2 py-1">
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
+          <SearchBar
+            value={filter}
+            onChange={setFilter}
+            onClear={() => setFilter('')}
             placeholder="Search Users..."
-            className="w-full px-2 py-1 border rounded"
           />
         </div>
         {/* Scrollable list (max 5 items tall) */}
