@@ -22,6 +22,7 @@ import { SearchBar } from "@/components/common/SearchBar";
 import { mainNav } from "@/types/navitem";
 import { NavItems } from "@/components/common/NavItems";
 import { CompanyAvatarDropdown } from '@/components/common/dropdowns/CompanyAvatarDropdown';
+import { WmsAvatarDropdown } from '@/componnents/common/dropdowns/WmsAvatarDropdown';
 
 export function NavBar() {
   const location = useLocation();
@@ -151,7 +152,7 @@ function NavBarWithSidebar() {
       <div className={`${leftMost}`}>
         {isOffCanvas ? (
           isBelowMd ? (
-            me?.userType === 'company' && (
+            me?.userType === 'company' ? (
               <CompanyAvatarDropdown
                 trigger={entityAvatar}
                 onAddWarehouse={() => {
@@ -164,12 +165,42 @@ function NavBarWithSidebar() {
                   console.log('Select User Clicked')
                 }}
               />
+            ) : (
+              <WmsAvatarDropdown
+                trigger={entityAvatar}
+                onSelectCompany={(id) => {
+                  console.log('Select Company Clicked')
+                }}
+                onSelectUser={(id) => {
+                    console.log('Select User Clicked')
+                }}
+              />
             )
           ) : (
             <div className="flex items-center gap-2">
               <SidebarTrigger />
               <div>
-                {entityAvatar}
+                {me?.userType === 'company' ? (
+                  <CompanyAvatarDropdown
+                    trigger={entityAvatar}
+                    onSelectWarehouse={(id) => {
+                      console.log('Select Warehouse Clicked')                    
+                    }}
+                    onSelectUser={(id) => {
+                      console.log('Select User Clicked')
+                    }}
+                  />
+                ) : (
+                  <WmsAvatarDropdown
+                    trigger={entityAvatar}
+                    onSelectCompany={(id) => {
+                      console.log('Select Company Clicked')
+                    }}
+                    onSelectUser={(id) => {
+                      console.log('Select User Clicked')
+                    }}
+                  />
+                )}
               </div>
             </div>
           )
