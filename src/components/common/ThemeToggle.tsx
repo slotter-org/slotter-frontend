@@ -27,7 +27,7 @@ export function ThemeToggle({ iconSize = 18 }: ThemeToggleProps) {
   const icon = theme === 'light' ? <Moon size={iconSize} /> : <Sun size={iconSize} />;
 
   return (
-    {!extended ? (
+    {(!extended) ? (
       <Button variant="ghost" onClick={toggleTheme}>
         {icon}
       </Button>
