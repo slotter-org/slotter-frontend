@@ -56,7 +56,7 @@ export function CompanyAvatarDropdown({
         </button>
       </DropdownMenuTrigger>
 
-      <DropdownMenuContent side="bottom" align="right" className="w-48">
+      <DropdownMenuContent side="right" align="start" className="w-48">
         <DropdownMenuLabel className="capitalize">
           {myCompany?.name || 'Company'}
         </DropdownMenuLabel>

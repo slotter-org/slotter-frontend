@@ -38,7 +38,7 @@ export function WmsAvatarDropdown({
       </DropdownMenuTrigger>
 
       {/* Open at bottom-right */}
-      <DropdownMenuContent side="bottom" align="end" className="w-48">
+      <DropdownMenuContent side="right" align="start" className="w-48">
         <DropdownMenuLabel className="capitalize">
           {myWms?.name || 'WMS'}
         </DropdownMenuLabel>
