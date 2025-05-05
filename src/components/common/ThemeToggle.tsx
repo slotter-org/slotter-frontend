@@ -28,12 +28,10 @@ export function ThemeToggle({ iconSize = 18, extended = false, }: ThemeTogglePro
 
   if (extended) {
     return (
-      <div className="flex items-center gap-2">
-        <Button variant="ghost" onClick={toggleTheme}>
+        <Button variant="ghost" onClick={toggleTheme} className="flex items-center gap-2">
           {icon}
+          <span>Theme</span>
         </Button>
-        <span>Theme</span>
-      </div>
     );
   }
 
