@@ -46,8 +46,6 @@ export function SideBar() {
     if (me?.userType === "wms") {
       displayName = myEntity?.name[0].toUpperCase() + myEntity?.name.split(1)
     } else if (me?.userType === "company") {
-      const { myCompany } = useMyCompany();
-      myEntity = myCompany;
       displayName = myEntity?.name[0].toUpperCase() + myEntity?.name.split(1)
     } else {
       displayName = "Unnamed Entity"

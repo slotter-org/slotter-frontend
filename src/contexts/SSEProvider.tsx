@@ -38,6 +38,15 @@ export function SSEProvider({ children }: { children: React.ReactNode }) {
   const initializedRef = useRef(false);
   const retryTimer = useRef<number | null>(null);
 
+  const resetState = () => {
+    setConnected(false);
+    setLastMessage(null);
+    pendingSubs.current.clear();
+    if (retryTimer.current) clearTimeout(retryTimer.current);
+    noTokenDelay.current = 1000;
+    SSEService.close();
+  };
+
   const scheduleRetry = useCallback((delay = 1000) => {
     if (retryTimer.current) window.clearTimeout(retryTimer.current);
     retryTimer.current = window.setTimeout(() => connect(), delay);
