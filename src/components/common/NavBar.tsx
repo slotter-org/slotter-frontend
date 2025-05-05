@@ -21,6 +21,7 @@ import { useViewport } from "@/contexts/ViewportProvider";
 import { SearchBar } from "@/components/common/SearchBar";
 import { mainNav } from "@/types/navitem";
 import { NavItems } from "@/components/common/NavItems";
+import { CompanyAvatarDropdown } from '@/components/common/dropdowns/CompanyAvatarDropdown';
 
 export function NavBar() {
   const location = useLocation();
@@ -150,9 +151,20 @@ function NavBarWithSidebar() {
       <div className={`${leftMost}`}>
         {isOffCanvas ? (
           isBelowMd ? (
-            <div>
-              {entityAvatar}
-            </div>
+            {me?.userType === 'company' ? (
+              <CompanyAvatarDropdown
+                trigger={entityAvatar}
+                onAddWarehouse={() => {
+                  console.log('Add Warehouse Clicked')
+                }}
+                onSelectWarehouse={(id) => {
+                  console.log('Select Warehouse Clicked')
+                }}
+                onSelectUser={(id) => {
+                  console.log('Select User Clicked')
+                }}
+              />
+            )}
           ) : (
             <div className="flex items-center gap-2">
               <SidebarTrigger />
@@ -161,7 +173,7 @@ function NavBarWithSidebar() {
               </div>
             </div>
           )
-        ): (
+        ) : (
           <SidebarTrigger />
         )}
       </div>
