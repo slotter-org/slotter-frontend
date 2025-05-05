@@ -4,6 +4,8 @@ import type { User } from "@/types/user"
 import type { Company } from "@/types/company"
 import type { Wms } from "@types/wms"
 import { MeContext } from "@/contexts/MeProvider"
+import { MyWmsContext} from "@/contexts/MyWmsProvider"
+import { MyCompanyContext} from "@/contexts/MyCompanyProvider"
 import { Button } from "@/components/ui/button"
 import { ChevronsUpDown } from "lucide-react"
 
@@ -91,7 +93,7 @@ export const CompanyAvatar = forwardRef<HTMLButtonElement, CompanyAvatarProps>(
     ref
   ) {
     const fallback = ""
-    const { myCompany } = useContext(MeContext)
+    const { myCompany } = useContext(MyCompanyContext)
     const effectiveCompany = mine ? myCompany : company
     const src = effectiveCompany?.avatarURL || fallback
     const name = effectiveCompany?.name
@@ -147,7 +149,7 @@ export const WmsAvatar = forwardRef<HTMLButtonElement, WmsAvatarProps>(
     ref
   ) {
     const fallback = ""
-    const { myWms } = useContext(MeContext)
+    const { myWms } = useContext(MyWmsContext)
     const effectiveWms = mine ? myWms : wms
     const src = effectiveWms?.avatarURL || fallback
     const name = effectiveWms?.name
