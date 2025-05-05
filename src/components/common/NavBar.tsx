@@ -151,7 +151,7 @@ function NavBarWithSidebar() {
       <div className={`${leftMost}`}>
         {isOffCanvas ? (
           isBelowMd ? (
-            {me?.userType === 'company' ? (
+            me?.userType === 'company' && (
               <CompanyAvatarDropdown
                 trigger={entityAvatar}
                 onAddWarehouse={() => {
@@ -164,7 +164,7 @@ function NavBarWithSidebar() {
                   console.log('Select User Clicked')
                 }}
               />
-            )}
+            )
           ) : (
             <div className="flex items-center gap-2">
               <SidebarTrigger />
