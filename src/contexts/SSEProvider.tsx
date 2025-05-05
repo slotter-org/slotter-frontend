@@ -35,7 +35,7 @@ export function useSSEContext(): SSEContextValue {
 export function SSEProvider({ children }: { children: React.ReactNode }) {
   const [connected, setConnected] = useState(false);
   const [lastMessage, setLastMessage] = useState<SSEMessage | null>(null);
-  const initialedRef = useRef(false);
+  const initializedRef = useRef(false);
   const connect = useCallback(() => {
     const token = getToken();
     if (!token) {
