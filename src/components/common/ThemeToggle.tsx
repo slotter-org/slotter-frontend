@@ -8,7 +8,7 @@ interface ThemeToggleProps {
   extended: boolean;
 }
 
-export function ThemeToggle({ iconSize = 18 }: ThemeToggleProps) {
+export function ThemeToggle({ iconSize = 18, extended = false, }: ThemeToggleProps) {
   const { theme, setTheme } = useTheme();
 
   function toggleTheme() {
@@ -23,22 +23,24 @@ export function ThemeToggle({ iconSize = 18 }: ThemeToggleProps) {
     }
   }
 
-  // If current theme is 'light' => show moon, else show sun
-  const icon = theme === 'light' ? <Moon size={iconSize} /> : <Sun size={iconSize} />;
+  const icon = 
+    theme === 'light' ? <Moon size={iconSize} /> : <Sun size={iconSize} />;
 
-  return (
-    {(!extended) ? (
-      <Button variant="ghost" onClick={toggleTheme}>
-        {icon}
-      </Button>
-    ) : (
+  if (extended) {
+    return (
       <div className="flex items-center gap-2">
         <Button variant="ghost" onClick={toggleTheme}>
           {icon}
         </Button>
         <span>Theme</span>
       </div>
-    )}
+    );
+  }
+
+  return (
+    <Button variant="ghost" onClick={toggleTheme}>
+      {icon}
+    </Button>
   );
 }
 
