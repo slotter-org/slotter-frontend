@@ -92,7 +92,7 @@ export function MyWmsProvider({ children }: { children: ReactNode }) {
 
   const fetchMyUsers = useCallback(async () => {
     if (!me?.wmsID) {
-      setMyusers(null);
+      setMyUsers(null);
       return;
     }
     setLoading(true);
