@@ -22,7 +22,7 @@ import { SearchBar } from "@/components/common/SearchBar";
 import { mainNav } from "@/types/navitem";
 import { NavItems } from "@/components/common/NavItems";
 import { CompanyAvatarDropdown } from '@/components/common/dropdowns/CompanyAvatarDropdown';
-import { WmsAvatarDropdown } from '@/componnents/common/dropdowns/WmsAvatarDropdown';
+import { WmsAvatarDropdown } from '@/components/common/dropdowns/WmsAvatarDropdown';
 
 export function NavBar() {
   const location = useLocation();
