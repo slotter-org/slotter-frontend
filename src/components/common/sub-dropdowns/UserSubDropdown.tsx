@@ -40,7 +40,7 @@ export function UserSubDropdown({
       </DropdownMenuSubTrigger>
 
       {/* Content */}
-      <DropdownMenuSubContent className="p-0 w-60">
+      <DropdownMenuSubContent className="p-0 w-46">
         {/* Sticky search header */}
         <div className="sticky top-0 z-10 bg-background px-2 py-1">
           <SearchBar
