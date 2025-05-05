@@ -32,7 +32,9 @@ export function CompanyAvatarDropdown({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        {trigger ?? <CompanyAvatar mine withName variant="outline" size={32} />}
+        <button className="p-0 rounded-full focus:outline-none">
+          {trigger ?? <CompanyAvatar mine withName variant="outline" size={32} />}
+        </button>
       </DropdownMenuTrigger>
 
       <DropdownMenuContent side="bottom" align="end" className="w-48">
