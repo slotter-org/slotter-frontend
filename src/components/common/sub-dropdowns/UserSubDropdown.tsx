@@ -19,56 +19,71 @@ export function UserSubDropdown({
   users,
   onSelectUser,
 }: UserSubDropdownProps) {
-  const [search, setSearch] = useState('')
+  const [filter, setFilter] = useState('');
   const filtered = useMemo(() => {
-    const term = search.toLowerCase();
-    return users.filter((u) => 
+    const term = filter.toLowerCase();
+    return users.filter((u) =>
       `${u.firstName} ${u.lastName}`.toLowerCase().includes(term)
     );
-  }, [users, search]);
+  }, [filter, users]);
+
+  // Only show the first 5 when rendering; scroll if more than 5
+  const toShow = filtered.slice(0, 5);
+  const isScrollable = filtered.length > 5;
 
   return (
     <DropdownMenuSub>
+      {/* Trigger */}
       <DropdownMenuSubTrigger className="flex items-center gap-2 px-2 py-1">
         <Users size={16} />
         <span>Users</span>
       </DropdownMenuSubTrigger>
+
+      {/* Content */}
       <DropdownMenuSubContent className="p-0 w-60">
-        {/* Sticky Search Header */}
-        <div className="sticky top-0 bg-background px-2 py-1">
+        {/* Sticky search header */}
+        <div className="sticky top-0 z-10 bg-background px-2 py-1">
           <SearchBar
             value={filter}
             onChange={setFilter}
             onClear={() => setFilter('')}
-            placeholder="Search Users..."
+            placeholder="Search users..."
+            className="w-full"
           />
         </div>
-        {/* Scrollable list (max 5 items tall) */}
-        <div className="max-h-48 overflow-y-auto">
-          {filtered.length > 0 ? (
-            filtered.map((user) => (
-              <DropdownMenuItem
-                key={user.id}
-                onClick={() => onSelectUser(user.id)}
-              >
-                <div className="flex items-center gap-2">
-                  <UserAvatar
-                    user={user}
-                    mine={false}
-                    withName={false}
-                    variant="ghost"
-                    size={16}
-                    className="p-0"
-                  />
-                  <span>{user.firstName} {user.lastName}</span>
-                </div>
-              </DropdownMenuItem>
-            ))
-          ) : (
-            <DropdownMenuItem disabled>No Users</DropdownMenuItem>
+
+        {/* User list: scrollable only if >5 */}
+        <div className={isScrollable ? 'max-h-48 overflow-y-auto' : ''}>
+          {toShow.map((user) => (
+            <DropdownMenuItem
+              key={user.id}
+              onClick={() => onSelectUser(user.id)}
+              className="px-2 py-1"
+            >
+              <div className="flex items-center gap-2">
+                <UserAvatar
+                  user={user}
+                  mine={false}
+                  withName={false}
+                  variant="ghost"
+                  size={16}
+                  className="p-0"
+                />
+                <span>
+                  {user.firstName} {user.lastName}
+                </span>
+              </div>
+            </DropdownMenuItem>
+          ))}
+
+          {filtered.length === 0 && (
+            <DropdownMenuItem disabled className="px-2 py-1">
+              No users found
+            </DropdownMenuItem>
           )}
         </div>
       </DropdownMenuSubContent>
     </DropdownMenuSub>
   );
 }
+
