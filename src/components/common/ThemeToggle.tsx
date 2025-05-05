@@ -9,7 +9,7 @@ interface ThemeToggleProps {
   className?: string;
 }
 
-export function ThemeToggle({ iconSize = 18, extended = false, }: ThemeToggleProps) {
+export function ThemeToggle({ iconSize = 18, extended = false, className = '', }: ThemeToggleProps) {
   const { theme, setTheme } = useTheme();
 
   function toggleTheme() {
