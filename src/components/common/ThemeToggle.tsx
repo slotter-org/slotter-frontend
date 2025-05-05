@@ -5,6 +5,7 @@ import { useTheme } from '@/contexts/ThemeProvider';
 
 interface ThemeToggleProps {
   iconSize?: number;
+  extended: boolean;
 }
 
 export function ThemeToggle({ iconSize = 18 }: ThemeToggleProps) {
@@ -26,9 +27,18 @@ export function ThemeToggle({ iconSize = 18 }: ThemeToggleProps) {
   const icon = theme === 'light' ? <Moon size={iconSize} /> : <Sun size={iconSize} />;
 
   return (
-    <Button variant="ghost" onClick={toggleTheme}>
-      {icon}
-    </Button>
+    {!extended ? (
+      <Button variant="ghost" onClick={toggleTheme}>
+        {icon}
+      </Button>
+    ) : (
+      <div className="flex items-center gap-2">
+        <Button variant="ghost" onClick={toggleTheme}>
+          {icon}
+        </Button>
+        <span>Theme</span>
+      </div>
+    )}
   );
 }
 

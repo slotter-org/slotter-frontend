@@ -35,7 +35,7 @@ export function UserAvatarDropdown({
 
       <DropdownMenuContent side="left" align="start" className="w-48">
         <DropdownMenuLabel className="capitalize">
-          {me?.name || 'Profile'}
+          {me?.firstName || 'Profile'}
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
 
@@ -46,9 +46,8 @@ export function UserAvatarDropdown({
         </DropdownMenuItem>
 
         {/* ThemeToggle */}
-        <DropdownMenuItem className="flex items-center gap-2">
-          <ThemeToggle />
-          <span>Theme</span>
+        <DropdownMenuItem>
+          <ThemeToggle iconSize={16} extended={true} />
         </DropdownMenuItem>
         <DropdownMenuSeparator />
 
