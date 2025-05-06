@@ -60,7 +60,7 @@ export function UserSubDropdown({
               onClick={() => onSelectUser(user.id)}
               className="px-2 py-1"
             >
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 capitalize">
                 <UserAvatar
                   user={user}
                   mine={false}

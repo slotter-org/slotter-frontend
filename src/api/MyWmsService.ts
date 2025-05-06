@@ -3,6 +3,7 @@ import type { Wms } from '@/types/wms'
 import type { User } from '@/types/user'
 import type { Role } from '@/types/role'
 import type { Company } from '@/types/company'
+import type { Invitation } from '@/types/invitation'
 
 export interface GetMyWmsResponse {
   myWms: Wms
@@ -18,6 +19,10 @@ export interface GetMyWmsRolesResponse {
 
 export interface GetMyWmsCompaniesResponse {
   myCompanies: Company[]
+}
+
+export interface GetMyWmsInvitationsResponse {
+  myInvitations: Invitation[]
 }
 
 export async function getMyWms(): Promise<GetMyWmsResponse> {
@@ -40,3 +45,7 @@ export async function getMyWmsCompanies(): Promise<GetMyWmsCompaniesResponse> {
   return resp.data
 }
 
+export async function getMyWmsInvitations(): Promise<GetMyWmsInvitationsResponse> {
+  const resp = await axiosClient.get<GetMyWmsInvitationsResponse>('/mywms/invitations')
+  return resp.data
+}

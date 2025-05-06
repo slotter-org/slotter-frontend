@@ -9,11 +9,15 @@ import React, {
 import { Wms } from '@/types/wms';
 import { Company } from '@/types/company';
 import { User } from '@/types/user';
+import { Role } from '@/types/role';
+import { Invitation } from '@/types/invitation';
 import { MeContext } from './MeProvider';
 import {
   getMyWms,
   getMyWmsCompanies,
   getMyWmsUsers,
+  getMyWmsRoles,
+  getMyWmsInvitations,
 } from '@/api/MyWmsService';
 import { useSSEContext } from '@/contexts/SSEProvider';
 
@@ -21,22 +25,30 @@ interface MyWmsContextValue {
   myWms: Wms | null;
   myCompanies: Company[] | null;
   myUsers: User[] | null;
+  myRoles: Role[] | null;
+  myInvitations: Invitation[] | null;
   loading: boolean;
   error: string | null;
   fetchMyWms: () => Promise<void>;
   fetchMyCompanies: () => Promise<void>;
   fetchMyUsers: () => Promise<void>;
+  fetchMyRoles: () => Promise<void>;
+  fetchMyInvitations: () => Promise<void>;
 }
 
 const MyWmsContext = createContext<MyWmsContextValue>({
   myWms: null,
   myCompanies: null,
   myUsers: null,
+  myRoles: null,
+  myInvitations: null,
   loading: false,
   error: null,
   fetchMyWms: async () => {},
   fetchMyCompanies: async () => {},
   fetchMyUsers: async () => {},
+  fetchMyRoles: async () => {},
+  fetchMyInvitations: async () => {},
 });
 
 export function useMyWms() {
@@ -49,6 +61,8 @@ export function MyWmsProvider({ children }: { children: ReactNode }) {
   const [myWms, setMyWms] = useState<Wms | null>(null);
   const [myCompanies, setMyCompanies] = useState<Company[] | null>(null);
   const [myUsers, setMyUsers] = useState<User[] | null>(null);
+  const [myRoles, setMyRoles] = useState<Role [] | null>(null);
+  const [myInvitations, setMyInvitations] = useState<Invitation[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -80,7 +94,7 @@ export function MyWmsProvider({ children }: { children: ReactNode }) {
     setError(null);
     try {
       const resp = await getMyWmsCompanies();
-      setMyCompanies(resp.myWmsCompanies);
+      setMyCompanies(resp.myCompanies);
     } catch (err: any) {
       console.error('[MyWmsProvider] fetchMyCompanies error:', err);
       setError(err.message || 'Failed to fetch my wms companies');
@@ -99,11 +113,49 @@ export function MyWmsProvider({ children }: { children: ReactNode }) {
     setError(null);
     try {
       const resp = await getMyWmsUsers();
-      setMyUsers(resp.myWmsUsers);
+      setMyUsers(resp.myUsers);
     } catch (err: any) {
       console.error('[MyWmsProvider] fetchMyUsers error:', err);
       setError(err.message || 'Failed to fetch my wms users');
       setMyUsers(null);
+    } finally {
+      setLoading(false);
+    }
+  }, [me?.wmsID]);
+
+  const fetchMyRoles = useCallback(async () => {
+    if (!me?.wmsID) {
+      setMyRoles(null);
+      return;
+    }
+    setLoading(true);
+    setError(null);
+    try {
+      const resp = await getMyWmsRoles();
+      setMyRoles(resp.myRoles);
+    } catch (err: any) {
+      console.error('[MyWmsProvider] fetchMyRoles error:', err);
+      setError(err.message || 'Failed to fetch my wms roles');
+      setMyRoles(null);
+    } finally {
+      setLoading(false);
+    }
+  }, [me?.wmsID]);
+
+  const fetchMyInvitations = useCallback(async () => {
+    if (!me?.wmsID) {
+      setMyInvitations(null);
+      return;
+    }
+    setLoading(true);
+    setError(null);
+    try {
+      const resp = await getMyWmsInvitations();
+      setMyInvitations(resp.myInvitations);
+    } catch (err: any) {
+      console.error('[MyWmsProvider] fetchMyInvitations error:', err);
+      setError(err.message || 'Failed to fetch my wms invitations');
+      setMyInvitations(null);
     } finally {
       setLoading(false);
     }
@@ -114,12 +166,16 @@ export function MyWmsProvider({ children }: { children: ReactNode }) {
       fetchMyWms();
       fetchMyCompanies();
       fetchMyUsers();
+      fetchMyRoles();
+      fetchMyInvitations();
     } else {
       setMyWms(null);
       setMyCompanies(null);
       setMyUsers(null);
+      setMyRoles(null);
+      setMyInvitations(null);
     }
-  }, [me?.userType, me?.wmsID, fetchMyWms, fetchMyCompanies, fetchMyUsers]);
+  }, [me?.userType, me?.wmsID, fetchMyWms, fetchMyCompanies, fetchMyUsers, fetchMyRoles, fetchMyInvitations]);
 
   useEffect(() => {
     if (!connected) return;
@@ -154,19 +210,41 @@ export function MyWmsProvider({ children }: { children: ReactNode }) {
         case 'CompanyDeleted':
           fetchMyCompanies();
           break;
+        case 'UserRoleUpdated':
+          fetchMyUsers();
+          fetchMyRoles();
+          break;
+        case 'CompanyRoleNameChanged':
+        case 'CompanyRoleUpdated':
+          fetchMyRoles();
+          break;
+        case 'WmsInvitationCreated':
+        case 'WmsInvitationDeleted':
+        case 'WmsInvitationAccepted':
+        case 'WmsInvitationCanceled':
+        case 'WmsInvitationExpired':
+        case 'WmsInvitationPending':
+          fetchMyUsers();
+          fetchMyInvitations();
+        default:
+          break;
       }
     }
-  }, [lastMessage, me?.userType, me?.wmsID, fetchMyWms, fetchMyCompanies, fetchMyUsers]);
+  }, [lastMessage, me?.userType, me?.wmsID, fetchMyWms, fetchMyCompanies, fetchMyUsers, fetchMyRoles, fetchMyInvitations]);
 
   const value: MyWmsContextValue = {
     myWms,
     myCompanies,
     myUsers,
+    myRoles,
+    myInvitations,
     loading,
     error,
     fetchMyWms,
     fetchMyCompanies,
     fetchMyUsers,
+    fetchMyRoles,
+    fetchMyInvitations,
   };
 
   return (

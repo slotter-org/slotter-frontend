@@ -6,6 +6,8 @@ export interface Warehouse {
   company?: Company;
 
   name?: string;
+  avatarBucketKey?: string;
+  avatarURL?: string;
 
   createdAt?: string;
   updatedAt?: string;

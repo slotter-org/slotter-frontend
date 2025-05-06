@@ -188,4 +188,52 @@ export const WmsAvatar = forwardRef<HTMLButtonElement, WmsAvatarProps>(
 )
 
 
+interface RoleAvatarProps extends BaseAvatarProps {
+  role?: Role | null
+}
 
+export const RoleAvatar = forwardRef<HTMLButtonElement, RoleAvatarProps>(
+  function RoleAvatar(
+    {
+      role,
+      size = 40,
+      className,
+      variant = "ghost",
+      withName = true,
+      mine = false
+    },
+    ref
+  ) {
+    const fallback = ""
+    const effectiveRole = role
+    const src = effectiveRole.avatarURL || fallback
+    const displayName = effectiveRole.name[0].toUpperCase() + effectiveRole.name.slice(1)
+
+    if (withName) {
+      return (
+        <Button variant={`${variant}`} className={cn("flex items-center gap-2 text-sm font-semibold", className)} ref={ref}>
+          <div className="flex gap-4 items-center">
+            <div className="flex gap-2">
+              <img
+                src={src}
+                alt={`${displayName} role`}
+                style={{ width: size, height: size, objectFit: "cover" }}
+              />
+              <span>{displayName}</span>
+            </div>
+          </div>
+        </Button>
+      )
+    } else {
+      return (
+        <Button variant={`${variant}`} className={cn("flex-shrink-o overflow-visible items-center", className)} ref={ref}>
+          <img
+            src={src}
+            alt={`${displayName} Role`}
+            style={{ width: size, height: size, objectFit: "cover" }}
+          />
+        </Button>
+      )
+    }
+  }
+)

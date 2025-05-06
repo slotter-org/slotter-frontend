@@ -3,6 +3,7 @@ import type { Company } from '@/types/company'
 import type { User } from '@/types/user'
 import type { Role } from '@/types/role'
 import type { Warehouse } from '@/types/warehouse'
+import type { Invitation } from '@/types/invitation'
 
 
 export interface GetMyCompanyResponse {
@@ -19,6 +20,10 @@ export interface GetMyCompanyRolesResponse {
 
 export interface GetMyCompanyWarehousesResponse {
   myWarehouses: Warehouse[]
+}
+
+export interface GetMyCompanyInvitationsResponse {
+  myInvitations: Invitation[]
 }
 
 export async function getMyCompany(): Promise<GetMyCompanyResponse> {
@@ -38,5 +43,10 @@ export async function getMyCompanyRoles(): Promise<GetMyCompanyRolesResponse> {
 
 export async function getMyCompanyWarehouses(): Promise<GetMyCompanyWarehousesResponse> {
   const resp = await axiosClient.get<GetMyCompanyWarehousesResponse>('/mycompany/warehouses')
+  return resp.data
+}
+
+export async function getMyCompanyInvitations(): Promise<GetMyCompanyInvitationsResponse> {
+  const resp = await axiosClient.get<GetMyCompanyInvitationsResponse>('/mycompany/invitations')
   return resp.data
 }

@@ -24,6 +24,7 @@ export interface CompanyAvatarDropdownProps {
   onSelectWarehouse: (warehouseId: string) => void;
   onSelectUser: (userId: string) => void;
   onSelectRole: (roleId: string) => void;
+  onSelectInvitation: (invitationId: string) => void;
 }
 
 export function CompanyAvatarDropdown({
@@ -32,21 +33,9 @@ export function CompanyAvatarDropdown({
   onSelectWarehouse,
   onSelectUser,
   onSelectRole,
+  onSelectInvitation,
 }: CompanyAvatarDropdownProps) {
-  const { myCompany, myWarehouses, myUsers } = useMyCompany();
-  const [myRoles, setMyRoles] = useState<Role[]>([]);
-
-  useEffect(() => {
-    async function fetchRoles() {
-      try {
-        const resp = await getMyCompanyRoles();
-        setMyRoles(resp.myRoles);
-      } catch (err) {
-        console.error('[CompanyAvatarDropdown] Failed to fetch roles', err);
-      }
-    }
-    fetchRoles();
-  }, []);
+  const { myCompany, myWarehouses, myUsers, myRoles, myInvitations } = useMyCompany();
 
   return (
     <DropdownMenu>
@@ -105,23 +94,12 @@ export function CompanyAvatarDropdown({
         )}
 
         {/* Roles Submenu */}
-        <DropdownMenuSub>
-          <DropdownMenuSubTrigger className="flex items-center gap-2">
-            <Users size={16} />
-            <span>Roles</span>
-          </DropdownMenuSubTrigger>
-          <DropdownMenuSubContent>
-            {myRoles.length > 0 ? (
-              myRoles.map((role) => (
-                <DropdownMenuItem key={role.id} onClick={() => onSelectRole(role.id)}>
-                  {role.name}
-                </DropdownMenuItem>
-              ))
-            ) : (
-              <DropdownMenuItem disabled>No Roles</DropdownMenuItem>
-            )}
-          </DropdownMenuSubContent>
-        </DropdownMenuSub>
+        {myRoles && (
+          <RoleSubDropdown
+            roles={myRoles}
+            onSelectedRole={onSelectRole}
+          />
+        )}
       </DropdownMenuContent>
     </DropdownMenu>
   );

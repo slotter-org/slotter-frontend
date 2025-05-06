@@ -13,6 +13,8 @@ export interface Role {
   permissions?: Permission[];
 
   name: string;
+  avatarBucketKey?: string;
+  avatarURL?: string;
 
   createdAt: string;
   updatedAt: string;

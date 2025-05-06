@@ -9,11 +9,15 @@ import React, {
 import { Company } from '@/types/company';
 import { Warehouse } from '@/types/warehouse';
 import { User } from '@/types/user';
+import { Invitation } from '@/types/invitation';
+import { Role } from '@/types/role';
 import { MeContext } from './MeProvider';
 import {
   getMyCompany,
   getMyCompanyWarehouses,
   getMyCompanyUsers,
+  getMyCompanyRoles,
+  getMyCompanyInvitations,
 } from '@/api/MyCompanyService';
 import { useSSEContext } from '@/contexts/SSEProvider';
 
@@ -21,22 +25,30 @@ interface MyCompanyContextValue {
   myCompany: Company | null;
   myWarehouses: Warehouse[] | null;
   myUsers: User[] | null;
+  myRoles: Role[] | null;
+  myInvitations: Invitation[] | null;
   loading: boolean;
   error: string | null;
   fetchMyCompany: () => Promise<void>;
   fetchMyWarehouses: () => Promise<void>;
   fetchMyUsers: () => Promise<void>;
+  fetchMyRoles: () => Promise<void>;
+  fetchMyInvitations: () => Promise<void>;
 }
 
 const MyCompanyContext = createContext<MyCompanyContextValue>({
   myCompany: null,
   myWarehouses: null,
   myUsers: null,
+  myRoles: null,
+  myInvitations: null,
   loading: false,
   error: null,
   fetchMyCompany: async () => {},
   fetchMyWarehouses: async () => {},
   fetchMyUsers: async () => {},
+  fetchMyRoles: async () => {},
+  fetchMyInvitations: async () => {},
 });
 
 export function useMyCompany() {
@@ -49,6 +61,8 @@ export function MyCompanyProvider({ children }: { children: ReactNode }) {
   const [myCompany, setMyCompany] = useState<Company | null>(null);
   const [myWarehouses, setMyWarehouses] = useState<Warehouse[] | null>(null);
   const [myUsers, setMyUsers] = useState<User[] | null>(null);
+  const [myRoles, setMyRoles] = useState<Role[] | null>(null);
+  const [myInvitations, setMyInvitations] = useState<Invitation[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
@@ -109,17 +123,59 @@ export function MyCompanyProvider({ children }: { children: ReactNode }) {
     }
   }, [me?.companyID]);
 
+  const fetchMyRoles = useCallback(async () => {
+    if (!me?.companyID) {
+      setMyRoles(null);
+      return;
+    }
+    setLoading(true);
+    setError(null);
+    try {
+      const resp = await getMyCompanyRoles();
+      setMyRoles(resp.myRoles);
+    } catch (err: any) {
+      console.error('[MyCompanyProvider] fetchMyRoles error:', err)
+      setError(err.message || 'Failed to fetch my company roles');
+      setMyRoles(null);
+    } finally {
+      setLoading(false);
+    }
+  }, [me?.companyID]);
+
+  const fetchMyInvitations = useCallback(async () => {
+    if (!me?.companyID) {
+      setMyInvitations(null);
+      return;
+    }
+    setLoading(true);
+    setError(null);
+    try {
+      const resp = await getMyCompanyInvitations();
+      setMyInvitations(resp.myInvitations);
+    } catch (err: any) {
+      console.error('[MyCompanyProvider] fetchMyInvitations error:', err)
+      setError(err.message || 'Failed to fetch my company invitations');
+      setMyInvitations(null);
+    } finally {
+      setLoading(false);
+    }
+  }, [me?.companyID]);
+
   useEffect(() => {
     if (me?.userType === 'company' && me.companyID) {
       fetchMyCompany();
       fetchMyWarehouses();
       fetchMyUsers();
+      fetchMyRoles();
+      fetchMyInvitations();
     } else {
       setMyCompany(null);
       setMyWarehouses(null);
       setMyUsers(null);
+      setMyRoles(null);
+      setMyInvitations(null);
     }
-  }, [me, fetchMyCompany, fetchMyWarehouses, fetchMyUsers]);
+  }, [me, fetchMyCompany, fetchMyWarehouses, fetchMyUsers, fetchMyRoles, fetchMyInvitations]);
 
   useEffect(() => {
     if (!connected) return;
@@ -155,21 +211,42 @@ export function MyCompanyProvider({ children }: { children: ReactNode }) {
         case 'WarehouseNameChanged':
           fetchMyWarehouses();
           break;
+        case 'UserRoleUpdated':
+          fetchMyUsers();
+          fetchMyRoles();
+          break;
+        case 'CompanyRoleNameChanged':
+        case 'CompanyRoleUpdated':
+          fetchMyRoles();
+          break;
+        case 'CompanyInvitationCreated':
+        case 'CompanyInvitationDeleted':
+        case 'CompanyInvitationAccepted':
+        case 'CompanyInvitationCanceled':
+        case 'CompanyInvitationExpired':
+        case 'CompanyInvitationPending':
+          fetchMyUsers();
+          fetchMyInvitations();
+          break;
         default:
-          break
+          break;
       }
     }
-  }, [lastMessage, me?.userType, me?.companyID, fetchMyCompany, fetchMyWarehouses, fetchMyUsers]);
+  }, [lastMessage, me?.userType, me?.companyID, fetchMyCompany, fetchMyWarehouses, fetchMyUsers, fetchMyRoles, fetchMyInvitations]);
 
   const value: MyCompanyContextValue = {
     myCompany,
     myWarehouses,
     myUsers,
+    myRoles,
+    myInvitations,
     loading,
     error,
     fetchMyCompany,
     fetchMyWarehouses,
     fetchMyUsers,
+    fetchMyRoles,
+    fetchMyInvitations,
   };
   
   return (
