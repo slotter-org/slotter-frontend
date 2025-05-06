@@ -4,6 +4,7 @@ import { CompanyAvatar, UserAvatar } from '@/components/common/avatars/Avatar';
 import { useMyCompany } from '@/contexts/MyCompanyProvider';
 import { getMyCompanyRoles } from '@/api/MyCompanyService';
 import { UserSubDropdown } from '@/components/common/sub-dropdowns/UserSubDropdown';
+import { RoleSubDropdown } from '@/components/common/sub-dropdowns/RoleSubDropdown';
 import type { Role } from '@/types/role';
 import {
   DropdownMenu,
