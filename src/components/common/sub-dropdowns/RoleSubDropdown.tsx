@@ -41,7 +41,7 @@ export function RoleSubDropdown({
               <div className="flex items-center gap-2 capitalize">
                 <RoleAvatar
                   role={role}
-                  variant={ghost}
+                  variant="ghost"
                   size={16}
                   className="p-0"
                   withName={false}

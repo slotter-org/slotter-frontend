@@ -198,7 +198,7 @@ export const RoleAvatar = forwardRef<HTMLButtonElement, RoleAvatarProps>(
       role,
       size = 40,
       className,
-      variant = "ghost",
+      variant = "outline",
       withName = true,
       mine = false
     },
