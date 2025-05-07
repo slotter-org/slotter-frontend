@@ -1,6 +1,7 @@
 import React from 'react';
 import { Ticket } from 'lucide-react';
 import { InvitationAvatar } from '@/components/common/avatars/Avatar';
+import { Invitation } from '@/types/invitation';
 import {
   DropdownMenuSub,
   DropdownMenuSubTrigger,
