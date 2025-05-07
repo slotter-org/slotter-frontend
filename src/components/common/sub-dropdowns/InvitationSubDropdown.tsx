@@ -57,7 +57,7 @@ export function InvitationSubDropdown({
                   className="p-0"
                   withName={false}
                 />
-                <span>{getInvitationName(inv)}</span>
+                <span>{getInvitationName(invitation)}</span>
               </div>
             </DropdownMenuItem>
           ))}
