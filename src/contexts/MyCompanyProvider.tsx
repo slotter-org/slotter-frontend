@@ -94,7 +94,7 @@ export function MyCompanyProvider({ children }: { children: ReactNode }) {
     setError(null);
     try {
       const resp = await getMyCompanyWarehouses();
-      setMyWarehouses(resp.myCompanyWarehouses);
+      setMyWarehouses(resp.myWarehouses);
     } catch (err: any) {
       console.error('[MyCompanyProvider] fetchMyWarehouses error:', err)
       setError(err.message || 'Failed to fetch my company warehouses');
@@ -154,7 +154,7 @@ export function MyCompanyProvider({ children }: { children: ReactNode }) {
       setMyInvitations(resp.myInvitations);
     } catch (err: any) {
       console.error('[MyCompanyProvider] fetchMyInvitations error:', err)
-      setError(err.message || 'Failed to fetch my company invitations');
+      setError(err.message ||'Failed to fetch my company invitations');
       setMyInvitations(null);
     } finally {
       setLoading(false);

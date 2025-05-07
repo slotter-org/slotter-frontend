@@ -88,28 +88,20 @@ export function CompanyAvatarDropdown({
         </DropdownMenuSub>
 
         {/* Users Submenu */}
-        {myUsers && (
-          <UserSubDropdown
-            users={myUsers}
-            onSelectedUser={onSelectUser}
-          />
-        )}
-
+        <UserSubDropdown
+          users={myUsers ?? []}
+          onSelectedUser={onSelectUser}
+        />
         {/* Roles Submenu */}
-        {myRoles && (
-          <RoleSubDropdown
-            roles={myRoles}
-            onSelectRole={onSelectRole}
-          />
-        )}
-
+        <RoleSubDropdown
+          roles={myRoles ?? []}
+          onSelectRole={onSelectRole}
+        />
         {/* Invitations Submenu */}
-        {myInvitations && (
-          <InvitationSubDropdown
-            invitations={myInvitations}
-            onSelectInvitation={onSelectInvitation}
-          />
-        )}
+        <InvitationSubDropdown
+          invitations={myInvitations ?? []}
+          onSelectInvitation={onSelectInvitation}
+        />
       </DropdownMenuContent>
     </DropdownMenu>
   );
