@@ -165,6 +165,12 @@ function NavBarWithSidebar() {
                 onSelectUser={(id) => {
                   console.log('Select User Clicked')
                 }}
+                onSelectRole={(id) => {
+                  console.log('Select Role Clicked')
+                }}
+                onSelectInvitation={(id) => {
+                  console.log('Select Invitation Clicked')
+                }}
               />
             ) : (
               <WmsAvatarDropdown
@@ -189,6 +195,12 @@ function NavBarWithSidebar() {
                     }}
                     onSelectUser={(id) => {
                       console.log('Select User Clicked')
+                    }}
+                    onSelectRole={(id) => {
+                      console.log('Select Role Clicked')
+                    }}
+                    onSelectInvitation={(id) => {
+                      console.log('Select Invitation Clicked')
                     }}
                   />
                 ) : (

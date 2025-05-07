@@ -17,6 +17,8 @@ export interface Invitation {
   email?: string;
   phoneNumber?: string;
   expiresAt?: string;
+  avatarBucketKey?: string;
+  avatarURL?: string;
 
   acceptedAt?: string;
   canceledAt?: string;

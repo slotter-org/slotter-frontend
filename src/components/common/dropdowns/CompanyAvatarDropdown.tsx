@@ -5,6 +5,7 @@ import { useMyCompany } from '@/contexts/MyCompanyProvider';
 import { getMyCompanyRoles } from '@/api/MyCompanyService';
 import { UserSubDropdown } from '@/components/common/sub-dropdowns/UserSubDropdown';
 import { RoleSubDropdown } from '@/components/common/sub-dropdowns/RoleSubDropdown';
+import { InvitationSubDropdown } from '@/components/common/sub-dropdowns/InvitationSubDropdown';
 import type { Role } from '@/types/role';
 import {
   DropdownMenu,
@@ -99,6 +100,14 @@ export function CompanyAvatarDropdown({
           <RoleSubDropdown
             roles={myRoles}
             onSelectedRole={onSelectRole}
+          />
+        )}
+
+        {/* Invitations Submenu */}
+        {myInvitations && (
+          <InvitationSubDropdown
+            invitations={myInvitations}
+            onSelectedInvitation={onSelectInvitation}
           />
         )}
       </DropdownMenuContent>

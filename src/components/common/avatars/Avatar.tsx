@@ -237,3 +237,26 @@ export const RoleAvatar = forwardRef<HTMLButtonElement, RoleAvatarProps>(
     }
   }
 )
+
+interface InvitationAvatarProps extends BaseAvatarProps {
+  invitation?: Invitation | null
+}
+
+export const InvitationAvatar = forwardRef<HTMLButtonElement, InvitationAvatarProps>(
+  function InvitationAvatar(
+    {
+      invitation,
+      size = 40,
+      className,
+      variant = "outline",
+      withName = true,
+      mine = false,
+    },
+    ref
+  ) {
+    const fallback = ""
+    const effectiveInvitation = invitation
+    const src = effectiveInvitation.avatarURL || fallback
+    const displayName = effectiveInvitation.name[0]
+  }
+)
