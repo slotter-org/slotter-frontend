@@ -27,8 +27,8 @@ export function InvitationSubDropdown({
   invitations,
   onSelectInvitation,
 }: InvitationSubDropdownProps) {
-  const toShow = roles.slice(0, 5);
-  const isScrollable = roles.length > 5;
+  const toShow = invitations.slice(0, 5);
+  const isScrollable = invitations.length > 5;
 
   
 
