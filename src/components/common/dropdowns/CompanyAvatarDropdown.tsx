@@ -99,7 +99,7 @@ export function CompanyAvatarDropdown({
         {myRoles && (
           <RoleSubDropdown
             roles={myRoles}
-            onSelectedRole={onSelectRole}
+            onSelectRole={onSelectRole}
           />
         )}
 
@@ -107,7 +107,7 @@ export function CompanyAvatarDropdown({
         {myInvitations && (
           <InvitationSubDropdown
             invitations={myInvitations}
-            onSelectedInvitation={onSelectInvitation}
+            onSelectInvitation={onSelectInvitation}
           />
         )}
       </DropdownMenuContent>
