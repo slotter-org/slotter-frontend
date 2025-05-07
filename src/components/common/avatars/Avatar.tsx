@@ -257,6 +257,33 @@ export const InvitationAvatar = forwardRef<HTMLButtonElement, InvitationAvatarPr
     const fallback = ""
     const effectiveInvitation = invitation
     const src = effectiveInvitation.avatarURL || fallback
-    const displayName = effectiveInvitation.name[0]
+    const displayName = effectiveInvitation.email
+
+    if (withName) {
+      return (
+        <Button variant={`${variant}`} className={cn("flex items-center gap-2 text-sm font-semibold", className)} ref={ref}>
+          <div className="flex gap-4 items-center">
+            <div className="flex gap-2">
+              <img
+                src={src}
+                alt={`${displayName} Invitation`}
+                style={{ width: size, height: size, objectFit: "cover" }}
+              />
+              <span>{displayName}</span>
+            </div>
+          </div>
+        </Button>
+      )
+    } else {
+      return (
+        <Button variant={`${variant}`} className={cn("flex-shrink-o overflow-visible items-center", className)} ref={ref}>
+          <img
+            src={src}
+            alt={`${displayName} Invitation`}
+            style={{ width: size, height: size, objectFit: "cover" }}
+          />
+        </Button>
+      )
+    }
   }
 )
