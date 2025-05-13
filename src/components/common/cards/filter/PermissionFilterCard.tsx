@@ -4,7 +4,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { MyBadge } from '@/components/MyBadge';
+import { MyBadge } from '@/components/common/cards/filter/MyBadge';
 import type { Permission } from '@/types/permission';
 
 interface PermissionFilterCardProps {
