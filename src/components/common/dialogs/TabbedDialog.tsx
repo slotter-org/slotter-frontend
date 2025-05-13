@@ -48,7 +48,7 @@ export function TabbedDialog({
                 <TabsTrigger value="help">Help & Instructions</TabsTrigger>
               </TabsList>
             </Tabs>
-            <Separator className="mt-2" />
+            <Separator />
           </div>
 
           <div className="flex justify-between items-center mb-4 h-8">
@@ -66,7 +66,7 @@ export function TabbedDialog({
             )}
           </div>
 
-          <div className="flex-1 min-h-[300px] h-[300px] overflow-y-auto">
+          <div className="flex-1 min-h-[500px] h-[500px] overflow-y-auto">
             {activeTab === "content" ? (
               <div className="space-y-4">{children}</div>
             ) : (
@@ -85,7 +85,7 @@ export function TabbedDialog({
             )}
           </div>
 
-          <div className="flex justify-end mt-6 pt-4 border-t h-[52px]">
+          <div className="flex justify-end mt-6">
             {activeTab === "content" && (
               <Button 
                 onClick={() => {
