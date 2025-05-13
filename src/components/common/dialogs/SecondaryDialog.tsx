@@ -21,7 +21,7 @@ interface InputField {
   required?: boolean;
 }
 
-interface CustomDialogProps {
+interface SecondaryDialogProps {
   trigger: React.ReactNode;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
@@ -32,7 +32,7 @@ interface CustomDialogProps {
   onSubmit: (values: Record<string, string>) => void;
 }
 
-export function CustomDialog({
+export function SecondaryDialog({
   trigger,
   open: controlledOpen,
   onOpenChange,
@@ -41,7 +41,7 @@ export function CustomDialog({
   inputs,
   buttonText = "Submit",
   onSubmit,
-}: CustomDialogProps) {
+}: SecondaryDialogProps) {
   const [values, setValues] = useState<Record<string, string>>(() => {
     const initialValues: Record<string, string> = {};
     inputs.forEach((input) => {

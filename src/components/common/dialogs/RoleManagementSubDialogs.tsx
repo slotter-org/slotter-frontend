@@ -1,6 +1,6 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { CustomDialog } from '@/components/common/dialogs/CustomDialog';
+import { SecondaryDialog } from '@/components/common/dialogs/SecondaryDialog';
 import { createRole, updateRoleNameDesc } from '@/api/RoleService';
 
 interface RoleCreateDialogProps {
@@ -9,7 +9,7 @@ interface RoleCreateDialogProps {
 
 export function RoleCreateDialog({ trigger }: RoleCreateDialogProps) {
   return (
-    <CustomDialog
+    <SecondaryDialog
       trigger={trigger}
       title="Create Role"
       description="Enter the details to create a new role."
@@ -39,7 +39,7 @@ export function RoleUpdateDialog({
   currentDescription = '',
 }: RoleUpdateDialogProps) {
   return (
-    <CustomDialog
+    <SecondaryDialog
       trigger={trigger}
       title="Update Role"
       description="Modify the details of this role."
