@@ -1,7 +1,7 @@
 import type React from 'react'
 import { useState } from 'react'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
-import { MyBadge } from '@/components/badges/MyBadge'
+import { MyBadge } from '@/components/common/badges/MyBadge'
 import type { Permission } from '@/types/permission'
 
 interface PermissionDropZoneProps {
@@ -69,7 +69,7 @@ export function PermissionDropZone({
           {selectedPermissions.length > 0 ? (
             <div className="flex flex-wrap gap-2">
               {selectedPermissions.map((permission) => (
-                <CustomBadge
+                <MyBadge
                   key={permission.id}
                   title={permission.name}
                   color={getColorForCategory(permission.category)}
