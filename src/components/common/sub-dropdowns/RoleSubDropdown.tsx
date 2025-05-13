@@ -8,6 +8,7 @@ import {
   DropdownMenuSubContent,
   DropdownMenuItem,
 } from '@/components/ui/dropdown-menu';
+import { RoleDialog } from '@/components/common/dialogs/RoleDialog';
 
 export interface RoleSubDropdownProps {
   roles: Role[];
@@ -24,11 +25,14 @@ export function RoleSubDropdown({
   return (
     <DropdownMenuSub>
       {/* Trigger */}
-      <DropdownMenuSubTrigger className="flex items-center gap-2 px-2 py-1">
-        <Badge size={16} />
-        <span>Roles</span>
-      </DropdownMenuSubTrigger>
-
+      <RoleDialog
+        trigger={
+          <DropdownMenuSubTrigger className="flex items-center gap-2 px-2 py-1">
+            <Badge size={16} />
+            <span>Roles</span>
+          </DropdownMenuSubTrigger>
+        }
+      />
       {/* Content */}
       <DropdownMenuSubContent className="p-0 w-48">
         <div className={isScrollable ? 'max-h-48 overflow-y-auto' : ''}>

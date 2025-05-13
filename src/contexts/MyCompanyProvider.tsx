@@ -11,6 +11,7 @@ import { Warehouse } from '@/types/warehouse';
 import { User } from '@/types/user';
 import { Invitation } from '@/types/invitation';
 import { Role } from '@/types/role';
+import { Permission } from '@/types/permission';
 import { MeContext } from './MeProvider';
 import {
   getMyCompany,
@@ -18,6 +19,7 @@ import {
   getMyCompanyUsers,
   getMyCompanyRoles,
   getMyCompanyInvitations,
+  getMyCompanyPermissions,
 } from '@/api/MyCompanyService';
 import { useSSEContext } from '@/contexts/SSEProvider';
 
@@ -27,6 +29,7 @@ interface MyCompanyContextValue {
   myUsers: User[] | null;
   myRoles: Role[] | null;
   myInvitations: Invitation[] | null;
+  myPermissions: Permission[] | null;
   loading: boolean;
   error: string | null;
   fetchMyCompany: () => Promise<void>;
@@ -34,6 +37,7 @@ interface MyCompanyContextValue {
   fetchMyUsers: () => Promise<void>;
   fetchMyRoles: () => Promise<void>;
   fetchMyInvitations: () => Promise<void>;
+  fetchMyPermissions: () => Promise<void>;
 }
 
 const MyCompanyContext = createContext<MyCompanyContextValue>({
@@ -42,6 +46,7 @@ const MyCompanyContext = createContext<MyCompanyContextValue>({
   myUsers: null,
   myRoles: null,
   myInvitations: null,
+  myPermissions: null,
   loading: false,
   error: null,
   fetchMyCompany: async () => {},
@@ -49,6 +54,7 @@ const MyCompanyContext = createContext<MyCompanyContextValue>({
   fetchMyUsers: async () => {},
   fetchMyRoles: async () => {},
   fetchMyInvitations: async () => {},
+  fetchMyPermissions: async () => {},
 });
 
 export function useMyCompany() {
@@ -63,6 +69,7 @@ export function MyCompanyProvider({ children }: { children: ReactNode }) {
   const [myUsers, setMyUsers] = useState<User[] | null>(null);
   const [myRoles, setMyRoles] = useState<Role[] | null>(null);
   const [myInvitations, setMyInvitations] = useState<Invitation[] | null>(null);
+  const [myPermissions, setMyPermissions] = useState<Permission[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
@@ -161,6 +168,25 @@ export function MyCompanyProvider({ children }: { children: ReactNode }) {
     }
   }, [me?.companyID]);
 
+  const fetchMyPermissions = useCallback(async () => {
+    if (!me?.companyID) {
+      setMyPermissions(null);
+      return;
+    }
+    setLoading(true);
+    setError(null);
+    try {
+      const resp = await getMyCompanyPermissions();
+      setMyPermissions(resp.myPermissions);
+    } catch (err: any) {
+      console.error(`[MyCompanyProvider] fetchMyPermissions error:`, err)
+      setError(err.message || 'Failed to fetch my company permissions');
+      setMyPermissions(null);
+    } finally {
+      setLoading(false);
+    }
+  }, [me?.companyID]);
+
   useEffect(() => {
     if (me?.userType === 'company' && me.companyID) {
       fetchMyCompany();
@@ -168,14 +194,16 @@ export function MyCompanyProvider({ children }: { children: ReactNode }) {
       fetchMyUsers();
       fetchMyRoles();
       fetchMyInvitations();
+      fetchMyPermissions();
     } else {
       setMyCompany(null);
       setMyWarehouses(null);
       setMyUsers(null);
       setMyRoles(null);
       setMyInvitations(null);
+      setMyPermissions(null);
     }
-  }, [me, fetchMyCompany, fetchMyWarehouses, fetchMyUsers, fetchMyRoles, fetchMyInvitations]);
+  }, [me, fetchMyCompany, fetchMyWarehouses, fetchMyUsers, fetchMyRoles, fetchMyInvitations, fetchMyPermissions]);
 
   useEffect(() => {
     if (!connected) return;
@@ -215,9 +243,14 @@ export function MyCompanyProvider({ children }: { children: ReactNode }) {
           fetchMyUsers();
           fetchMyRoles();
           break;
-        case 'CompanyRoleNameChanged':
-        case 'CompanyRoleUpdated':
+        case 'RoleCreated':
+        case 'RoleUpdated':
+        case 'RoleDeleted':
           fetchMyRoles();
+          break;
+        case 'RoleAssignmentChanged':
+          fetchMyRoles();
+          fetchMyUsers();
           break;
         case 'CompanyInvitationCreated':
         case 'CompanyInvitationDeleted':
@@ -240,6 +273,7 @@ export function MyCompanyProvider({ children }: { children: ReactNode }) {
     myUsers,
     myRoles,
     myInvitations,
+    myPermissions,
     loading,
     error,
     fetchMyCompany,
@@ -247,6 +281,7 @@ export function MyCompanyProvider({ children }: { children: ReactNode }) {
     fetchMyUsers,
     fetchMyRoles,
     fetchMyInvitations,
+    fetchMyPermissions,
   };
   
   return (

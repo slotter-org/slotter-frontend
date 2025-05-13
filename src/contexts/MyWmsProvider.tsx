@@ -10,6 +10,7 @@ import { Wms } from '@/types/wms';
 import { Company } from '@/types/company';
 import { User } from '@/types/user';
 import { Role } from '@/types/role';
+import { Permission } from '@/types/permission';
 import { Invitation } from '@/types/invitation';
 import { MeContext } from './MeProvider';
 import {
@@ -18,6 +19,7 @@ import {
   getMyWmsUsers,
   getMyWmsRoles,
   getMyWmsInvitations,
+  getMyWmsPermissions,
 } from '@/api/MyWmsService';
 import { useSSEContext } from '@/contexts/SSEProvider';
 
@@ -27,6 +29,7 @@ interface MyWmsContextValue {
   myUsers: User[] | null;
   myRoles: Role[] | null;
   myInvitations: Invitation[] | null;
+  myPermissions: Permission[] | null;
   loading: boolean;
   error: string | null;
   fetchMyWms: () => Promise<void>;
@@ -34,6 +37,7 @@ interface MyWmsContextValue {
   fetchMyUsers: () => Promise<void>;
   fetchMyRoles: () => Promise<void>;
   fetchMyInvitations: () => Promise<void>;
+  fetchMyPermissions: () => Promise<void>;
 }
 
 const MyWmsContext = createContext<MyWmsContextValue>({
@@ -42,6 +46,7 @@ const MyWmsContext = createContext<MyWmsContextValue>({
   myUsers: null,
   myRoles: null,
   myInvitations: null,
+  myPermissions: null,
   loading: false,
   error: null,
   fetchMyWms: async () => {},
@@ -49,6 +54,7 @@ const MyWmsContext = createContext<MyWmsContextValue>({
   fetchMyUsers: async () => {},
   fetchMyRoles: async () => {},
   fetchMyInvitations: async () => {},
+  fetchMyPermissions: async () => {},
 });
 
 export function useMyWms() {
@@ -63,6 +69,7 @@ export function MyWmsProvider({ children }: { children: ReactNode }) {
   const [myUsers, setMyUsers] = useState<User[] | null>(null);
   const [myRoles, setMyRoles] = useState<Role [] | null>(null);
   const [myInvitations, setMyInvitations] = useState<Invitation[] | null>(null);
+  const [myPermissions, setMyPermissions] = useState<Permission[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -161,6 +168,25 @@ export function MyWmsProvider({ children }: { children: ReactNode }) {
     }
   }, [me?.wmsID]);
 
+  const fetchMyPermissions = useCallback(async () => {
+    if (!me?.wmsID) {
+      setMyPermissions(null);
+      return;
+    }
+    setLoading(true);
+    setError(null);
+    try {
+      const resp = await getMyWmsPermissions();
+      setMyPermissions(resp.myPermissions);
+    } catch (err: any) {
+      console.error('[MyWmsProvider] fetchMyPermissions error:', err);
+      setError(err.message || 'Failed to fetch my wms permissions');
+      setMyPermissions(null);
+    } finally {
+      setLoading(false);
+    }
+  }, [me?.wmsID]);
+
   useEffect(() => {
     if (me?.userType === 'wms' && me.wmsID) {
       fetchMyWms();
@@ -168,14 +194,16 @@ export function MyWmsProvider({ children }: { children: ReactNode }) {
       fetchMyUsers();
       fetchMyRoles();
       fetchMyInvitations();
+      fetchMyPermissions();
     } else {
       setMyWms(null);
       setMyCompanies(null);
       setMyUsers(null);
       setMyRoles(null);
       setMyInvitations(null);
+      setMyPermissions(null);
     }
-  }, [me?.userType, me?.wmsID, fetchMyWms, fetchMyCompanies, fetchMyUsers, fetchMyRoles, fetchMyInvitations]);
+  }, [me?.userType, me?.wmsID, fetchMyWms, fetchMyCompanies, fetchMyUsers, fetchMyRoles, fetchMyInvitations, fetchMyPermissions]);
 
   useEffect(() => {
     if (!connected) return;
@@ -214,9 +242,14 @@ export function MyWmsProvider({ children }: { children: ReactNode }) {
           fetchMyUsers();
           fetchMyRoles();
           break;
-        case 'CompanyRoleNameChanged':
-        case 'CompanyRoleUpdated':
+        case 'RoleCreated':
+        case 'RoleUpdated':
+        case 'RoleDeleted':
           fetchMyRoles();
+          break;
+        case 'RoleReassigned':
+          fetchMyRoles();
+          fetchMyUsers();
           break;
         case 'WmsInvitationCreated':
         case 'WmsInvitationDeleted':
@@ -238,6 +271,7 @@ export function MyWmsProvider({ children }: { children: ReactNode }) {
     myUsers,
     myRoles,
     myInvitations,
+    myPermissions,
     loading,
     error,
     fetchMyWms,
@@ -245,6 +279,7 @@ export function MyWmsProvider({ children }: { children: ReactNode }) {
     fetchMyUsers,
     fetchMyRoles,
     fetchMyInvitations,
+    fetchMyPermissions,
   };
 
   return (

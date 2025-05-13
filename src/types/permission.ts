@@ -6,6 +6,8 @@ export interface Permission {
   roles?: Role[];
 
   name: string;
+  category: string;
+  action: string;
 
   createdAt: string;
   updatedAt: string;
