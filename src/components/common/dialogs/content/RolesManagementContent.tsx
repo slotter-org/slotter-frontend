@@ -43,6 +43,15 @@ export function RolesManagementContent() {
     }
   };
 
+  const handlePermissionDrop = (permission: Permission) => {
+    if (!selectedPermissions.some((p) => p.id === permission.id)) {
+      setSelectedPermissions([...selectedPermissions, permission])
+    }
+  }
+  const handlePermissionRemove = (permission: Permisison) => {
+    setSelectedPermissions(selectedPermissions.filter((p) => p.id !== permission.id))
+  }
+
   return (
     <div className="flex w-full h-full gap-4 mx-auto">
       {/* Left Side: a "permissionfiltercard" with drag functionality */}
