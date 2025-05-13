@@ -181,7 +181,6 @@ export function RoleCard({ role, onSave, onDelete }: RoleCardProps) {
               currentName={role.name}
               currentDescription={role.description ?? ''}
             />
-            </Button>
             <Button
               variant="outline"
               size="sm"
