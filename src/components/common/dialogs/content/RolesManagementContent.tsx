@@ -55,7 +55,7 @@ export function RolesManagementContent() {
         />
       </div>
       {/* Right Side: roles list / management */}
-      <div className="flex-1">
+      <div className="w-[100%]">
         <RoleCardFilter
           roles={entityRoles}
           onSaveRole={handleSaveRole}
