@@ -1,7 +1,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { TabbedDialog } from '@/components/common/dialogs/TabbedDialog';
-import { RolesManagementContent } from '@/components/common/dialogs/content/RoleManagementContent';
+import { RolesManagementContent } from '@/components/common/dialogs/content/RolesManagementContent';
 import { RoleCreateDialog } from '@/components/common/dialogs/RoleManagementSubDialogs';
 
 export function RoleDialog({ trigger }: { trigger: React.ReactNode }) {
