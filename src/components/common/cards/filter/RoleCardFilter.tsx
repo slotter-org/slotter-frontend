@@ -1,5 +1,4 @@
 import React, { useState, useMemo } from 'react';
-// Removed unused icons: Plus, Pencil, Trash
 import { Search, Filter, Badge } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -11,7 +10,6 @@ import type { Permission } from '@/types/permission';
 
 interface RoleCardFilterProps {
   roles: Role[];
-  // Use the correct prop names matching RoleCard's “onSavePermissions” and “onDelete”
   onSavePermissions?: (roleId: string, permissions: Permission[]) => void;
   onDeleteRole?: (roleId: string) => void;
   onUpdateRole?: (roleId: string, newName: string, newDesc: string) => void;
@@ -49,7 +47,6 @@ export function RoleCardFilter({
     return ["all", ...Array.from(actions)];
   }, [roles]);
 
-  // Filter roles
   const filteredRoles = useMemo(() => {
     return roles.filter((role) => {
       const matchesSearch =
@@ -66,15 +63,13 @@ export function RoleCardFilter({
     });
   }, [roles, searchQuery, categoryFilter, actionFilter]);
 
-  // Sort roles. We fix the permission length:
+  // Sort by number of permissions (descending)
   const finalRoles = useMemo(() => {
-    const sorted = [...filteredRoles].sort((a, b) => {
+    return [...filteredRoles].sort((a, b) => {
       const aCount = a.permissions?.length || 0;
       const bCount = b.permissions?.length || 0;
-      // Descending order by # of permissions
       return bCount - aCount;
     });
-    return sorted;
   }, [filteredRoles]);
 
   return (
@@ -99,6 +94,7 @@ export function RoleCardFilter({
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
+
         {/* Filter Dropdowns */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Category Filter */}
@@ -184,3 +180,4 @@ export function RoleCardFilter({
     </Card>
   );
 }
+

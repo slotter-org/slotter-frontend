@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { SecondaryDialog } from '@/components/common/dialogs/SecondaryDialog';
 import { createRole, updateRoleNameDesc } from '@/api/RoleService';
 
-// Shared error feedback placeholder:
+// Basic error feedback
 function ErrorMessage({ message }: { message: string }) {
   return (
     <div className="text-sm text-red-500 mt-2">
@@ -14,7 +14,7 @@ function ErrorMessage({ message }: { message: string }) {
 
 interface RoleCreateDialogProps {
   trigger: React.ReactNode;
-  onSuccess?: () => void; // optional callback to refresh roles
+  onSuccess?: () => void;
 }
 
 export function RoleCreateDialog({ trigger, onSuccess }: RoleCreateDialogProps) {
@@ -37,9 +37,8 @@ export function RoleCreateDialog({ trigger, onSuccess }: RoleCreateDialogProps) 
             name: values.name.trim(),
             description: values.description.trim(),
           });
-          // If successful:
           onSuccess?.();
-          closeDialog(); // close the dialog on success
+          closeDialog(); // close on success
         } catch (e: any) {
           console.error('[RoleCreateDialog] Error:', e);
           setError(e?.message || 'Failed to create role.');
@@ -56,7 +55,7 @@ interface RoleUpdateDialogProps {
   roleId: string;
   currentName: string;
   currentDescription?: string;
-  onSuccess?: () => void; // optional callback to refresh roles
+  onSuccess?: () => void; // callback to re-fetch
 }
 
 export function RoleUpdateDialog({
@@ -97,9 +96,8 @@ export function RoleUpdateDialog({
             name: values.name.trim(),
             description: values.description.trim(),
           });
-          // If successful:
           onSuccess?.();
-          closeDialog(); // close the dialog on success
+          closeDialog();
         } catch (e: any) {
           console.error('[RoleUpdateDialog] Error:', e);
           setError(e?.message || 'Failed to update role.');

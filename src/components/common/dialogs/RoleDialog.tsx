@@ -4,10 +4,7 @@ import { TabbedDialog } from '@/components/common/dialogs/TabbedDialog';
 import { RolesManagementContent } from '@/components/common/dialogs/content/RolesManagementContent';
 import { RoleCreateDialog } from '@/components/common/dialogs/RoleManagementSubDialogs';
 
-// Optionally, if you want to force a re-fetch when dialogs succeed:
-//   1) Provide an onSuccess callback to <RoleCreateDialog> / <RoleUpdateDialog>
-//   2) Use some state or context-based re-fetch mechanism in RolesManagementContent
-
+// If you need to force a re-fetch upon creation, pass onSuccess to <RoleCreateDialog>
 export function RoleDialog({ trigger }: { trigger: React.ReactNode }) {
   return (
     <TabbedDialog
@@ -28,7 +25,7 @@ export function RoleDialog({ trigger }: { trigger: React.ReactNode }) {
         <RoleCreateDialog
           trigger={<Button variant="outline" size="sm">Create</Button>}
           // onSuccess={() => {
-          //   // e.g. trigger a refresh in RolesManagementContent or do a context refetch
+          //   // re-fetch or refresh logic
           // }}
         />
       }

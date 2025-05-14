@@ -11,12 +11,12 @@ interface TabbedDialogProps {
   helpContent?: React.ReactNode;
   children: React.ReactNode;
 
-  // Optional top-right
+  // Top-right
   topRightButtonText?: string;
   onTopRightButtonClick?: () => void;
   topRightSlot?: React.ReactNode;
 
-  // Bottom-right “Close/Submit” button
+  // Bottom-right close/submit
   bottomRightButtonText?: string;
   onBottomRightButtonClick?: () => void;
 }
@@ -28,23 +28,18 @@ export function TabbedDialog({
   helpContent,
   children,
 
-  // Top-right
   topRightButtonText = "Action",
   onTopRightButtonClick,
   topRightSlot,
 
-  // Bottom-right
   bottomRightButtonText = "Submit",
   onBottomRightButtonClick,
 }: TabbedDialogProps) {
   const [open, setOpen] = React.useState(false);
   const [activeTab, setActiveTab] = React.useState("content");
 
-  // Internal close handler that calls the user callback if provided
   const handleBottomRightClick = () => {
-    if (onBottomRightButtonClick) {
-      onBottomRightButtonClick();
-    }
+    onBottomRightButtonClick?.();
     setOpen(false);
   };
 

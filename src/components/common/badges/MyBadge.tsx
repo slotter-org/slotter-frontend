@@ -11,7 +11,7 @@ interface MyBadgeProps {
   className?: string;
 
   draggable?: boolean;
-  dragData?: any;
+  dragData?: any; // typically { id: string }
   onDragStart?: (e: React.DragEvent) => void;
 }
 
@@ -28,22 +28,21 @@ export function MyBadge({
 }: MyBadgeProps) {
   const [isHovered, setIsHovered] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
-
   const ghostRef = useRef<HTMLDivElement | null>(null);
 
-  // Attempting a simple “hex + 20” opacity for background:
-  const backgroundColor = `${color}20`; // e.g. #6366f120
+  // 20% alpha color from a 6-digit hex:
+  const backgroundColor = `${color}20`;
   const borderColor = color;
   const textColor = color;
 
   const handleDragStart = (e: React.DragEvent) => {
-    // Attach data
     if (dragData) {
+      // Only store { id: "abc123" } or similar, not a big object
       e.dataTransfer.setData("text/plain", JSON.stringify(dragData));
     }
     setIsDragging(true);
 
-    // Create a ghost element for the drag preview
+    // Create a ghost element
     const ghostElement = document.createElement("div");
     ghostElement.className =
       "inline-flex items-center gap-1 rounded-full border px-2 py-1 text-xs font-semibold";
@@ -57,17 +56,12 @@ export function MyBadge({
     document.body.appendChild(ghostElement);
     ghostRef.current = ghostElement;
 
-    // Set the custom drag image
     e.dataTransfer.setDragImage(ghostElement, 15, 15);
-
-    if (onDragStart) {
-      onDragStart(e);
-    }
+    onDragStart?.(e);
   };
 
   const handleDragEnd = () => {
     setIsDragging(false);
-    // Clean up ghost element if it still exists
     if (ghostRef.current && document.body.contains(ghostRef.current)) {
       document.body.removeChild(ghostRef.current);
     }
@@ -75,7 +69,6 @@ export function MyBadge({
   };
 
   const handleClickClose = (e: React.MouseEvent) => {
-    // Stop the parent from seeing this as a drag or click
     e.stopPropagation();
     onClose?.();
   };
@@ -104,7 +97,7 @@ export function MyBadge({
       {showCloseOnHover && isHovered && (
         <X
           className="ml-1 h-3 w-3 cursor-pointer opacity-70 hover:opacity-100"
-          onMouseDown={handleClickClose} // prevent drag
+          onMouseDown={handleClickClose}
           onClick={handleClickClose}
         />
       )}

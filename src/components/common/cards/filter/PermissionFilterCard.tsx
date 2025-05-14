@@ -9,7 +9,7 @@ import type { Permission } from '@/types/permission';
 
 interface PermissionFilterCardProps {
   permissions: Permission[];
-  onDragPermission?: (permission: Permission) => void; // optional callback
+  onDragPermission?: (permission: Permission) => void;
 }
 
 export function PermissionFilterCard({
@@ -30,25 +30,20 @@ export function PermissionFilterCard({
     return ["all", ...Array.from(uniqueActions)];
   }, [permissions]);
 
-  // Remove references to permission.permissionType, just match by name or action
   const filteredPermissions = useMemo(() => {
-    return permissions.filter((permission) => {
+    return permissions.filter((p) => {
       const matchesSearch =
         searchQuery === "" ||
-        permission.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        permission.action.toLowerCase().includes(searchQuery.toLowerCase());
-
+        p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        p.action.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesCategory =
-        categoryFilter === "all" || permission.category === categoryFilter;
-
+        categoryFilter === "all" || p.category === categoryFilter;
       const matchesAction =
-        actionFilter === "all" || permission.action === actionFilter;
-
+        actionFilter === "all" || p.action === actionFilter;
       return matchesSearch && matchesCategory && matchesAction;
     });
   }, [permissions, searchQuery, categoryFilter, actionFilter]);
 
-  // Simple color picking:
   const getColorForCategory = (category: string): string => {
     switch (category) {
       case "roles":
@@ -62,11 +57,9 @@ export function PermissionFilterCard({
     }
   };
 
-  // Optional local callback for the drag event
+  // onDragStart callback
   const handleDragStart = (permission: Permission) => {
-    if (onDragPermission) {
-      onDragPermission(permission);
-    }
+    onDragPermission?.(permission);
   };
 
   return (
@@ -79,7 +72,7 @@ export function PermissionFilterCard({
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
-        {/* Search Bar */}
+        {/* Search */}
         <div className="relative">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
@@ -90,7 +83,7 @@ export function PermissionFilterCard({
           />
         </div>
 
-        {/* Filter Dropdowns */}
+        {/* Filters */}
         <div className="flex gap-4">
           <div className="flex-1">
             <Select value={categoryFilter} onValueChange={setCategoryFilter}>
@@ -144,14 +137,15 @@ export function PermissionFilterCard({
                     color={getColorForCategory(permission.category)}
                     showCloseOnHover={false}
                     draggable={true}
-                    dragData={permission}
+                    // The crucial part: only store the ID in dragData
+                    dragData={{ id: permission.id }}
                     onDragStart={() => handleDragStart(permission)}
                   />
                 ))}
               </div>
             ) : (
               <div className="flex h-full items-center justify-center text-muted-foreground">
-                No permissions found matching your filters.
+                No permissions found.
               </div>
             )}
           </ScrollArea>

@@ -9,6 +9,9 @@ interface PermissionDropZoneProps {
   onPermissionRemove?: (permission: Permission) => void;
   selectedPermissions: Permission[];
   isEditing?: boolean;
+
+  // Add this if you need to look up the full Permission by ID:
+  allPermissions?: Permission[];
 }
 
 export function PermissionDropZone({
@@ -17,6 +20,7 @@ export function PermissionDropZone({
   onPermissionRemove,
   selectedPermissions,
   isEditing = false,
+  allPermissions = [],
 }: PermissionDropZoneProps) {
   const [isDropActive, setIsDropActive] = useState(false);
 
@@ -46,29 +50,29 @@ export function PermissionDropZone({
     e.preventDefault();
     setIsDropActive(false);
 
-    if (!isEditing) {
-      // If not editing, ignore drops
-      return;
-    }
+    if (!isEditing) return;
 
     try {
-      const data = e.dataTransfer.getData("text/plain");
-      if (!data) return;
+      const raw = e.dataTransfer.getData("text/plain");
+      if (!raw) return;
+      const parsed = JSON.parse(raw);
+      // Expect parsed to be { id: "some-permission-id" }
+      if (!parsed || !parsed.id) return;
 
-      const permissionData = JSON.parse(data);
-      if (permissionData && onPermissionDrop) {
-        onPermissionDrop(permissionData);
+      // Find the actual permission in allPermissions
+      // or just pass the ID to onPermissionDrop
+      const permissionObj = allPermissions.find((p) => p.id === parsed.id);
+      if (permissionObj && onPermissionDrop) {
+        onPermissionDrop(permissionObj);
       }
     } catch (error) {
       console.error("Error parsing dropped permission:", error);
-      // Optionally surface an error or ignore
     }
   };
 
   return (
     <Card
       className={`w-full transition-colors ${isDropActive ? "ring-2 ring-primary ring-offset-2" : ""}`}
-      // Only allow dragOver, drop if editing
       onDragOver={isEditing ? handleDragOver : undefined}
       onDragLeave={isEditing ? handleDragLeave : undefined}
       onDrop={isEditing ? handleDrop : undefined}
