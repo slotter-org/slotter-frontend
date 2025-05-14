@@ -112,13 +112,13 @@ export function PermissionFilterCard({ permissions, onDragPermission }: Permissi
               <div className="flex flex-wrap gap-2">
                 {filteredPermissions.map((permission) => (
                   <MyBadge
-                    key={permission.ID}
+                    key={permission.id}
                     title={permission.name}
                     color={getColorForCategory(permission.category)}
                     showCloseOnHover={false}
                     draggable={true}
                     // Make sure we're passing the correct ID
-                    dragData={{ id: permission.ID }}
+                    dragData={{ id: permission.id }}
                     onDragStart={() => handleDragStart(permission)}
                   />
                 ))}
