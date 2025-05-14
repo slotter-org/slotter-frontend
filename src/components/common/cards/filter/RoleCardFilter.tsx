@@ -157,7 +157,7 @@ export function RoleCardFilter({
             {finalRoles.length > 0 ? (
               finalRoles.map((role) => (
                 <RoleCard
-                  key={role.id}
+                  key={role.ID}
                   role={role}
                   onSavePermissions={onSavePermissions}
                   onDelete={onDeleteRole}

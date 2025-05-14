@@ -50,20 +50,20 @@ export function PermissionDropZone({
       }
       console.log("Raw drop data:", raw)
       const parsed = JSON.parse(raw)
-      if (!parsed || !parsed.id) {
+      if (!parsed || !parsed.ID) {
         console.warn("Invalid drop data format", parsed)
         return
       }
-      console.log("Looking for permission with ID:", parsed.id, "in", allPermissions.length, "permissions")
-      const permissionObj = allPermissions.find((p) => p.id === parsed.id)
+      console.log("Looking for permission with ID:", parsed.ID, "in", allPermissions.length, "permissions")
+      const permissionObj = allPermissions.find((p) => p.ID === parsed.ID)
       if (permissionObj && onPermissionDrop) {
         console.log("Permission found, calling onPermissionDrop with:", permissionObj)
         onPermissionDrop(permissionObj)
       } else {
         console.warn("Permission not found in allPermissions or onPermissionDrop not provided", {
-          permissionId: parsed.id,
+          permissionId: parsed.ID,
           allPermissionsCount: allPermissions.length,
-          allPermissionIds: allPermissions.map((p) => p.id),
+          allPermissionIds: allPermissions.map((p) => p.ID),
           hasDropHandler: !!onPermissionDrop,
         })
       }
@@ -91,7 +91,7 @@ export function PermissionDropZone({
             <div className="flex flex-wrap gap-2">
               {selectedPermissions.map((permission) => (
                 <MyBadge
-                  key={permission.id}
+                  key={permission.ID}
                   title={permission.name}
                   color={getColorForCategory(permission.category)}
                   showCloseOnHover={isEditing}
