@@ -22,7 +22,7 @@ export function RoleCardFilter({ roles,  onSaveRole, onDeleteRole, className }: 
   const permissionCategories = useMemo(() => {
     const categories = new Set<string>()
     roles.forEach((role) => {
-      role.permission?.forEach((permission) => {
+      role.permissions?.forEach((permission) => {
         categories.add(permission.category)
       })
     })
@@ -31,7 +31,7 @@ export function RoleCardFilter({ roles,  onSaveRole, onDeleteRole, className }: 
   const permissionActions = useMemo(() => {
     const actions = new Set<string>()
     roles.forEach((role) => {
-      role.permission?.forEach((permission) => {
+      role.permissions?.forEach((permission) => {
         actions.add(permission.action)
       })
     })
@@ -40,8 +40,8 @@ export function RoleCardFilter({ roles,  onSaveRole, onDeleteRole, className }: 
   const filteredRoles = useMemo(() => {
     return roles.filter((role) => {
       const matchesSearch = searchQuery === "" || role.name.toLowerCase().includes(searchQuery.toLowerCase())
-      const matchesCategory = categoryFilter === "all" || role.permission?.some((p) => p.category === categoryFilter)
-      const matchesAction = actionFilter === "all" || role.permission?.some((p) => p.action === actionFilter)
+      const matchesCategory = categoryFilter === "all" || role.permissions?.some((p) => p.category === categoryFilter)
+      const matchesAction = actionFilter === "all" || role.permissions?.some((p) => p.action === actionFilter)
       return matchesSearch && matchesCategory && matchesAction
     })
   }, [roles, searchQuery, categoryFilter, actionFilter])
