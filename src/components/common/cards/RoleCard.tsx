@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
@@ -13,144 +13,167 @@ import type { Role } from '@/types/role';
 import type { Permission } from '@/types/permission';
 import { PermissionDropZone } from '@/components/common/utils/PermissionDropZone';
 import { cn } from '@/lib/utils';
+import { updateRoleNameDesc } from '@/api/RoleService';
+
 
 interface RoleCardProps {
-  role: Role;
-  onDelete?: (roleId: string) => void;
-  onUpdateRole?: (roleId: string, name: string, description: string) => void;
-  onSavePermissions?: (roleId: string, permissions: Permission[]) => void;
-
-  // If you need the drop zone to look up the full permission by ID,
-  // you can pass it in here as well:
-  allPermissions?: Permission[];
+  role: Role
+  onDelete?: (roleId: string) => void
+  onUpdateRole?: (roleId: string, name: string, description: string) => void
+  onSavePermissions?: (roleId: string, permissions: Permission[]) => void
+  allPermissions?: Permission[]
 }
 
-const deepClone = <T,>(obj: T): T => JSON.parse(JSON.stringify(obj));
+const deepClone = <T,>(obj: T): T => JSON.parse(JSON.stringify(obj))
 
 const arePermissionsEqual = (perms1: Permission[] = [], perms2: Permission[] = []) => {
-  if (perms1.length !== perms2.length) return false;
-  const ids1 = new Set(perms1.map((p) => p.id));
-  const ids2 = new Set(perms2.map((p) => p.id));
-  if (ids1.size !== ids2.size) return false;
-  return [...ids1].every((id) => ids2.has(id));
-};
+  if (perms1.length !== perms2.length) return false
+  const ids1 = new Set(perms1.map((p) => p.id))
+  const ids2 = new Set(perms2.map((p) => p.id))
+  if (ids1.size !== ids2.size) return false
+  return [...ids1].every((id) => ids2.has(id))
+}
 
-export function RoleCard({
-  role,
-  onDelete,
-  onUpdateRole,
-  onSavePermissions,
-  allPermissions = [],
-}: RoleCardProps) {
-  const originalRoleRef = useRef<Role>(deepClone(role));
-  const [localRole, setLocalRole] = useState<Role>(deepClone(role));
-  const [selectedPermissions, setSelectedPermissions] = useState<Permission[]>(deepClone(role.permissions || []));
-  const [isEditing, setIsEditing] = useState(false);
-  const [isStale, setIsStale] = useState(false);
+export function RoleCard({ role, onDelete, onUpdateRole, onSavePermissions, allPermissions = [] }: RoleCardProps) {
+  const originalRoleRef = useRef<Role>(deepClone(role))
+  const [localRole, setLocalRole] = useState<Role>(deepClone(role))
+  const [selectedPermissions, setSelectedPermissions] = useState<Permission[]>(deepClone(role.permissions || []))
+  const [isEditing, setIsEditing] = useState(false)
+  const [isStale, setIsStale] = useState(false)
 
   // Update dialog
-  const [updateDialogOpen, setUpdateDialogOpen] = useState(false);
-  const [roleName, setRoleName] = useState(role.name);
-  const [roleDescription, setRoleDescription] = useState(role.description || "");
-  const [permissionsChanged, setPermissionsChanged] = useState(false);
+  const [updateDialogOpen, setUpdateDialogOpen] = useState(false)
+  const [roleName, setRoleName] = useState(role.name)
+  const [roleDescription, setRoleDescription] = useState(role.description || "")
+  const [permissionsChanged, setPermissionsChanged] = useState(false)
+
+  // Log allPermissions when the component mounts or when it changes
+  useEffect(() => {
+    console.log("RoleCard received allPermissions:", {
+      count: allPermissions.length,
+      sample: allPermissions.slice(0, 3),
+    })
+  }, [allPermissions])
 
   // If new data arrives from the parent
   useEffect(() => {
-    const prev = originalRoleRef.current;
-    const incoming = role;
+    const prev = originalRoleRef.current
+    const incoming = role
 
     const basicPropsChanged =
-      prev.name !== incoming.name ||
-      prev.description !== incoming.description ||
-      prev.avatarURL !== incoming.avatarURL;
+      prev.name !== incoming.name || prev.description !== incoming.description || prev.avatarURL !== incoming.avatarURL
 
-    const permsChanged = !arePermissionsEqual(prev.permissions || [], incoming.permissions || []);
+    const permsChanged = !arePermissionsEqual(prev.permissions || [], incoming.permissions || [])
     if (basicPropsChanged || permsChanged) {
-      setIsStale(true);
+      setIsStale(true)
     }
 
     // if not editing (and no open update dialog), re-sync
     if (!isEditing && !updateDialogOpen) {
-      setLocalRole(deepClone(incoming));
-      setSelectedPermissions(deepClone(incoming.permissions || []));
-      setRoleName(incoming.name);
-      setRoleDescription(incoming.description || "");
+      setLocalRole(deepClone(incoming))
+      setSelectedPermissions(deepClone(incoming.permissions || []))
+      setRoleName(incoming.name)
+      setRoleDescription(incoming.description || "")
       if (isStale) {
-        originalRoleRef.current = deepClone(incoming);
-        setIsStale(false);
+        originalRoleRef.current = deepClone(incoming)
+        setIsStale(false)
       }
     }
-  }, [role, isEditing, updateDialogOpen, isStale]);
+  }, [role, isEditing, updateDialogOpen, isStale])
 
   // Whenever selectedPermissions changes, check if it differs from original
   useEffect(() => {
-    const origPerms = originalRoleRef.current.permissions || [];
-    setPermissionsChanged(!arePermissionsEqual(selectedPermissions, origPerms));
-  }, [selectedPermissions]);
+    const origPerms = originalRoleRef.current.permissions || []
+    setPermissionsChanged(!arePermissionsEqual(selectedPermissions, origPerms))
+  }, [selectedPermissions])
 
   // Called by PermissionDropZone
   const handlePermissionDrop = (permission: Permission) => {
+    console.log("Permission received in RoleCard:", permission)
+
+    // Check if this permission is already in the role
     if (!selectedPermissions.some((p) => p.id === permission.id)) {
-      const newPerms = [...selectedPermissions, deepClone(permission)];
-      setSelectedPermissions(newPerms);
-      setLocalRole((prev) => ({ ...prev, permissions: newPerms }));
+      const newPerms = [...selectedPermissions, deepClone(permission)]
+      console.log("Updated permissions:", newPerms)
+      setSelectedPermissions(newPerms)
+      setLocalRole((prev) => ({ ...prev, permissions: newPerms }))
+      setPermissionsChanged(true) // Explicitly mark as changed
+    } else {
+      console.log("Permission already exists in role")
     }
-  };
+  }
 
   const handlePermissionRemove = (permission: Permission) => {
-    const newPerms = selectedPermissions.filter((p) => p.id !== permission.id);
-    setSelectedPermissions(newPerms);
-    setLocalRole((prev) => ({ ...prev, permissions: newPerms }));
-  };
+    const newPerms = selectedPermissions.filter((p) => p.id !== permission.id)
+    setSelectedPermissions(newPerms)
+    setLocalRole((prev) => ({ ...prev, permissions: newPerms }))
+  }
 
+  // Update the handleToggleEditMode function to ensure permissions are saved
   const handleToggleEditMode = () => {
-    if (isStale) return;
+    if (isStale) return
+
     if (isEditing && permissionsChanged) {
-      onSavePermissions?.(localRole.id, selectedPermissions);
-      originalRoleRef.current = deepClone(localRole);
-      originalRoleRef.current.permissions = deepClone(selectedPermissions);
-      setPermissionsChanged(false);
+      console.log("Saving permissions:", selectedPermissions)
+      onSavePermissions?.(localRole.id, selectedPermissions)
+      originalRoleRef.current = deepClone(localRole)
+      originalRoleRef.current.permissions = deepClone(selectedPermissions)
+      setPermissionsChanged(false)
     }
-    setIsEditing(!isEditing);
-  };
+
+    setIsEditing(!isEditing)
+  }
 
   const handleOpenUpdateDialog = () => {
-    if (isStale) return;
-    setRoleName(localRole.name);
-    setRoleDescription(localRole.description || "");
-    setUpdateDialogOpen(true);
-  };
+    if (isStale) return
+    setRoleName(localRole.name)
+    setRoleDescription(localRole.description || "")
+    setUpdateDialogOpen(true)
+  }
 
   const handleDelete = () => {
-    if (isStale) return;
-    onDelete?.(localRole.id);
-  };
+    if (isStale) return
+    onDelete?.(localRole.id)
+  }
 
   // Revert everything
   const handleRefresh = () => {
-    const fresh = deepClone(role);
-    setLocalRole(fresh);
-    setSelectedPermissions(deepClone(fresh.permissions || []));
-    setRoleName(fresh.name);
-    setRoleDescription(fresh.description || "");
-    originalRoleRef.current = deepClone(fresh);
-    setIsStale(false);
-    setIsEditing(false);
-    setUpdateDialogOpen(false);
-  };
+    const fresh = deepClone(role)
+    setLocalRole(fresh)
+    setSelectedPermissions(deepClone(fresh.permissions || []))
+    setRoleName(fresh.name)
+    setRoleDescription(fresh.description || "")
+    originalRoleRef.current = deepClone(fresh)
+    setIsStale(false)
+    setIsEditing(false)
+    setUpdateDialogOpen(false)
+  }
 
-  const handleUpdateRole = () => {
+  const handleUpdateRole = async () => {
     if (!onUpdateRole || isStale || !roleName.trim()) {
-      setUpdateDialogOpen(false);
-      return;
+      setUpdateDialogOpen(false)
+      return
     }
-    const changedName = roleName.trim() !== originalRoleRef.current.name;
-    const changedDesc = roleDescription.trim() !== (originalRoleRef.current.description || "");
+
+    const changedName = roleName.trim() !== originalRoleRef.current.name
+    const changedDesc = roleDescription.trim() !== (originalRoleRef.current.description || "")
+
     if (changedName || changedDesc) {
-      onUpdateRole(localRole.id, roleName.trim(), roleDescription.trim());
+      try {
+        await updateRoleNameDesc({
+          role_id: localRole.id,
+          name: changedName ? roleName.trim() : undefined,
+          description: changedDesc ? roleDescription.trim() : undefined,
+        })
+
+        onUpdateRole(localRole.id, roleName.trim(), roleDescription.trim())
+      } catch (error) {
+        console.error("Error updating role:", error)
+      }
     }
-    setUpdateDialogOpen(false);
-  };
+
+    setUpdateDialogOpen(false)
+  }
 
   const getInitials = (name: string) =>
     name
@@ -158,16 +181,13 @@ export function RoleCard({
       .map((n) => n[0])
       .join("")
       .toUpperCase()
-      .substring(0, 2);
+      .substring(0, 2)
 
   return (
     <>
       <Card className={cn("w-full", isStale && "border-amber-400")}>
         {isStale && (
-          <Alert
-            variant="warning"
-            className="border-amber-400 bg-amber-50 dark:bg-amber-950/30 rounded-b-none"
-          >
+          <Alert variant="warning" className="border-amber-400 bg-amber-50 dark:bg-amber-950/30 rounded-b-none">
             <AlertTriangle className="h-4 w-4 text-amber-500" />
             <div className="flex w-full items-center justify-between">
               <AlertDescription className="text-amber-600 dark:text-amber-300">
@@ -193,19 +213,14 @@ export function RoleCard({
             <div className="flex items-center gap-3">
               <Avatar className="h-10 w-10">
                 {localRole.avatarURL ? (
-                  <AvatarImage
-                    src={localRole.avatarURL || "/placeholder.svg"}
-                    alt={localRole.name}
-                  />
+                  <AvatarImage src={localRole.avatarURL || "/placeholder.svg"} alt={localRole.name} />
                 ) : (
                   <AvatarFallback>{getInitials(localRole.name)}</AvatarFallback>
                 )}
               </Avatar>
               <div>
                 <h3 className="text-lg font-semibold">{localRole.name}</h3>
-                {localRole.description && (
-                  <p className="text-sm text-muted-foreground">{localRole.description}</p>
-                )}
+                {localRole.description && <p className="text-sm text-muted-foreground">{localRole.description}</p>}
               </div>
             </div>
             <div className="flex items-center gap-2">
@@ -278,7 +293,7 @@ export function RoleCard({
                       onClick={handleDelete}
                       className={cn(
                         "text-destructive hover:bg-destructive hover:text-destructive-foreground",
-                        isStale && "opacity-50 cursor-not-allowed"
+                        isStale && "opacity-50 cursor-not-allowed",
                       )}
                       disabled={isStale}
                       aria-label="Delete role"
@@ -287,9 +302,7 @@ export function RoleCard({
                       <span className="hidden sm:inline">Delete</span>
                     </Button>
                   </TooltipTrigger>
-                  <TooltipContent>
-                    {isStale ? "Refresh required before deleting" : "Delete this role"}
-                  </TooltipContent>
+                  <TooltipContent>{isStale ? "Refresh required before deleting" : "Delete this role"}</TooltipContent>
                 </Tooltip>
               </TooltipProvider>
             </div>
@@ -303,7 +316,6 @@ export function RoleCard({
             onPermissionDrop={isEditing && !isStale ? handlePermissionDrop : undefined}
             onPermissionRemove={isEditing && !isStale ? handlePermissionRemove : undefined}
             isEditing={isEditing}
-            // If you need to look up by ID inside the drop zone, pass allPermissions:
             allPermissions={allPermissions}
           />
 
@@ -331,17 +343,13 @@ export function RoleCard({
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle>Update Role</DialogTitle>
-            <DialogDescription>
-              Make changes to the role name and description
-            </DialogDescription>
+            <DialogDescription>Make changes to the role name and description</DialogDescription>
           </DialogHeader>
 
           {isStale && (
             <Alert variant="warning" className="mt-2">
               <AlertTriangle className="h-4 w-4" />
-              <AlertDescription>
-                This role has been updated elsewhere. Refresh before making changes.
-              </AlertDescription>
+              <AlertDescription>This role has been updated elsewhere. Refresh before making changes.</AlertDescription>
             </Alert>
           )}
 
@@ -382,5 +390,6 @@ export function RoleCard({
         </DialogContent>
       </Dialog>
     </>
-  );
+  )
 }
+

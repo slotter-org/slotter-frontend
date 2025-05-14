@@ -1,17 +1,17 @@
-import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { MyBadge } from '@/components/common/badges/MyBadge';
-import type { Permission } from '@/types/permission';
+import type React from 'react'
+import { useState, useEffect } from 'react'
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
+import { MyBadge } from '@/components/common/badges/MyBadge'
+import type { Permission } from '@/types/permission'
+import { getColorForCategory } from '@/utils/PermissionColors'
 
 interface PermissionDropZoneProps {
-  title: string;
-  onPermissionDrop?: (permission: Permission) => void;
-  onPermissionRemove?: (permission: Permission) => void;
-  selectedPermissions: Permission[];
-  isEditing?: boolean;
-
-  // Add this if you need to look up the full Permission by ID:
-  allPermissions?: Permission[];
+  title: string
+  onPermissionDrop?: (permission: Permission) => void
+  onPermissionRemove?: (permission: Permission) => void
+  selectedPermissions: Permission[]
+  isEditing?: boolean
+  allPermissions?: Permission[]
 }
 
 export function PermissionDropZone({
@@ -22,54 +22,55 @@ export function PermissionDropZone({
   isEditing = false,
   allPermissions = [],
 }: PermissionDropZoneProps) {
-  const [isDropActive, setIsDropActive] = useState(false);
+  const [isDropActive, setIsDropActive] = useState(false)
 
-  const getColorForCategory = (category: string): string => {
-    switch (category) {
-      case 'avatar':
-        return "#3b82f6";
-      case 'invitations':
-        return "#10b981";
-      case 'roles':
-        return "#ef4444";
-      default:
-        return "#8b5cf6";
-    }
-  };
+  useEffect(() => {
+    console.log("PermissionDropZone received allPermissions:", {
+      count: allPermissions.length,
+      sample: allPermissions.slice(0, 3),
+    })
+  }, [allPermissions])
 
   const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDropActive(true);
-  };
-
+    e.preventDefault()
+    setIsDropActive(true)
+  }
   const handleDragLeave = () => {
-    setIsDropActive(false);
-  };
-
+    setIsDropActive(false)
+  }
   const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDropActive(false);
-
-    if (!isEditing) return;
-
+    e.preventDefault()
+    setIsDropActive(false)
+    if (!isEditing) return
     try {
-      const raw = e.dataTransfer.getData("text/plain");
-      if (!raw) return;
-      const parsed = JSON.parse(raw);
-      // Expect parsed to be { id: "some-permission-id" }
-      if (!parsed || !parsed.id) return;
-
-      // Find the actual permission in allPermissions
-      // or just pass the ID to onPermissionDrop
-      const permissionObj = allPermissions.find((p) => p.id === parsed.id);
+      const raw = e.dataTransfer.getData("text/plain")
+      if (!raw) {
+        console.warn('No data received in drop')
+        return
+      }
+      console.log("Raw drop data:", raw)
+      const parsed = JSON.parse(raw)
+      if (!parsed || !parsed.id) {
+        console.warn("Invalid drop data format", parsed)
+        return
+      }
+      console.log("Looking for permission with ID:", parsed.id, "in", allPermissions.length, "permissions")
+      const permissionObj = allPermissions.find((p) => p.id === parsed.id)
       if (permissionObj && onPermissionDrop) {
-        onPermissionDrop(permissionObj);
+        console.log("Permission found, calling onPermissionDrop with:", permissionObj)
+        onPermissionDrop(permissionObj)
+      } else {
+        console.warn("Permission not found in allPermissions or onPermissionDrop not provided", {
+          permissionId: parsed.id,
+          allPermissionsCount: allPermissions.length,
+          allPermissionIds: allPermissions.map((p) => p.id),
+          hasDropHandler: !!onPermissionDrop,
+        })
       }
     } catch (error) {
-      console.error("Error parsing dropped permission:", error);
+      console.error("Error parsing dropped permission:", error)
     }
-  };
-
+  }
   return (
     <Card
       className={`w-full transition-colors ${isDropActive ? "ring-2 ring-primary ring-offset-2" : ""}`}
@@ -106,5 +107,5 @@ export function PermissionDropZone({
         </div>
       </CardContent>
     </Card>
-  );
+  )
 }

@@ -9,66 +9,99 @@ import { RoleCardFilter } from '@/components/common/cards/filter/RoleCardFilter'
 import { updateRolePermissions, deleteRole } from '@/api/RoleService';
 
 export function RolesManagementContent() {
-  const { me } = useContext(MeContext);
+  const { me } = useContext(MeContext)
+  const { myRoles, myPermissions, loading, error, fetchMyRoles, fetchMyPermissions } = useMyCompany()
 
-  const { myRoles: wmsRoles = [], myPermissions: wmsPermissions = [] } = useMyWms();
-  const { myRoles: companyRoles = [], myPermissions: companyPermissions = [] } = useMyCompany();
-
-  const isWms = me?.userType === 'wms';
-  const allPermissions: Permission[] = isWms ? wmsPermissions : companyPermissions;
-  const entityRoles: Role[] = isWms ? wmsRoles : companyRoles;
-
-  const [loading, setLoading] = useState(false);
-
+  // Update the handleSaveRolePermissions function to properly handle permission updates
   const handleSaveRolePermissions = async (roleId: string, updatedPermissions: Permission[]) => {
     try {
-      setLoading(true);
-      const resp = await updateRolePermissions({ role_id: roleId, permissions: updatedPermissions });
-      console.log('[handleSaveRolePermissions] Updated permissions:', resp.message);
-      // Optionally re-fetch roles here
+      console.log("Saving role permissions:", {
+        roleId,
+        permissionsCount: updatedPermissions.length,
+        permissions: updatedPermissions,
+      })
+
+      await updateRolePermissions({
+        role_id: roleId,
+        permissions: updatedPermissions,
+      })
+
+      // Refresh roles after update
+      console.log("Permissions updated successfully, refreshing roles")
+      fetchMyRoles()
     } catch (error) {
-      console.error('[handleSaveRolePermissions] Error:', error);
-    } finally {
-      setLoading(false);
+      console.error("[handleSaveRolePermissions] Error:", error)
     }
-  };
+  }
 
   const handleDeleteRole = async (roleId: string) => {
     try {
-      setLoading(true);
-      const resp = await deleteRole({ role_id: roleId });
-      console.log('[handleDeleteRole] Deleted role:', resp.message);
-      // Optionally re-fetch roles or remove from local state
-    } catch (error) {
-      console.error('[handleDeleteRole] Error:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+      await deleteRole({ role_id: roleId })
 
-  // We pass allPermissions so we can do a lookup by ID in the drop zone
+      // Refresh roles after deletion
+      fetchMyRoles()
+    } catch (error) {
+      console.error("[handleDeleteRole] Error:", error)
+    }
+  }
+
+  const handleUpdateRole = (roleId: string, newName: string, newDesc: string) => {
+    // The actual API call is handled in the RoleCard component
+    // We just need to refresh the roles after update
+    fetchMyRoles()
+  }
+
+  // If loading or no data, show loading state
+  if (loading) {
+    return <div className="flex justify-center items-center h-full">Loading...</div>
+  }
+
+  // If error, show error state
+  if (error) {
+    return (
+      <div className="flex justify-center items-center h-full text-destructive">
+        Error loading roles and permissions: {error}
+      </div>
+    )
+  }
+
+  // If no roles or permissions, show empty state
+  if (!myRoles || !myPermissions) {
+    return (
+      <div className="flex justify-center items-center h-full text-muted-foreground">
+        No roles or permissions found.
+      </div>
+    )
+  }
+
+  // Log the permissions to verify they exist
+  console.log("RolesManagementContent has permissions:", {
+    count: myPermissions.length,
+    sample: myPermissions.slice(0, 3),
+  })
+
   return (
     <div className="flex w-full h-full gap-4 mx-auto">
       <div className="w-[40%]">
         <PermissionFilterCard
-          permissions={allPermissions}
+          permissions={myPermissions}
           onDragPermission={(p) => {
-            console.log(`[PermissionFilterCard] Dragging permission: ${p.name}`);
+            console.log(`[PermissionFilterCard] Dragging permission: ${p.name}`)
           }}
         />
       </div>
 
       <div className="w-full">
         <RoleCardFilter
-          roles={entityRoles}
+          roles={myRoles}
           onSavePermissions={handleSaveRolePermissions}
           onDeleteRole={handleDeleteRole}
-          onUpdateRole={(roleId, newName, newDesc) => {
-            console.log(`[RolesManagementContent] Update role: ${roleId} => ${newName}, ${newDesc}`);
-            // Optionally call an API or do something else
-          }}
+          onUpdateRole={handleUpdateRole}
+          // Pass all permissions to RoleCardFilter
+          allPermissions={myPermissions}
         />
       </div>
     </div>
-  );
+  )
 }
+

@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { Search, Filter, Badge } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -9,11 +9,13 @@ import type { Role } from '@/types/role';
 import type { Permission } from '@/types/permission';
 
 interface RoleCardFilterProps {
-  roles: Role[];
-  onSavePermissions?: (roleId: string, permissions: Permission[]) => void;
-  onDeleteRole?: (roleId: string) => void;
-  onUpdateRole?: (roleId: string, newName: string, newDesc: string) => void;
-  className?: string;
+  roles: Role[]
+  onSavePermissions?: (roleId: string, permissions: Permission[]) => void
+  onDeleteRole?: (roleId: string) => void
+  onUpdateRole?: (roleId: string, newName: string, newDesc: string) => void
+  className?: string
+  // Add allPermissions prop
+  allPermissions?: Permission[]
 }
 
 export function RoleCardFilter({
@@ -22,55 +24,56 @@ export function RoleCardFilter({
   onDeleteRole,
   onUpdateRole,
   className,
+  allPermissions = [],
 }: RoleCardFilterProps) {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [categoryFilter, setCategoryFilter] = useState<string>("all");
-  const [actionFilter, setActionFilter] = useState<string>("all");
+  const [searchQuery, setSearchQuery] = useState("")
+  const [categoryFilter, setCategoryFilter] = useState<string>("all")
+  const [actionFilter, setActionFilter] = useState<string>("all")
 
   const permissionCategories = useMemo(() => {
-    const categories = new Set<string>();
+    const categories = new Set<string>()
     roles.forEach((role) => {
       role.permissions?.forEach((permission) => {
-        categories.add(permission.category);
-      });
-    });
-    return ["all", ...Array.from(categories)];
-  }, [roles]);
+        categories.add(permission.category)
+      })
+    })
+    return ["all", ...Array.from(categories)]
+  }, [roles])
 
   const permissionActions = useMemo(() => {
-    const actions = new Set<string>();
+    const actions = new Set<string>()
     roles.forEach((role) => {
       role.permissions?.forEach((permission) => {
-        actions.add(permission.action);
-      });
-    });
-    return ["all", ...Array.from(actions)];
-  }, [roles]);
+        actions.add(permission.action)
+      })
+    })
+    return ["all", ...Array.from(actions)]
+  }, [roles])
 
   const filteredRoles = useMemo(() => {
     return roles.filter((role) => {
-      const matchesSearch =
-        searchQuery === "" ||
-        role.name.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesCategory =
-        categoryFilter === "all" ||
-        role.permissions?.some((p) => p.category === categoryFilter);
-      const matchesAction =
-        actionFilter === "all" ||
-        role.permissions?.some((p) => p.action === actionFilter);
+      const matchesSearch = searchQuery === "" || role.name.toLowerCase().includes(searchQuery.toLowerCase())
+      const matchesCategory = categoryFilter === "all" || role.permissions?.some((p) => p.category === categoryFilter)
+      const matchesAction = actionFilter === "all" || role.permissions?.some((p) => p.action === actionFilter)
 
-      return matchesSearch && matchesCategory && matchesAction;
-    });
-  }, [roles, searchQuery, categoryFilter, actionFilter]);
+      return matchesSearch && matchesCategory && matchesAction
+    })
+  }, [roles, searchQuery, categoryFilter, actionFilter])
 
   // Sort by number of permissions (descending)
   const finalRoles = useMemo(() => {
     return [...filteredRoles].sort((a, b) => {
-      const aCount = a.permissions?.length || 0;
-      const bCount = b.permissions?.length || 0;
-      return bCount - aCount;
-    });
-  }, [filteredRoles]);
+      const aCount = a.permissions?.length || 0
+      const bCount = b.permissions?.length || 0
+      return bCount - aCount
+    })
+  }, [filteredRoles])
+
+  // Log the allPermissions to verify it's being passed correctly
+  console.log("RoleCardFilter received allPermissions:", {
+    count: allPermissions.length,
+    sample: allPermissions.slice(0, 3),
+  })
 
   return (
     <Card className={className}>
@@ -109,9 +112,7 @@ export function RoleCardFilter({
               <SelectContent>
                 {permissionCategories.map((category) => (
                   <SelectItem key={category} value={category}>
-                    {category === "all"
-                      ? "All Categories"
-                      : category.charAt(0).toUpperCase() + category.slice(1)}
+                    {category === "all" ? "All Categories" : category.charAt(0).toUpperCase() + category.slice(1)}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -129,9 +130,7 @@ export function RoleCardFilter({
               <SelectContent>
                 {permissionActions.map((action) => (
                   <SelectItem key={action} value={action}>
-                    {action === "all"
-                      ? "All Actions"
-                      : action.charAt(0).toUpperCase() + action.slice(1)}
+                    {action === "all" ? "All Actions" : action.charAt(0).toUpperCase() + action.slice(1)}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -144,14 +143,10 @@ export function RoleCardFilter({
           <div className="flex flex-wrap gap-2 text-sm">
             <span className="text-muted-foreground">Active filters:</span>
             {categoryFilter !== "all" && (
-              <span className="bg-primary/10 text-primary px-2 py-0.5 rounded-md">
-                Category: {categoryFilter}
-              </span>
+              <span className="bg-primary/10 text-primary px-2 py-0.5 rounded-md">Category: {categoryFilter}</span>
             )}
             {actionFilter !== "all" && (
-              <span className="bg-primary/10 text-primary px-2 py-0.5 rounded-md">
-                Action: {actionFilter}
-              </span>
+              <span className="bg-primary/10 text-primary px-2 py-0.5 rounded-md">Action: {actionFilter}</span>
             )}
           </div>
         )}
@@ -167,6 +162,8 @@ export function RoleCardFilter({
                   onSavePermissions={onSavePermissions}
                   onDelete={onDeleteRole}
                   onUpdateRole={onUpdateRole}
+                  // Pass allPermissions to each RoleCard
+                  allPermissions={allPermissions}
                 />
               ))
             ) : (
@@ -178,6 +175,6 @@ export function RoleCardFilter({
         </ScrollArea>
       </CardContent>
     </Card>
-  );
+  )
 }
 
