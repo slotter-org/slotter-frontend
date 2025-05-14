@@ -37,6 +37,7 @@ export function PermissionDropZone({
     setIsDropActive(true)
   }
   const handleDragLeave = () => {
+    e.preventDefault()
     setIsDropActive(false)
   }
   const handleDrop = (e: React.DragEvent) => {
