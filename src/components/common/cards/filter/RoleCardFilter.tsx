@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef, useLayoutEffect } from 'react';
 import { Search, Filter, Badge } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -7,6 +7,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { RoleCard } from '@/components/common/cards/RoleCard';
 import type { Role } from '@/types/role';
 import type { Permission } from '@/types/permission';
+import { useViewport } from '@/contexts/ViewportProvider';
 
 interface RoleCardFilterProps {
   roles: Role[]
@@ -26,9 +27,22 @@ export function RoleCardFilter({
   className,
   allPermissions = [],
 }: RoleCardFilterProps) {
+  const { height: viewportHeight } = useViewport()
+  const scrollRef = useRef<HTMLDivElement>(null)
+  const [offsetTop, setOffsetTop] = useState(0)
   const [searchQuery, setSearchQuery] = useState("")
   const [categoryFilter, setCategoryFilter] = useState<string>("all")
   const [actionFilter, setActionFilter] = useState<string>("all")
+
+  useLayoutEffect(() => {
+    if (scrollRef.current) {
+      setOffsetTop(scrollRef.current.getBoundingClientRect().top)
+    }
+  }, [viewportHeight]);
+
+  const scrollHeight = viewportHeight != null
+    ? viewportHeight - offsetTop - 16
+    : undefined
 
   const permissionCategories = useMemo(() => {
     const categories = new Set<string>()
@@ -152,7 +166,7 @@ export function RoleCardFilter({
         )}
 
         {/* Roles List */}
-        <ScrollArea className="h-[600px] pr-4">
+        <ScrollArea ref={scrollRef} className="pr-4" style={{ height: scrollHeight }}>
           <div className="space-y-4">
             {finalRoles.length > 0 ? (
               finalRoles.map((role) => (
