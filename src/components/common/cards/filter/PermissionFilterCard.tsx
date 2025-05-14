@@ -6,7 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { MyBadge } from '@/components/common/badges/MyBadge';
 import type { Permission } from '@/types/permission';
-import { getColorForCategory } from '@/utils/permissioncolors';
+import { getColorForCategory } from '@/utils/PermissionColors';
 
 interface PermissionFilterCardProps {
   permissions: Permission[]
