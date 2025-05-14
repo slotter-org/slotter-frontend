@@ -55,31 +55,44 @@ export function RoleCard({ role, onDelete, onUpdateRole, onSavePermissions, allP
     })
   }, [allPermissions])
 
-  // If new data arrives from the parent
+    useEffect(() => {
+    console.log('RoleCard received allPermissions:', {
+      count: allPermissions.length,
+      sample: allPermissions.slice(0, 3),
+    });
+  }, [allPermissions]);
+
+  // 1) detect server-side changes once
   useEffect(() => {
-    const prev = originalRoleRef.current
-    const incoming = role
-
-    const basicPropsChanged =
-      prev.name !== incoming.name || prev.description !== incoming.description || prev.avatarURL !== incoming.avatarURL
-
-    const permsChanged = !arePermissionsEqual(prev.permissions || [], incoming.permissions || [])
-    if (basicPropsChanged || permsChanged) {
-      setIsStale(true)
+    const prev = originalRoleRef.current;
+    const incoming = role;
+    const basicChanged =
+      prev.name !== incoming.name ||
+      prev.description !== incoming.description ||
+      prev.avatarURL !== incoming.avatarURL;
+    const permsChanged = !arePermissionsEqual(prev.permissions || [], incoming.permissions || []);
+    if (basicChanged || permsChanged) {
+      setIsStale(true);
     }
+  }, [role]);
 
-    // if not editing (and no open update dialog), re-sync
-    if (!isEditing && !updateDialogOpen) {
-      setLocalRole(deepClone(incoming))
-      setSelectedPermissions(deepClone(incoming.permissions || []))
-      setRoleName(incoming.name)
-      setRoleDescription(incoming.description || "")
-      if (isStale) {
-        originalRoleRef.current = deepClone(incoming)
-        setIsStale(false)
-      }
+  // 2) sync local state only once when stale
+  useEffect(() => {
+    if (!isEditing && !updateDialogOpen && isStale) {
+      const incoming = role;
+      setLocalRole(deepClone(incoming));
+      setSelectedPermissions(deepClone(incoming.permissions || []));
+      setRoleName(incoming.name);
+      setRoleDescription(incoming.description || '');
+      originalRoleRef.current = deepClone(incoming);
+      setIsStale(false);
     }
-  }, [role, isEditing, updateDialogOpen, isStale])
+  }, [isEditing, updateDialogOpen, isStale, role]);
+
+  useEffect(() => {
+    const origPerms = originalRoleRef.current.permissions || [];
+    setPermissionsChanged(!arePermissionsEqual(selectedPermissions, origPerms));
+  }, [selectedPermissions]);
 
   // Whenever selectedPermissions changes, check if it differs from original
   useEffect(() => {
