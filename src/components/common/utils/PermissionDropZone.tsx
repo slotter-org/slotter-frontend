@@ -34,14 +34,17 @@ export function PermissionDropZone({
   }
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault()
+    e.stopPropagation()
     setIsDropActive(true)
   }
   const handleDragLeave = () => {
     e.preventDefault()
+    e.stopPropagation()
     setIsDropActive(false)
   }
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault()
+    e.stopPropagation()
     setIsDropActive(false)
     try {
       const permissionData = JSON.parse(e.dataTransfer.getData("text/plain"))
