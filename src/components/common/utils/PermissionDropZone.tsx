@@ -1,15 +1,14 @@
-import type React from 'react'
-import { useState } from 'react'
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
-import { MyBadge } from '@/components/common/badges/MyBadge'
-import type { Permission } from '@/types/permission'
+import React, { useState } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { MyBadge } from '@/components/common/badges/MyBadge';
+import type { Permission } from '@/types/permission';
 
 interface PermissionDropZoneProps {
-  title: string
-  onPermissionDrop?: (permission: Permission) => void
-  onPermissionRemove?: (permission: Permission) => void
-  selectedPermissions: Permission[]
-  isEditing?: boolean
+  title: string;
+  onPermissionDrop?: (permission: Permission) => void;
+  onPermissionRemove?: (permission: Permission) => void;
+  selectedPermissions: Permission[];
+  isEditing?: boolean;
 }
 
 export function PermissionDropZone({
@@ -17,56 +16,71 @@ export function PermissionDropZone({
   onPermissionDrop,
   onPermissionRemove,
   selectedPermissions,
-  isEditing,
+  isEditing = false,
 }: PermissionDropZoneProps) {
-  const [isDropActive, setIsDropActive] = useState(false)
+  const [isDropActive, setIsDropActive] = useState(false);
+
   const getColorForCategory = (category: string): string => {
     switch (category) {
       case 'avatar':
-        return "#3b82f6"
+        return "#3b82f6";
       case 'invitations':
-        return "#10b981"
+        return "#10b981";
       case 'roles':
-        return "#ef4444"
+        return "#ef4444";
       default:
-        return "#8b5cf6"
+        return "#8b5cf6";
     }
-  }
+  };
+
   const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-    setIsDropActive(true)
-  }
+    e.preventDefault();
+    setIsDropActive(true);
+  };
+
   const handleDragLeave = () => {
-    setIsDropActive(false)
-  }
+    setIsDropActive(false);
+  };
+
   const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-    setIsDropActive(false)
+    e.preventDefault();
+    setIsDropActive(false);
+
+    if (!isEditing) {
+      // If not editing, ignore drops
+      return;
+    }
+
     try {
-      const permissionData = JSON.parse(e.dataTransfer.getData("text/plain"))
+      const data = e.dataTransfer.getData("text/plain");
+      if (!data) return;
+
+      const permissionData = JSON.parse(data);
       if (permissionData && onPermissionDrop) {
-        onPermissionDrop(permissionData)
+        onPermissionDrop(permissionData);
       }
     } catch (error) {
-      console.error("Error parsing dropped permission:", error)
+      console.error("Error parsing dropped permission:", error);
+      // Optionally surface an error or ignore
     }
-  }
+  };
 
   return (
     <Card
       className={`w-full transition-colors ${isDropActive ? "ring-2 ring-primary ring-offset-2" : ""}`}
-      onDragOver={handleDragOver}
-      onDragLeave={handleDragLeave}
-      onDrop={handleDrop}
+      // Only allow dragOver, drop if editing
+      onDragOver={isEditing ? handleDragOver : undefined}
+      onDragLeave={isEditing ? handleDragLeave : undefined}
+      onDrop={isEditing ? handleDrop : undefined}
     >
       <CardHeader>
         <CardTitle>{title}</CardTitle>
       </CardHeader>
       <CardContent>
         <div
-          className={`min-h-[150px] rounded-md border-2 border-dashed p-4 transition-colors ${isDropActive ? "border-primary bg-primary/5" : "border-muted-foreground/20"}`}
+          className={`min-h-[150px] rounded-md border-2 border-dashed p-4 transition-colors ${
+            isDropActive ? "border-primary bg-primary/5" : "border-muted-foreground/20"
+          }`}
         >
           {selectedPermissions.length > 0 ? (
             <div className="flex flex-wrap gap-2">
@@ -76,7 +90,7 @@ export function PermissionDropZone({
                   title={permission.name}
                   color={getColorForCategory(permission.category)}
                   showCloseOnHover={isEditing}
-                  onClose={() => onPermissionRemove && onPermissionRemove(permission)}
+                  onClose={() => onPermissionRemove?.(permission)}
                 />
               ))}
             </div>
@@ -88,6 +102,5 @@ export function PermissionDropZone({
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }
-

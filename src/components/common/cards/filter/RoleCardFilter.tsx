@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
-import { Search, Filter, Badge, Plus, Pencil, Trash } from 'lucide-react';
+// Removed unused icons: Plus, Pencil, Trash
+import { Search, Filter, Badge } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -9,49 +10,72 @@ import type { Role } from '@/types/role';
 import type { Permission } from '@/types/permission';
 
 interface RoleCardFilterProps {
-  roles: Role[]
-  onSaveRole?: (roleId: string, permissions: Permission[]) => void
-  onDeleteRole?: (roleId: string) => void
-  className?: string
+  roles: Role[];
+  // Use the correct prop names matching RoleCard's “onSavePermissions” and “onDelete”
+  onSavePermissions?: (roleId: string, permissions: Permission[]) => void;
+  onDeleteRole?: (roleId: string) => void;
+  onUpdateRole?: (roleId: string, newName: string, newDesc: string) => void;
+  className?: string;
 }
 
-export function RoleCardFilter({ roles,  onSaveRole, onDeleteRole, className }: RoleCardFilterProps) {
-  const [searchQuery, setSearchQuery] = useState("")
-  const [categoryFilter, setCategoryFilter] = useState<string>("all")
-  const [actionFilter, setActionFilter] = useState<string>("all")
+export function RoleCardFilter({
+  roles,
+  onSavePermissions,
+  onDeleteRole,
+  onUpdateRole,
+  className,
+}: RoleCardFilterProps) {
+  const [searchQuery, setSearchQuery] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState<string>("all");
+  const [actionFilter, setActionFilter] = useState<string>("all");
+
   const permissionCategories = useMemo(() => {
-    const categories = new Set<string>()
+    const categories = new Set<string>();
     roles.forEach((role) => {
       role.permissions?.forEach((permission) => {
-        categories.add(permission.category)
-      })
-    })
-    return ["all", ...Array.from(categories)]
-  }, [roles])
+        categories.add(permission.category);
+      });
+    });
+    return ["all", ...Array.from(categories)];
+  }, [roles]);
+
   const permissionActions = useMemo(() => {
-    const actions = new Set<string>()
+    const actions = new Set<string>();
     roles.forEach((role) => {
       role.permissions?.forEach((permission) => {
-        actions.add(permission.action)
-      })
-    })
-    return ["all", ...Array.from(actions)]
-  }, [roles])
+        actions.add(permission.action);
+      });
+    });
+    return ["all", ...Array.from(actions)];
+  }, [roles]);
+
+  // Filter roles
   const filteredRoles = useMemo(() => {
     return roles.filter((role) => {
-      const matchesSearch = searchQuery === "" || role.name.toLowerCase().includes(searchQuery.toLowerCase())
-      const matchesCategory = categoryFilter === "all" || role.permissions?.some((p) => p.category === categoryFilter)
-      const matchesAction = actionFilter === "all" || role.permissions?.some((p) => p.action === actionFilter)
-      return matchesSearch && matchesCategory && matchesAction
-    })
-  }, [roles, searchQuery, categoryFilter, actionFilter])
-  const sortedRoles = useMemo(() => {
-    return [...filteredRoles].sort((a, b) => {
-      const aCount = a.permission?.length || 0
-      const bCount = b.permission?.length || 0
-      return bCount - aCount
-    })
-  }, [filteredRoles])
+      const matchesSearch =
+        searchQuery === "" ||
+        role.name.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesCategory =
+        categoryFilter === "all" ||
+        role.permissions?.some((p) => p.category === categoryFilter);
+      const matchesAction =
+        actionFilter === "all" ||
+        role.permissions?.some((p) => p.action === actionFilter);
+
+      return matchesSearch && matchesCategory && matchesAction;
+    });
+  }, [roles, searchQuery, categoryFilter, actionFilter]);
+
+  // Sort roles. We fix the permission length:
+  const finalRoles = useMemo(() => {
+    const sorted = [...filteredRoles].sort((a, b) => {
+      const aCount = a.permissions?.length || 0;
+      const bCount = b.permissions?.length || 0;
+      // Descending order by # of permissions
+      return bCount - aCount;
+    });
+    return sorted;
+  }, [filteredRoles]);
 
   return (
     <Card className={className}>
@@ -61,7 +85,7 @@ export function RoleCardFilter({ roles,  onSaveRole, onDeleteRole, className }: 
           Roles
         </CardTitle>
         <div className="text-sm text-muted-foreground">
-          {sortedRoles.length} of {roles.length} roles
+          {finalRoles.length} of {roles.length} roles
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -89,7 +113,9 @@ export function RoleCardFilter({ roles,  onSaveRole, onDeleteRole, className }: 
               <SelectContent>
                 {permissionCategories.map((category) => (
                   <SelectItem key={category} value={category}>
-                    {category === "all" ? "All Categories" : category.charAt(0).toUpperCase() + category.slice(1)}
+                    {category === "all"
+                      ? "All Categories"
+                      : category.charAt(0).toUpperCase() + category.slice(1)}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -107,7 +133,9 @@ export function RoleCardFilter({ roles,  onSaveRole, onDeleteRole, className }: 
               <SelectContent>
                 {permissionActions.map((action) => (
                   <SelectItem key={action} value={action}>
-                    {action === "all" ? "All Actions" : action.charAt(0).toUpperCase() + action.slice(1)}
+                    {action === "all"
+                      ? "All Actions"
+                      : action.charAt(0).toUpperCase() + action.slice(1)}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -120,10 +148,14 @@ export function RoleCardFilter({ roles,  onSaveRole, onDeleteRole, className }: 
           <div className="flex flex-wrap gap-2 text-sm">
             <span className="text-muted-foreground">Active filters:</span>
             {categoryFilter !== "all" && (
-              <span className="bg-primary/10 text-primary px-2 py-0.5 rounded-md">Category:  {categoryFilter}</span>
+              <span className="bg-primary/10 text-primary px-2 py-0.5 rounded-md">
+                Category: {categoryFilter}
+              </span>
             )}
             {actionFilter !== "all" && (
-              <span className="bg-primary/10 text-primary px-2 py-0.5 rounded-md">Action: {actionFilter}</span>
+              <span className="bg-primary/10 text-primary px-2 py-0.5 rounded-md">
+                Action: {actionFilter}
+              </span>
             )}
           </div>
         )}
@@ -131,9 +163,15 @@ export function RoleCardFilter({ roles,  onSaveRole, onDeleteRole, className }: 
         {/* Roles List */}
         <ScrollArea className="h-[600px] pr-4">
           <div className="space-y-4">
-            {filteredRoles.length > 0 ? (
-              filteredRoles.map((role) => (
-                <RoleCard key={role.id} role={role} onSave={onSaveRole} onDelete={onDeleteRole} />
+            {finalRoles.length > 0 ? (
+              finalRoles.map((role) => (
+                <RoleCard
+                  key={role.id}
+                  role={role}
+                  onSavePermissions={onSavePermissions}
+                  onDelete={onDeleteRole}
+                  onUpdateRole={onUpdateRole}
+                />
               ))
             ) : (
               <div className="flex h-20 items-center justify-center rounded-md border border-dashed text-muted-foreground">

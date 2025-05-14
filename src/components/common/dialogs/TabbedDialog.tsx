@@ -10,9 +10,13 @@ interface TabbedDialogProps {
   tabTitle: string;
   helpContent?: React.ReactNode;
   children: React.ReactNode;
+
+  // Optional top-right
   topRightButtonText?: string;
   onTopRightButtonClick?: () => void;
   topRightSlot?: React.ReactNode;
+
+  // Bottom-right “Close/Submit” button
   bottomRightButtonText?: string;
   onBottomRightButtonClick?: () => void;
 }
@@ -23,14 +27,26 @@ export function TabbedDialog({
   tabTitle,
   helpContent,
   children,
+
+  // Top-right
   topRightButtonText = "Action",
-  onTopRightButtonClick = () => {},
+  onTopRightButtonClick,
   topRightSlot,
+
+  // Bottom-right
   bottomRightButtonText = "Submit",
-  onBottomRightButtonClick = () => {},
+  onBottomRightButtonClick,
 }: TabbedDialogProps) {
   const [open, setOpen] = React.useState(false);
   const [activeTab, setActiveTab] = React.useState("content");
+
+  // Internal close handler that calls the user callback if provided
+  const handleBottomRightClick = () => {
+    if (onBottomRightButtonClick) {
+      onBottomRightButtonClick();
+    }
+    setOpen(false);
+  };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -55,8 +71,14 @@ export function TabbedDialog({
             {activeTab === "content" ? (
               <>
                 <h3 className="text-base font-medium">{tabTitle}</h3>
-                {topRightSlot ?? (
-                  <Button variant="outline" size="sm" onClick={onTopRightButtonClick}>
+                {topRightSlot ? (
+                  topRightSlot
+                ) : (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={onTopRightButtonClick}
+                  >
                     {topRightButtonText}
                   </Button>
                 )}
@@ -85,21 +107,15 @@ export function TabbedDialog({
             )}
           </div>
 
-          <div className="flex justify-end mt-6">
-            {activeTab === "content" && (
-              <Button 
-                onClick={() => {
-                  onBottomRightButtonClick();
-                  setOpen(false);
-                }}
-              >
+          {activeTab === "content" && (
+            <div className="flex justify-end mt-6">
+              <Button onClick={handleBottomRightClick}>
                 {bottomRightButtonText}
               </Button>
-            )}
-          </div>
+            </div>
+          )}
         </div>
       </DialogContent>
     </Dialog>
-  )
+  );
 }
-

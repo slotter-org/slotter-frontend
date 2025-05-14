@@ -8,51 +8,66 @@ import { MyBadge } from '@/components/common/badges/MyBadge';
 import type { Permission } from '@/types/permission';
 
 interface PermissionFilterCardProps {
-  permissions: Permission[]
-  onDragPermission?: (permission: Permission) => void
+  permissions: Permission[];
+  onDragPermission?: (permission: Permission) => void; // optional callback
 }
 
-export function PermissionFilterCard({ permissions, onDragPermission }: PermissionFilterCardProps) {
-  const [searchQuery, setSearchQuery] = useState("")
-  const [categoryFilter, setCategoryFilter] = useState<string>("all")
-  const [actionFilter, setActionFilter] = useState<string>("all")
+export function PermissionFilterCard({
+  permissions,
+  onDragPermission,
+}: PermissionFilterCardProps) {
+  const [searchQuery, setSearchQuery] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState<string>("all");
+  const [actionFilter, setActionFilter] = useState<string>("all");
+
   const categories = useMemo(() => {
-    const uniqueCategories = new Set(permissions.map((p) => p.category))
-    return ["all", ...Array.from(uniqueCategories)]
-  }, [permissions])
+    const uniqueCategories = new Set(permissions.map((p) => p.category));
+    return ["all", ...Array.from(uniqueCategories)];
+  }, [permissions]);
+
   const actions = useMemo(() => {
-    const uniqueActions = new Set(permissions.map((p) => p.action))
-    return ["all", ...Array.from(uniqueActions)]
-  }, [permissions])
+    const uniqueActions = new Set(permissions.map((p) => p.action));
+    return ["all", ...Array.from(uniqueActions)];
+  }, [permissions]);
+
+  // Remove references to permission.permissionType, just match by name or action
   const filteredPermissions = useMemo(() => {
     return permissions.filter((permission) => {
       const matchesSearch =
         searchQuery === "" ||
         permission.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        permission.permissionType.toLowerCase().includes(searchQuery.toLowerCase())
-      const matchesCategory = categoryFilter === "all" || permission.category === categoryFilter
-      const matchesAction = actionFilter === "all" || permission.action === actionFilter
+        permission.action.toLowerCase().includes(searchQuery.toLowerCase());
 
-      return matchesSearch && matchesCategory && matchesAction
-    })
-  }, [permissions, searchQuery, categoryFilter, actionFilter])
+      const matchesCategory =
+        categoryFilter === "all" || permission.category === categoryFilter;
+
+      const matchesAction =
+        actionFilter === "all" || permission.action === actionFilter;
+
+      return matchesSearch && matchesCategory && matchesAction;
+    });
+  }, [permissions, searchQuery, categoryFilter, actionFilter]);
+
+  // Simple color picking:
   const getColorForCategory = (category: string): string => {
     switch (category) {
       case "roles":
-        return "#10b981"
+        return "#10b981";
       case "avatar":
-        return "#3b82f6"
+        return "#3b82f6";
       case "invitations":
-        return "#8b5cf6"
+        return "#8b5cf6";
       default:
-        return "#ef4444"
+        return "#ef4444";
     }
-  }
+  };
+
+  // Optional local callback for the drag event
   const handleDragStart = (permission: Permission) => {
     if (onDragPermission) {
-      onDragPermission(permission)
+      onDragPermission(permission);
     }
-  }
+  };
 
   return (
     <Card className="w-full max-w-3xl">
@@ -88,13 +103,14 @@ export function PermissionFilterCard({ permissions, onDragPermission }: Permissi
               <SelectContent>
                 {categories.map((category) => (
                   <SelectItem key={category} value={category}>
-                    {category === "all" ? "All Categories" : category.charAt(0).toUpperCase() + category.slice(1)}
+                    {category === "all"
+                      ? "All Categories"
+                      : category.charAt(0).toUpperCase() + category.slice(1)}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
-
           <div className="flex-1">
             <Select value={actionFilter} onValueChange={setActionFilter}>
               <SelectTrigger>
@@ -106,7 +122,9 @@ export function PermissionFilterCard({ permissions, onDragPermission }: Permissi
               <SelectContent>
                 {actions.map((action) => (
                   <SelectItem key={action} value={action}>
-                    {action === "all" ? "All Actions" : action.charAt(0).toUpperCase() + action.slice(1)}
+                    {action === "all"
+                      ? "All Actions"
+                      : action.charAt(0).toUpperCase() + action.slice(1)}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -144,5 +162,5 @@ export function PermissionFilterCard({ permissions, onDragPermission }: Permissi
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }
