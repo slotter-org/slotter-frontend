@@ -1,4 +1,4 @@
-import type React from 'react'
+import React from 'react'
 import { useState } from 'react'
 import { X } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -45,7 +45,6 @@ export function MyBadge({ icon, title, color = "#6366f1", showCloseOnHover = fal
     }
   }
   const handleDragEnd = () => {
-    e.stopPropagation()
     setIsDragging(false)
   }
 

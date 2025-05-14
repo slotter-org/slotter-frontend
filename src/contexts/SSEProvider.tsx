@@ -14,18 +14,18 @@ export interface SSEMessage {
   channel: string;
 }
 
-interface SSEContextValue {
+export interface SSEContentValue {
   connected: boolean;
   lastMessage: SSEMessage | null;
-  subscribeChannel: (channel: string) => void;
-  unsubscribeChannel: (channel: string) => void;
+  subscribeChannel: (channel: string) => Promise<void>;
+  unsubscribeChannel: (channel: string) => Promise<void>;
 }
 
 const SSEContext = createContext<SSEContextValue>({
   connected: false,
   lastMessage: null,
-  subscribeChannel: () => {},
-  unsubscribeChannel: () => {},
+  subscribeChannel: async () => {},
+  unsubscribeChannel: async () => {},
 });
 
 export function useSSEContext(): SSEContextValue {
@@ -35,95 +35,102 @@ export function useSSEContext(): SSEContextValue {
 export function SSEProvider({ children }: { children: React.ReactNode }) {
   const [connected, setConnected] = useState(false);
   const [lastMessage, setLastMessage] = useState<SSEMessage | null>(null);
-  const initializedRef = useRef(false);
+  const subscribedChannelsRef = useRef<Set<string>>(new Set());
+  const initRef = useRef(false);
   const retryTimer = useRef<number | null>(null);
-
-  const resetState = () => {
+  const resetState = useCallback(() => {
     setConnected(false);
     setLastMessage(null);
-    pendingSubs.current.clear();
-    if (retryTimer.current) clearTimeout(retryTimer.current);
-    noTokenDelay.current = 1000;
+    subscribedChannelsRef.current.clear();
+    if (retryTimer.current) {
+      window.clearTimeout(retryTimer.current);
+      retryTimer.current = null;
+    }
     SSEService.close();
-  };
-
+  }, []);
   const scheduleRetry = useCallback((delay = 1000) => {
     if (retryTimer.current) window.clearTimeout(retryTimer.current);
-    retryTimer.current = window.setTimeout(() => connect(), delay);
+    retryTimer.current = window.setTimeout(() => {
+      connect();
+    }, delay);
   }, []);
-
   const connect = useCallback(() => {
     const token = getToken();
     if (!token) {
-      console.warn('[SSEProvider] No token found, retrying SSE connect...');
+      console.warn('[SSEProvider] No token found, will retry...');
       setConnected(false);
-      scheduleRetry();            // <── retry until token exists
+      scheduleRetry(2000);
       return;
     }
-
     SSEService.connect();
     SSEService.onOpen(() => {
       console.log('[SSEProvider] onopen => connected!');
-      if (retryTimer.current) window.clearTimeout(retryTimer.current);
+      if (retryTimer.current) {
+        window.clearTimeout(retryTimer.current);
+        retryTimer.current = null;
+      }
       setConnected(true);
     });
     SSEService.onError((err) => {
       console.error('[SSEProvider] onerror =>', err);
       setConnected(false);
       SSEService.close();
-      scheduleRetry(2000);        // <── retry on stream error
+      scheduleRetry(3000);
     });
     SSEService.onMessage((evt) => {
       try {
         const parsed = JSON.parse(evt.data);
-        setLastMessage({
-          event: parsed.event,
-          channel: parsed.channel,
-        });
+        setLastMessage({ event: parsed.event, channel: parsed.channel });
       } catch (error) {
         console.warn('[SSEProvider] Failed to parse SSE data =>', evt.data, error);
       }
     });
   }, [scheduleRetry]);
-
   useEffect(() => {
-    if (!initializedRef.current) {
-      initializedRef.current = true;
+    if (!initRef.current) {
+      initRef.current = true;
       connect();
     }
     return () => {
       if (retryTimer.current) window.clearTimeout(retryTimer.current);
-      SSEService.close();
+      resetState();
     };
-  }, [connect]);
-
+  }, [connect, resetState]);
   const subscribeChannel = useCallback(async (channel: string) => {
+    if (!connected) {
+      console.warn(`[SSEProvider] Not connected yet, cannot subscribe to ${channel}.`);
+      return;
+    }
+    if (subscribedChannelsRef.current.has(channel)) {
+      return;
+    }
     try {
       await SSEService.subscribe(channel);
+      subscribedChannelsRef.current.add(channel);
     } catch (err) {
-      console.error('[SSEProvider] Failed to subscribe =>', err);
+      console.error(`[SSEProvider] Failed to subscribe ${channel} =>`, err);
     }
-  }, []);
-
-  const unsubscribeChannel = useCallback(async (channel: string) => {
+  }, [connected]);
+  const unsubscribedChannel = useCallback(async (channel: string) => {
+    if (!subscribedChannelsRef.current.has(channel)) {
+      return;
+    }
     try {
       await SSEService.unsubscribe(channel);
+      subscribedChannelsRef.current.delete(channel);
     } catch (err) {
-      console.error('[SSEProvider] Failed to unsubscribe =>', err);
+      console.error(`[SSEProvider] Failed to unsubscribe =>`, err);
     }
   }, []);
-
   const value: SSEContextValue = {
     connected,
     lastMessage,
     subscribeChannel,
     unsubscribeChannel,
   };
-  
   return (
     <SSEContext.Provider value={value}>
       {children}
     </SSEContext.Provider>
   );
 }
-

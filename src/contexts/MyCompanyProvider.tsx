@@ -12,7 +12,7 @@ import { User } from '@/types/user';
 import { Invitation } from '@/types/invitation';
 import { Role } from '@/types/role';
 import { Permission } from '@/types/permission';
-import { MeContext } from './MeProvider';
+import { MeContext } from '@/contexts/MeProvider';
 import {
   getMyCompany,
   getMyCompanyWarehouses,
@@ -28,16 +28,16 @@ interface MyCompanyContextValue {
   myWarehouses: Warehouse[] | null;
   myUsers: User[] | null;
   myRoles: Role[] | null;
-  myInvitations: Invitation[] | null;
   myPermissions: Permission[] | null;
+  myInvitations: Invitation[] | null;
   loading: boolean;
   error: string | null;
   fetchMyCompany: () => Promise<void>;
   fetchMyWarehouses: () => Promise<void>;
   fetchMyUsers: () => Promise<void>;
   fetchMyRoles: () => Promise<void>;
-  fetchMyInvitations: () => Promise<void>;
   fetchMyPermissions: () => Promise<void>;
+  fetchMyInvitations: () => Promise<void>;
 }
 
 const MyCompanyContext = createContext<MyCompanyContextValue>({
@@ -45,16 +45,16 @@ const MyCompanyContext = createContext<MyCompanyContextValue>({
   myWarehouses: null,
   myUsers: null,
   myRoles: null,
-  myInvitations: null,
   myPermissions: null,
+  myInvitations: null,
   loading: false,
   error: null,
   fetchMyCompany: async () => {},
   fetchMyWarehouses: async () => {},
   fetchMyUsers: async () => {},
   fetchMyRoles: async () => {},
-  fetchMyInvitations: async () => {},
   fetchMyPermissions: async () => {},
+  fetchMyInvitations: async () => {},
 });
 
 export function useMyCompany() {
@@ -68,11 +68,12 @@ export function MyCompanyProvider({ children }: { children: ReactNode }) {
   const [myWarehouses, setMyWarehouses] = useState<Warehouse[] | null>(null);
   const [myUsers, setMyUsers] = useState<User[] | null>(null);
   const [myRoles, setMyRoles] = useState<Role[] | null>(null);
-  const [myInvitations, setMyInvitations] = useState<Invitation[] | null>(null);
   const [myPermissions, setMyPermissions] = useState<Permission[] | null>(null);
+  const [myInvitations, setMyInvitations] = useState<Invitation[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  
+
+  //------------------------------Fetch Helpers--------------------------------------
   const fetchMyCompany = useCallback(async () => {
     if (!me?.companyID) {
       setMyCompany(null);
@@ -103,8 +104,8 @@ export function MyCompanyProvider({ children }: { children: ReactNode }) {
       const resp = await getMyCompanyWarehouses();
       setMyWarehouses(resp.myWarehouses);
     } catch (err: any) {
-      console.error('[MyCompanyProvider] fetchMyWarehouses error:', err)
-      setError(err.message || 'Failed to fetch my company warehouses');
+      console.error('[MyCompanyProvider] fetchMyWarehouses error:', err);
+      setError(err.message || 'Failed to fetch myWarehouses');
       setMyWarehouses(null);
     } finally {
       setLoading(false);
@@ -122,8 +123,8 @@ export function MyCompanyProvider({ children }: { children: ReactNode }) {
       const resp = await getMyCompanyUsers();
       setMyUsers(resp.myUsers);
     } catch (err: any) {
-      console.error('[MyCompanyProvider] fetchMyUsers error:', err)
-      setError(err.message || 'Failed to fetch my company users');
+      console.error('[MyCompanyProvider] fetchMyUsers error:', err);
+      setError(err.message || 'Failed to fetch myUsers');
       setMyUsers(null);
     } finally {
       setLoading(false);
@@ -139,30 +140,11 @@ export function MyCompanyProvider({ children }: { children: ReactNode }) {
     setError(null);
     try {
       const resp = await getMyCompanyRoles();
-      setMyRoles(resp.myRoles);
+      setMyRoles(resp.myRoles)
     } catch (err: any) {
-      console.error('[MyCompanyProvider] fetchMyRoles error:', err)
-      setError(err.message || 'Failed to fetch my company roles');
+      console.error('[MyCompanyProvider] fetchMyRoles error:', err);
+      setError(err.message || 'Failed to fetch myRoles');
       setMyRoles(null);
-    } finally {
-      setLoading(false);
-    }
-  }, [me?.companyID]);
-
-  const fetchMyInvitations = useCallback(async () => {
-    if (!me?.companyID) {
-      setMyInvitations(null);
-      return;
-    }
-    setLoading(true);
-    setError(null);
-    try {
-      const resp = await getMyCompanyInvitations();
-      setMyInvitations(resp.myInvitations);
-    } catch (err: any) {
-      console.error('[MyCompanyProvider] fetchMyInvitations error:', err)
-      setError(err.message ||'Failed to fetch my company invitations');
-      setMyInvitations(null);
     } finally {
       setLoading(false);
     }
@@ -179,114 +161,160 @@ export function MyCompanyProvider({ children }: { children: ReactNode }) {
       const resp = await getMyCompanyPermissions();
       setMyPermissions(resp.myPermissions);
     } catch (err: any) {
-      console.error(`[MyCompanyProvider] fetchMyPermissions error:`, err)
-      setError(err.message || 'Failed to fetch my company permissions');
+      console.error('[MyCompanyProvider] fetchMyPermissions error:', err);
+      setError(err.message || 'Failed to fetch myPermissions');
       setMyPermissions(null);
     } finally {
       setLoading(false);
     }
   }, [me?.companyID]);
 
+  const fetchMyInvitations = useCallback(async () => {
+    if (!me?.companyID) {
+      setMyInvitations(null);
+      return;
+    }
+    setLoading(true);
+    setError(null);
+    try {
+      const resp = await getMyCompanyInvitations();
+      setMyInvitations(resp.myInvitations);
+    } catch (err: any) {
+      console.error('[MyCompanyProvider] fetchMyInvitations error:', err);
+      setError(err.message || 'Failed to fetch myInvitations');
+      setMyInvitations(null);
+    } finally {
+      setLoading(false);
+    }
+  }, [me?.companyID]);
+
+  //-----------------------------Subscribe to "company" channel once--------------------------------
   useEffect(() => {
-    if (me?.userType === 'company' && me.companyID) {
+    if (!connected) return;
+    if (me?.userType === "company" && me.companyID) {
+      const companyChannel = `company:${me.companyID}`;
+      subscribeChannel(companyChannel);
+      return () => {
+        unsubscribeChannel(companyChannel);
+      };
+    }
+  }, [connected, me?.userType, me?.companyID, subscribeChannel, unsubscribeChannel]);
+
+  //-----------------------------Auto-fetch data once we know we are a "company" user------------------
+  useEffect(() => {
+    if (me?.userType === "company" && me.companyID) {
       fetchMyCompany();
       fetchMyWarehouses();
       fetchMyUsers();
       fetchMyRoles();
-      fetchMyInvitations();
       fetchMyPermissions();
+      fetchMyInvitations();
     } else {
       setMyCompany(null);
       setMyWarehouses(null);
       setMyUsers(null);
       setMyRoles(null);
-      setMyInvitations(null);
       setMyPermissions(null);
+      setMyInvitations(null);
     }
-  }, [me, fetchMyCompany, fetchMyWarehouses, fetchMyUsers, fetchMyRoles, fetchMyInvitations, fetchMyPermissions]);
+  }, [
+      me,
+      fetchMyCompany,
+      fetchMyWarehouses,
+      fetchMyRoles,
+      fetchMyPermissions,
+      fetchMyInvitations,
+    ]);
 
-  useEffect(() => {
-    if (!connected) return;
-    if (me?.userType === 'company' && me.companyID) {
-      const companyChan = 'company:' + me.companyID;
-      subscribeChannel(companyChan);
-      return () => {
-        unsubscribeChannel(companyChan);
-      };
-    }
-  }, [connected, me?.userType, me?.companyID, subscribeChannel, unsubscribeChannel]);
-
+  //---------------------------Listen to SSE events that indicate data change-------------------------
   useEffect(() => {
     if (!lastMessage) return;
-    const { event, channel } = lastMessage;
     if (me?.userType !== 'company' || !me.companyID) return;
-    const companyChan = 'company:' + me.companyID;
-    if (channel === companyChan) {
-      switch (event) {
-        case 'UserJoined':
-        case 'UserLeft':
-        case 'UserAvatarUpdated':
-        case 'UserNameChanged':
-          fetchMyUsers();
-          break;
-        case 'CompanyAvatarUpdated':
-        case 'CompanyNameChanged':
-        case 'CompanyDeleted':
-          fetchMyCompany();
-          break;
-        case 'WarehouseCreated':
-        case 'WarehouseDeleted':
-        case 'WarehouseNameChanged':
-          fetchMyWarehouses();
-          break;
-        case 'UserRoleUpdated':
-          fetchMyUsers();
-          fetchMyRoles();
-          break;
-        case 'RoleCreated':
-        case 'RoleUpdated':
-        case 'RoleDeleted':
-          fetchMyRoles();
-          break;
-        case 'RoleAssignmentChanged':
-          fetchMyRoles();
-          fetchMyUsers();
-          break;
-        case 'CompanyInvitationCreated':
-        case 'CompanyInvitationDeleted':
-        case 'CompanyInvitationAccepted':
-        case 'CompanyInvitationCanceled':
-        case 'CompanyInvitationExpired':
-        case 'CompanyInvitationPending':
-          fetchMyUsers();
-          fetchMyInvitations();
-          break;
-        default:
-          break;
-      }
+    const { event, channel } = lastMessage;
+    const myChannel = `company:${me.companyID}`;
+    if (channel !== myChannel) return;
+    switch (event) {
+      case 'UserJoined':
+      case 'UserLeft':
+      case 'UserAvatarUpdated':
+      case 'UserNameChanged':
+        fetchMyUsers();
+        break;
+      case 'CompanyAvatarUpdated':
+      case 'CompanyNameChanged':
+      case 'CompanyDeleted':
+        fetchMyCompany();
+        break;
+      case 'WarehouseCreated':
+      case 'WarehouseDeleted':
+      case 'WarehouseNameChanged':
+        fetchMyWarehouses();
+        break;
+      case 'UserRoleUpdated':
+        fetchMyUsers();
+        fetchMyRoles();
+        break;
+      case 'RoleCreated':
+      case 'RoleUpdated':
+      case 'RoleDeleted':
+      case 'RoleAssignmentChanged':
+        fetchMyRoles();
+        fetchMyUsers();
+        break;
+      case 'InvitationCreated':
+      case 'InvitationCanceled':
+      case 'InvitationDeleted':
+      case 'InvitationAccepted':
+      case 'InvitationExpired':
+        fetchMyInvitations();
+        fetchMyUsers();
+        break;
+      default:
+        break;
     }
-  }, [lastMessage, me?.userType, me?.companyID, fetchMyCompany, fetchMyWarehouses, fetchMyUsers, fetchMyRoles, fetchMyInvitations]);
-
+  }, [
+      lastMessage,
+      me?.userType,
+      me?.companyID,
+      fetchMyCompany,
+      fetchMyWarehouses,
+      fetchMyUsers,
+      fetchMyRoles,
+      fetchMyInvitations,
+    ]);
+  
   const value: MyCompanyContextValue = {
     myCompany,
     myWarehouses,
     myUsers,
     myRoles,
-    myInvitations,
     myPermissions,
+    myInvitations,
     loading,
     error,
     fetchMyCompany,
     fetchMyWarehouses,
     fetchMyUsers,
     fetchMyRoles,
-    fetchMyInvitations,
     fetchMyPermissions,
+    fetchMyInvitations,
   };
-  
+
   return (
     <MyCompanyContext.Provider value={value}>
       {children}
     </MyCompanyContext.Provider>
   );
 }
+
+
+
+
+
+
+
+
+
+
+
+
