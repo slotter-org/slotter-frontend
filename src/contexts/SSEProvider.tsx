@@ -111,7 +111,7 @@ export function SSEProvider({ children }: { children: React.ReactNode }) {
       console.error(`[SSEProvider] Failed to subscribe ${channel} =>`, err);
     }
   }, [connected]);
-  const unsubscribedChannel = useCallback(async (channel: string) => {
+  const unsubscribeChannel = useCallback(async (channel: string) => {
     if (!subscribedChannelsRef.current.has(channel)) {
       return;
     }
