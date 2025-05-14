@@ -75,7 +75,7 @@ export function MyBadge({
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
     >
-      {icon && <span className="mr-1">{icon}</span>}
+      {/*{icon && <span className="mr-1">{icon}</span>}*/}
       <span>{title}</span>
       {showCloseOnHover && isHovered && onClose && (
         <X
