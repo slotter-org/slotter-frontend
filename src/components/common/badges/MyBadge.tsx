@@ -22,6 +22,7 @@ export function MyBadge({ icon, title, color = "#6366f1", showCloseOnHover = fal
   const borderColor = color
   const textColor = color
   const handleDragStart = (e: React.DragEvent) => {
+    e.stopPropagation()
     if (dragData) {
       e.dataTransfer.setData("text/plain", JSON.stringify(dragData))
     }
@@ -44,6 +45,7 @@ export function MyBadge({ icon, title, color = "#6366f1", showCloseOnHover = fal
     }
   }
   const handleDragEnd = () => {
+    e.stopPropagation()
     setIsDragging(false)
   }
 
