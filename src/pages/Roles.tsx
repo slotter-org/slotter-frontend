@@ -1,5 +1,5 @@
 import { RolesManagementContent } from '@/components/common/dialogs/content/RolesManagementContent'
 
-export default function RolesPage() {
+export function RolesPage() {
   return <RolesManagementContent />
 }
