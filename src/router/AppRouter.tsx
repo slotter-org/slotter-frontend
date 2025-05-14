@@ -7,6 +7,7 @@ import { RegisterPage } from '@/components/common/cards/RegisterCard';
 import { Dashboard } from '@/pages/Dashboard';
 import { Slotting } from '@/pages/Slotting';
 import { Inventory } from '@/pages/Inventory';
+import { RolesPage } from '@/pages/Roles';
 import { AppLayout } from '@/layouts/AppLayout';
 
 export function AppRouter() {
@@ -24,6 +25,7 @@ export function AppRouter() {
           <Route path="dashboard" element={<RequireAuth><Dashboard /></RequireAuth>} />
           <Route path="slotting" element={<RequireAuth><Slotting /></RequireAuth>} />
           <Route path="inventory" element={<RequireAuth><Inventory /></RequireAuth>} />
+          <Route path="roles" element={<RequireAuth><Roles /></RequireAuth>} />
         </Route>
       </Routes>
     </BrowserRouter>

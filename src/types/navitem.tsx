@@ -41,7 +41,7 @@ export const mainNav: NavItem[] = [
     key: "roles",
     label: "Roles",
     icon: <Lock />,
-    href: "roles",
+    href: "/roles",
     requiredPermission: "manage_roles",
   },
 ];
