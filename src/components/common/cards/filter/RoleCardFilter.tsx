@@ -30,7 +30,7 @@ export function RoleCardFilter({
   const [searchQuery, setSearchQuery] = useState("")
   const [categoryFilter, setCategoryFilter] = useState<string>("all")
   const [actionFilter, setActionFilter] = useState<string>("all")
-
+  
   const permissionCategories = useMemo(() => {
     const categories = new Set<string>()
     roles.forEach((role) => {
@@ -40,7 +40,7 @@ export function RoleCardFilter({
     })
     return ["all", ...Array.from(categories)]
   }, [roles])
-
+  
   const permissionActions = useMemo(() => {
     const actions = new Set<string>()
     roles.forEach((role) => {
@@ -50,17 +50,16 @@ export function RoleCardFilter({
     })
     return ["all", ...Array.from(actions)]
   }, [roles])
-
+  
   const filteredRoles = useMemo(() => {
     return roles.filter((role) => {
       const matchesSearch = searchQuery === "" || role.name.toLowerCase().includes(searchQuery.toLowerCase())
       const matchesCategory = categoryFilter === "all" || role.permissions?.some((p) => p.category === categoryFilter)
       const matchesAction = actionFilter === "all" || role.permissions?.some((p) => p.action === actionFilter)
-
       return matchesSearch && matchesCategory && matchesAction
     })
   }, [roles, searchQuery, categoryFilter, actionFilter])
-
+  
   // Sort by number of permissions (descending)
   const finalRoles = useMemo(() => {
     return [...filteredRoles].sort((a, b) => {
@@ -69,16 +68,16 @@ export function RoleCardFilter({
       return bCount - aCount
     })
   }, [filteredRoles])
-
+  
   // Log the allPermissions to verify it's being passed correctly
   console.log("RoleCardFilter received allPermissions:", {
     count: allPermissions.length,
     sample: allPermissions.slice(0, 3),
   })
-
+  
   return (
     <Card className={`${className ?? ''} h-full flex flex-col`}>
-      <CardHeader className="flex flex-row items-center justify-between">
+      <CardHeader className="flex flex-row items-center justify-between shrink-0">
         <CardTitle className="flex items-center gap-2">
           <Badge className="h-5 w-5" />
           Roles
@@ -87,9 +86,9 @@ export function RoleCardFilter({
           {finalRoles.length} of {roles.length} roles
         </div>
       </CardHeader>
-      <CardContent className="flex flex-col flex-1 overflow-hidden --6">
+      <CardContent className="flex flex-col flex-1 overflow-hidden p-6">
         {/* Search Bar */}
-        <div className="relative">
+        <div className="relative mb-4 shrink-0">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Search roles..."
@@ -98,9 +97,8 @@ export function RoleCardFilter({
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
-
         {/* Filter Dropdowns */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 shrink-0">
           {/* Category Filter */}
           <div>
             <Select value={categoryFilter} onValueChange={setCategoryFilter}>
@@ -138,10 +136,9 @@ export function RoleCardFilter({
             </Select>
           </div>
         </div>
-
         {/* Active Filters Display */}
         {(categoryFilter !== "all" || actionFilter !== "all") && (
-          <div className="flex flex-wrap gap-2 text-sm">
+          <div className="flex flex-wrap gap-2 text-sm mb-4 shrink-0">
             <span className="text-muted-foreground">Active filters:</span>
             {categoryFilter !== "all" && (
               <span className="bg-primary/10 text-primary px-2 py-0.5 rounded-md">Category: {categoryFilter}</span>
@@ -151,7 +148,6 @@ export function RoleCardFilter({
             )}
           </div>
         )}
-
         {/* Roles List */}
         <ScrollArea className="flex-1 overflow-auto pr-4">
           <div className="space-y-4">
@@ -178,4 +174,3 @@ export function RoleCardFilter({
     </Card>
   )
 }
-
