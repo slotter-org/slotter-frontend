@@ -17,6 +17,8 @@ interface MyBadgeProps {
 }
 
 export function MyBadge({
+  icon,
+  img,
   title,
   color = "#6366f1",
   showCloseOnHover = false,
