@@ -22,9 +22,7 @@ export function RolesPage() {
           />
         </div>
       </div>
-      <div className="flex-1 min-h-0">
-        <RolesManagementContent />
-      </div>
+      <RolesManagementContent />
     </div>
   ) 
 }
