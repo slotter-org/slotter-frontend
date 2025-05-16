@@ -52,7 +52,7 @@ export function UserFilterCard({ users, roles, onDragUser, className }: UserFilt
   }
   
   return (
-    <Card className={`w-full max-w-3xl ${className || ''}`}> {/* Added className prop */}
+    <Card className={`w-full max-w-3xl ${className || ''}`}>
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle>Users</CardTitle>
         <div className="text-sm text-muted-foreground flex items-center gap-1">
