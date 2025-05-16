@@ -1,8 +1,11 @@
 import React, { useState, useRef } from 'react';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 import { X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface MyBadgeProps {
+  icon?: React.ReactNode;
+  img?: string;
   title: string;
   color?: string;
   showCloseOnHover?: boolean;
@@ -76,6 +79,13 @@ export function MyBadge({
       onDragEnd={handleDragEnd}
     >
       {/*{icon && <span className="mr-1">{icon}</span>}*/}
+      {icon && !img && <span className="mr-1">{icon}</span>}
+      {img && !icon && (
+        <Avatar className="h-4 w-4 mr-1">
+          <AvatarImage src={img} alt={title} />
+          <AvatarFallback>{imgFallback || title.charAt(0)}</AvatarFallback>
+        </Avatar>
+      )}
       <span>{title}</span>
       {showCloseOnHover && isHovered && onClose && (
         <X

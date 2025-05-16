@@ -10,7 +10,7 @@ import { updateRolePermissions, deleteRole } from '@/api/RoleService';
 
 export function RolesManagementContent() {
   const { me } = useContext(MeContext)
-  const { myRoles, myPermissions, loading, error, fetchMyRoles, fetchMyPermissions } = useMyCompany()
+  const { myRoles, myPermissions, myUsers, loading, error, fetchMyRoles, fetchMyPermissions } = useMyCompany()
 
   // Update the handleSaveRolePermissions function to properly handle permission updates
   const handleSaveRolePermissions = async (roleId: string, updatedPermissions: Permission[]) => {
@@ -81,14 +81,24 @@ export function RolesManagementContent() {
   })
 
   return (
-    <div className="flex w-full h-full gap-4 mx-auto">
-      <div className="w-[40%] h-full">
-        <PermissionFilterCard
-          permissions={myPermissions}
-          onDragPermission={(p) => {
-            console.log(`[PermissionFilterCard] Dragging permission: ${p.name}`)
-          }}
-        />
+    <div className="flex w-full h-full gap-4 mx-auto overflow-hidden">
+      <div className="flex-col overflow-hidden">
+        <div className="w-[40%] h-full overflow-hidden">
+          <PermissionFilterCard
+            permissions={myPermissions}
+            onDragPermission={(p) => {
+              console.log(`[PermissionFilterCard] Dragging permission: ${p.name}`)
+            }}
+          />
+        </div>
+        <div className="w-[40%] full overflow-hidden">
+          <UserFilterCard
+            users={myUsers}
+            onDragUser={(u) => {
+              console.log(`[UserFilterCard] Dragging user: ${u.firstName} ${u.lastName}`)
+            }}
+          />
+        </div>
       </div>
 
       <div className="flex-1 h-full overflow-hidden">
