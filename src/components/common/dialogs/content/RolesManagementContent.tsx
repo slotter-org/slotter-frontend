@@ -91,7 +91,7 @@ export function RolesManagementContent() {
         />
       </div>
 
-      <div className="w-full h-full">
+      <div className="flex-1 h-full overflow-hidden">
         <RoleCardFilter
           roles={myRoles}
           onSavePermissions={handleSaveRolePermissions}
