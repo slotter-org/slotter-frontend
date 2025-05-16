@@ -153,7 +153,7 @@ export function RoleCardFilter({
         )}
 
         {/* Roles List */}
-        <ScrollArea className="pr-4">
+        <ScrollArea className="h-full pr-4">
           <div className="space-y-4">
             {finalRoles.length > 0 ? (
               finalRoles.map((role) => (
