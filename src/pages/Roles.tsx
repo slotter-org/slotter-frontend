@@ -6,7 +6,7 @@ import { useMyCompany } from '@/contexts/MyCompanyProvider'
 export function RolesPage() {
   const { fetchMyRoles } = useMyCompany()
   return (
-    <div className="flex flex-col p-4">
+    <div className="flex flex-col flex-1 p-4">
       <div className="flex justify-between items-center mb-4 w-full">
         <h1 className="text-3xl font-bold">Role & Permission Management</h1>
         <RoleCreateDialog
