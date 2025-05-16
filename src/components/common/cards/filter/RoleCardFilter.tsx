@@ -27,8 +27,6 @@ export function RoleCardFilter({
   className,
   allPermissions = [],
 }: RoleCardFilterProps) {
-  const scrollRef = useRef<HTMLDivElement>(null)
-  const [offsetTop, setOffsetTop] = useState(0)
   const [searchQuery, setSearchQuery] = useState("")
   const [categoryFilter, setCategoryFilter] = useState<string>("all")
   const [actionFilter, setActionFilter] = useState<string>("all")
@@ -155,29 +153,27 @@ export function RoleCardFilter({
         )}
 
         {/* Roles List */}
-        <div className="flex-1 overflow-hidden">
-          <ScrollArea ref={scrollRef} className="pr-4">
-            <div className="space-y-4">
-              {finalRoles.length > 0 ? (
-                finalRoles.map((role) => (
-                  <RoleCard
-                    key={role.id}
-                    role={role}
-                    onSavePermissions={onSavePermissions}
-                    onDelete={onDeleteRole}
-                    onUpdateRole={onUpdateRole}
-                    // Pass allPermissions to each RoleCard
-                    allPermissions={allPermissions}
-                  />
-                ))
-              ) : (
-                <div className="flex h-20 items-center justify-center rounded-md border border-dashed text-muted-foreground">
-                  No roles found matching your search.
-                </div>
-              )}
-            </div>
-          </ScrollArea>
-        </div>
+        <ScrollArea className="h-[600px] pr-4">
+          <div className="space-y-4">
+            {finalRoles.length > 0 ? (
+              finalRoles.map((role) => (
+                <RoleCard
+                  key={role.id}
+                  role={role}
+                  onSavePermissions={onSavePermissions}
+                  onDelete={onDeleteRole}
+                  onUpdateRole={onUpdateRole}
+                  // Pass allPermissions to each RoleCard
+                  allPermissions={allPermissions}
+                />
+              ))
+            ) : (
+              <div className="flex h-20 items-center justify-center rounded-md border border-dashed text-muted-foreground">
+                No roles found matching your search.
+              </div>
+            )}
+          </div>
+        </ScrollArea>
       </CardContent>
     </Card>
   )
