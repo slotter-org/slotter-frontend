@@ -7,8 +7,8 @@ export function RolesPage() {
   const { fetchMyRoles } = useMyCompany()
   return (
     <div className="flex flex-col p-4">
-      <div className="flex justify-between">
-        <h1 className="text-3xl font-bold mb-4">Role & Permission Management</h1>
+      <div className="flex justify-between items-center mb-4 w-full">
+        <h1 className="text-3xl font-bold">Role & Permission Management</h1>
         <RoleCreateDialog
           trigger={
             <Button variant="outline" size="sm">
