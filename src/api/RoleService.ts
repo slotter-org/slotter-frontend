@@ -58,6 +58,24 @@ export async function updateRolePermissions(req: UpdateRolePermissionsRequest): 
   return response.data;
 }
 
+//------------------------------------------------------------------
+// UPDATE (users)
+//------------------------------------------------------------------
+
+export interface UpdateRoleUsersRequest {
+  role_id: string;
+  users: User[];
+}
+
+export interface UpdateRoleUsersResponse {
+  message: string;
+}
+
+export async function updateRoleUsers(req: UpdateRoleUsersRequest): Promise<UpdateRoleUsersResponse> {
+  const response = await axiosClient.patch("/role/users", req);
+  return response.data;
+}
+
 //-------------------------------------------------------------------
 // DELETE
 //-------------------------------------------------------------------

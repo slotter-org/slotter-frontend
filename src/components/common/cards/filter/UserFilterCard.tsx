@@ -91,7 +91,6 @@ export function UserFilterCard({ users, roles, onDragUser, className }: UserFilt
             </Select>
           </div>
         </div>
-        {/* User Badges */}
         <div className="mt-4">
           <ScrollArea className="h-[300px] rounded-md border p-4">
             {filteredUsers.length > 0 ? (
@@ -101,7 +100,7 @@ export function UserFilterCard({ users, roles, onDragUser, className }: UserFilt
                     key={user.id}
                     title={`${user.firstName} ${user.lastName}`}
                     img={user.avatarURL} 
-                    imgFallback={`${user.firstName[0]}${user.lastName[0]}`} // Added fallback
+                    imgFallback={`${user.firstName[0]}${user.lastName[0]}`}
                     color="#64748b"
                     showCloseOnHover={false}
                     draggable={true}
@@ -111,12 +110,12 @@ export function UserFilterCard({ users, roles, onDragUser, className }: UserFilt
                 ))}
               </div>
             ) : (
-              <div className="flex h-full items-center justify-center text-muted-foreground">No users found.</div> {/* Fixed: 'permissions' to 'users' */}
+              <div className="flex h-full items-center justify-center text-muted-foreground">No users found.</div>
             )}
           </ScrollArea>
         </div>
         <div className="text-xs text-muted-foreground">
-          Showing {filteredUsers.length} of {users.length} users {/* Fixed: 'permissions' to 'users' */}
+          Showing {filteredUsers.length} of {users.length} users
         </div>
       </CardContent>
     </Card>
