@@ -1,8 +1,25 @@
 import { RolesManagementContent } from '@/components/common/dialogs/content/RolesManagementContent'
+import { RoleCreateDialog } from '@/components/common/dialogs/RoleCreateDialog'
+import { Button } from '@/components/ui/button'
+import { useMyCompany } from '@/contexts/MyCompanyProvider'
 
 export function RolesPage() {
+  const { fetchMyRoles } = useMyCompany()
   return (
-    <div className="p-4">
+    <div className="flex flex-col p-4">
+      <div className="flex justify-between">
+        <h1 className="text-3xl font-bold mb-4">Role & Permission Management</h1>
+        <RoleCreateDialog
+          trigger={
+            <Button variant="outline" size="sm">
+              Create
+            </Button>
+          }
+          onSuccess={() => {
+            fetchMyRoles()
+          }}
+        />
+      </div>
       <RolesManagementContent />
     </div>
   ) 
