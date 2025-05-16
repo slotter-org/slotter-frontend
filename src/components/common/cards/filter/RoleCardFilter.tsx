@@ -17,6 +17,7 @@ interface RoleCardFilterProps {
   className?: string
   // Add allPermissions prop
   allPermissions?: Permission[]
+  allUsers?: User[]
 }
 
 export function RoleCardFilter({
@@ -26,6 +27,7 @@ export function RoleCardFilter({
   onUpdateRole,
   className,
   allPermissions = [],
+  allUsers = [],
 }: RoleCardFilterProps) {
   const [searchQuery, setSearchQuery] = useState("")
   const [categoryFilter, setCategoryFilter] = useState<string>("all")
@@ -157,10 +159,12 @@ export function RoleCardFilter({
                   key={role.id}
                   role={role}
                   onSavePermissions={onSavePermissions}
+                  onSaveUsers={onSaveUsers}
                   onDelete={onDeleteRole}
                   onUpdateRole={onUpdateRole}
                   // Pass allPermissions to each RoleCard
                   allPermissions={allPermissions}
+                  allUsers={allUsers}
                 />
               ))
             ) : (

@@ -6,7 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { MyBadge } from '@/components/common/badges/MyBadge'
 import type { User } from '@/types/user'
-
+import type { Role } from '@/types/role'
 
 interface UserFilterCardProps {
   users: User[]
@@ -18,6 +18,7 @@ interface UserFilterCardProps {
 export function UserFilterCard({ users, roles, onDragUser, className }: UserFilterCardProps) {
   const [searchQuery, setSearchQuery] = useState("")
   const [roleFilter, setRoleFilter] = useState<string>("all")
+  
   const roleOptions = useMemo(() => {
     const roleMap = new Map<string, string>()
     roles.forEach((role) => {
@@ -33,6 +34,7 @@ export function UserFilterCard({ users, roles, onDragUser, className }: UserFilt
       ...Array.from(roleMap.entries()).map(([id, name]) => ({ id, name}))
     ]
   }, [roles, users])
+  
   const filteredUsers = useMemo(() => {
     return users.filter((user) => {
       const matchesSearch =
@@ -43,12 +45,14 @@ export function UserFilterCard({ users, roles, onDragUser, className }: UserFilt
       return matchesSearch && matchesRole
     })
   }, [users, searchQuery, roleFilter])
+  
   const handleDragStart = (user: User) => {
-    console.log(`[UserFilterCard] Dragging User:`, User)
+    console.log(`[UserFilterCard] Dragging user:`, user) // Fixed: 'User' to 'user'
     onDragUser?.(user)
   }
+  
   return (
-   <Card className="w-full max-w-3xl">
+    <Card className={`w-full max-w-3xl ${className || ''}`}> {/* Added className prop */}
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle>Users</CardTitle>
         <div className="text-sm text-muted-foreground flex items-center gap-1">
@@ -67,7 +71,6 @@ export function UserFilterCard({ users, roles, onDragUser, className }: UserFilt
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
-
         {/* Filters */}
         <div className="flex gap-4">
           <div className="flex-1">
@@ -97,24 +100,23 @@ export function UserFilterCard({ users, roles, onDragUser, className }: UserFilt
                   <MyBadge
                     key={user.id}
                     title={`${user.firstName} ${user.lastName}`}
-                    img={user.avatarURL}
+                    img={user.avatarURL} 
+                    imgFallback={`${user.firstName[0]}${user.lastName[0]}`} // Added fallback
                     color="#64748b"
                     showCloseOnHover={false}
                     draggable={true}
-                    // Make sure we're passing the correct ID
                     dragData={{ id: user.id }}
                     onDragStart={() => handleDragStart(user)}
                   />
                 ))}
               </div>
             ) : (
-              <div className="flex h-full items-center justify-center text-muted-foreground">No permissions found.</div>
+              <div className="flex h-full items-center justify-center text-muted-foreground">No users found.</div> {/* Fixed: 'permissions' to 'users' */}
             )}
           </ScrollArea>
         </div>
-
         <div className="text-xs text-muted-foreground">
-          Showing {filteredUsers.length} of {users.length} permissions
+          Showing {filteredUsers.length} of {users.length} users {/* Fixed: 'permissions' to 'users' */}
         </div>
       </CardContent>
     </Card>
