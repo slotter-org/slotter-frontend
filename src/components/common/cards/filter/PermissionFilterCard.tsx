@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Search, Filter, GripHorizontal } from 'lucide-react';
+import { Search, Filter, GripHorizontal, Shield } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -49,7 +49,10 @@ export function PermissionFilterCard({ permissions, onDragPermission }: Permissi
   return (
     <Card className="w-full h-full flex flex-col">
       <CardHeader className="flex flex-row items-center justify-between shrink-0">
-        <CardTitle>Permissions</CardTitle>
+        <CardTitle className="flex items-center gap-2">
+          <Shield className="h-5 w-5" />
+            Permissions
+        </CardTitle>
         <div className="text-sm text-muted-foreground flex items-center gap-1">
           <GripHorizontal className="h-4 w-4" />
           <span>Drag to assign</span>
