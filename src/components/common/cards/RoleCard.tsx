@@ -313,7 +313,7 @@ export function RoleCard({
                   <AvatarFallback>{getInitials(localRole.name)}</AvatarFallback>
                 )}
               </Avatar>
-              <div>
+              <div className="capitalize">
                 <h3 className="text-lg font-semibold">{localRole.name}</h3>
                 {localRole.description && <p className="text-sm text-muted-foreground">{localRole.description}</p>}
               </div>
