@@ -5,6 +5,7 @@ import { useMyCompany } from '@/contexts/MyCompanyProvider';
 import type { Role } from '@/types/role';
 import type { Permission } from '@/types/permission';
 import { PermissionFilterCard } from '@/components/common/cards/filter/PermissionFilterCard';
+import { UserFilterCard } from '@/components/common/cards/filter/UserFilterCard'
 import { RoleCardFilter } from '@/components/common/cards/filter/RoleCardFilter';
 import { updateRolePermissions, deleteRole } from '@/api/RoleService';
 
