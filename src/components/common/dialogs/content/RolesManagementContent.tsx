@@ -95,6 +95,7 @@ export function RolesManagementContent() {
         <div className="w-[40%] full overflow-hidden">
           <UserFilterCard
             users={myUsers}
+            roles={myRoles}
             onDragUser={(u) => {
               console.log(`[UserFilterCard] Dragging user: ${u.firstName} ${u.lastName}`)
             }}

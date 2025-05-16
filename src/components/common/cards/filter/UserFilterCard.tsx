@@ -98,7 +98,7 @@ export function UserFilterCard({ users, roles, onDragUser, className }: UserFilt
                     key={user.id}
                     title={`${user.firstName} ${user.lastName}`}
                     img={user.avatarURL}
-                    color={#64748b}
+                    color="#64748b"
                     showCloseOnHover={false}
                     draggable={true}
                     // Make sure we're passing the correct ID
