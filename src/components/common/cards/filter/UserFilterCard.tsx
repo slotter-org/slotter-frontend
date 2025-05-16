@@ -47,22 +47,22 @@ export function UserFilterCard({ users, roles, onDragUser, className }: UserFilt
   }, [users, searchQuery, roleFilter])
   
   const handleDragStart = (user: User) => {
-    console.log(`[UserFilterCard] Dragging user:`, user) // Fixed: 'User' to 'user'
+    console.log(`[UserFilterCard] Dragging user:`, user)
     onDragUser?.(user)
   }
   
   return (
-    <Card className={`w-full max-w-3xl ${className || ''}`}>
-      <CardHeader className="flex flex-row items-center justify-between">
+    <Card className={`w-full h-full flex flex-col ${className || ''}`}>
+      <CardHeader className="flex flex-row items-center justify-between shrink-0">
         <CardTitle>Users</CardTitle>
         <div className="text-sm text-muted-foreground flex items-center gap-1">
           <GripHorizontal className="h-4 w-4" />
           <span>Drag to assign</span>
         </div>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="flex flex-col flex-1 overflow-hidden p-6">
         {/* Search */}
-        <div className="relative">
+        <div className="relative mb-4 shrink-0">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Search users..."
@@ -72,7 +72,7 @@ export function UserFilterCard({ users, roles, onDragUser, className }: UserFilt
           />
         </div>
         {/* Filters */}
-        <div className="flex gap-4">
+        <div className="flex gap-4 mb-4 shrink-0">
           <div className="flex-1">
             <Select value={roleFilter} onValueChange={setRoleFilter}>
               <SelectTrigger>
@@ -91,8 +91,9 @@ export function UserFilterCard({ users, roles, onDragUser, className }: UserFilt
             </Select>
           </div>
         </div>
-        <div className="mt-4">
-          <ScrollArea className="h-[300px] rounded-md border p-4">
+        {/* User Badges */}
+        <ScrollArea className="flex-1 overflow-auto pr-4">
+          <div className="space-y-4">
             {filteredUsers.length > 0 ? (
               <div className="flex flex-wrap gap-2">
                 {filteredUsers.map((user) => (
@@ -110,11 +111,13 @@ export function UserFilterCard({ users, roles, onDragUser, className }: UserFilt
                 ))}
               </div>
             ) : (
-              <div className="flex h-full items-center justify-center text-muted-foreground">No users found.</div>
+              <div className="flex h-20 items-center justify-center rounded-md border border-dashed text-muted-foreground">
+                No users found.
+              </div>
             )}
-          </ScrollArea>
-        </div>
-        <div className="text-xs text-muted-foreground">
+          </div>
+        </ScrollArea>
+        <div className="text-xs text-muted-foreground mt-2 shrink-0">
           Showing {filteredUsers.length} of {users.length} users
         </div>
       </CardContent>

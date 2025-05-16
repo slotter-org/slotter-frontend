@@ -106,8 +106,8 @@ export function RolesManagementContent() {
   return (
     <div className="flex w-full h-full gap-4 mx-auto overflow-hidden">
       {/* Left column - 40% width */}
-      <div className="w-[40%] h-full flex flex-col overflow-hidden space-y-4">
-        <div className="flex-1 min-h-0 overflow-hidden">
+      <div className="w-[40%] h-full flex flex-col gap-4 overflow-hidden">
+        <div className="flex-1 overflow-hidden">
           <PermissionFilterCard
             permissions={myPermissions}
             onDragPermission={(p) => {
@@ -115,7 +115,7 @@ export function RolesManagementContent() {
             }}
           />
         </div>
-        <div className="flex-1 min-h-0 overflow-hidden">
+        <div className="flex-1 overflow-hidden">
           <UserFilterCard
             users={myUsers || []}
             roles={myRoles}

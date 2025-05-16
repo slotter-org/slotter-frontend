@@ -17,17 +17,17 @@ export function PermissionFilterCard({ permissions, onDragPermission }: Permissi
   const [searchQuery, setSearchQuery] = useState("")
   const [categoryFilter, setCategoryFilter] = useState<string>("all")
   const [actionFilter, setActionFilter] = useState<string>("all")
-
+  
   const categories = useMemo(() => {
     const uniqueCategories = new Set(permissions.map((p) => p.category))
     return ["all", ...Array.from(uniqueCategories)]
   }, [permissions])
-
+  
   const actions = useMemo(() => {
     const uniqueActions = new Set(permissions.map((p) => p.action))
     return ["all", ...Array.from(uniqueActions)]
   }, [permissions])
-
+  
   const filteredPermissions = useMemo(() => {
     return permissions.filter((p) => {
       const matchesSearch =
@@ -39,25 +39,25 @@ export function PermissionFilterCard({ permissions, onDragPermission }: Permissi
       return matchesSearch && matchesCategory && matchesAction
     })
   }, [permissions, searchQuery, categoryFilter, actionFilter])
-
+  
   // onDragStart callback
   const handleDragStart = (permission: Permission) => {
     console.log(`[PermissionFilterCard] Dragging permission:`, permission)
     onDragPermission?.(permission)
   }
-
+  
   return (
-    <Card className="w-full max-w-3xl">
-      <CardHeader className="flex flex-row items-center justify-between">
+    <Card className="w-full h-full flex flex-col">
+      <CardHeader className="flex flex-row items-center justify-between shrink-0">
         <CardTitle>Permissions</CardTitle>
         <div className="text-sm text-muted-foreground flex items-center gap-1">
           <GripHorizontal className="h-4 w-4" />
           <span>Drag to assign</span>
         </div>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="flex flex-col flex-1 overflow-hidden p-6">
         {/* Search */}
-        <div className="relative">
+        <div className="relative mb-4 shrink-0">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Search permissions..."
@@ -66,9 +66,8 @@ export function PermissionFilterCard({ permissions, onDragPermission }: Permissi
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
-
         {/* Filters */}
-        <div className="flex gap-4">
+        <div className="flex gap-4 mb-4 shrink-0">
           <div className="flex-1">
             <Select value={categoryFilter} onValueChange={setCategoryFilter}>
               <SelectTrigger>
@@ -104,10 +103,9 @@ export function PermissionFilterCard({ permissions, onDragPermission }: Permissi
             </Select>
           </div>
         </div>
-
         {/* Permission Badges */}
-        <div className="mt-4">
-          <ScrollArea className="h-[300px] rounded-md border p-4">
+        <ScrollArea className="flex-1 overflow-auto pr-4">
+          <div className="space-y-4">
             {filteredPermissions.length > 0 ? (
               <div className="flex flex-wrap gap-2">
                 {filteredPermissions.map((permission) => (
@@ -117,23 +115,22 @@ export function PermissionFilterCard({ permissions, onDragPermission }: Permissi
                     color={getColorForCategory(permission.category)}
                     showCloseOnHover={false}
                     draggable={true}
-                    // Make sure we're passing the correct ID
                     dragData={{ id: permission.id }}
                     onDragStart={() => handleDragStart(permission)}
                   />
                 ))}
               </div>
             ) : (
-              <div className="flex h-full items-center justify-center text-muted-foreground">No permissions found.</div>
+              <div className="flex h-20 items-center justify-center rounded-md border border-dashed text-muted-foreground">
+                No permissions found.
+              </div>
             )}
-          </ScrollArea>
-        </div>
-
-        <div className="text-xs text-muted-foreground">
+          </div>
+        </ScrollArea>
+        <div className="text-xs text-muted-foreground mt-2 shrink-0">
           Showing {filteredPermissions.length} of {permissions.length} permissions
         </div>
       </CardContent>
     </Card>
   )
 }
-
