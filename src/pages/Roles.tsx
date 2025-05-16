@@ -2,7 +2,7 @@ import { RolesManagementContent } from '@/components/common/dialogs/content/Role
 
 export function RolesPage() {
   return (
-    <div className="p-4"
+    <div className="p-4">
       <RolesManagementContent />
     </div>
   ) 
