@@ -82,7 +82,7 @@ export function RolesManagementContent() {
 
   return (
     <div className="flex w-full h-full gap-4 mx-auto">
-      <div className="w-[40%]">
+      <div className="w-[40%] h-full">
         <PermissionFilterCard
           permissions={myPermissions}
           onDragPermission={(p) => {
@@ -91,7 +91,7 @@ export function RolesManagementContent() {
         />
       </div>
 
-      <div className="w-full h-screen">
+      <div className="w-full h-full">
         <RoleCardFilter
           roles={myRoles}
           onSavePermissions={handleSaveRolePermissions}
