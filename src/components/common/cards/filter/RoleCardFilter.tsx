@@ -87,7 +87,7 @@ export function RoleCardFilter({
           {finalRoles.length} of {roles.length} roles
         </div>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="flex flex-col flex-1 overflow-hidden --6">
         {/* Search Bar */}
         <div className="relative">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -153,7 +153,7 @@ export function RoleCardFilter({
         )}
 
         {/* Roles List */}
-        <ScrollArea className="flex-1 pr-4">
+        <ScrollArea className="flex-1 overflow-auto pr-4">
           <div className="space-y-4">
             {finalRoles.length > 0 ? (
               finalRoles.map((role) => (
