@@ -79,7 +79,7 @@ export function RoleCardFilter({
   })
 
   return (
-    <Card className={`${classNam} ?? ''} h-full flex flex-col`}>
+    <Card className={`${className ?? ''} h-full flex flex-col`}>
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle className="flex items-center gap-2">
           <Badge className="h-5 w-5" />
