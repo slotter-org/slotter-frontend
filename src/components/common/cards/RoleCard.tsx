@@ -16,7 +16,7 @@ import type { User } from '@/types/user';
 import { PermissionDropZone } from '@/components/common/utils/PermissionDropZone';
 import { UserDropZone } from '@/components/common/utils/UserDropZone';
 import { cn } from '@/lib/utils';
-import { updateRoleNameDesc } from '@/api/RoleService';
+import { updateRoleNameDesc, update } from '@/api/RoleService';
 
 interface RoleCardProps {
   role: Role

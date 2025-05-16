@@ -12,7 +12,7 @@ import { updateRolePermissions, deleteRole, updateRoleUsers } from '@/api/RoleSe
 
 export function RolesManagementContent() {
   const { me } = useContext(MeContext)
-  const { myRoles, myPermissions, myUsers, loading, error, fetchMyRoles, fetchMyPermissions } = useMyCompany()
+  const { myRoles, myPermissions, myUsers, loading, error, fetchMyRoles, fetchMyPermissions, fetchMyUsers } = useMyCompany()
   
   // Update the handleSaveRolePermissions function to properly handle permission updates
   const handleSaveRolePermissions = async (roleId: string, updatedPermissions: Permission[]) => {

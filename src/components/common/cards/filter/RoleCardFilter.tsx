@@ -7,11 +7,13 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { RoleCard } from '@/components/common/cards/RoleCard';
 import type { Role } from '@/types/role';
 import type { Permission } from '@/types/permission';
+import type { User } from '@/types/user';
 import { useViewport } from '@/contexts/ViewportProvider';
 
 interface RoleCardFilterProps {
   roles: Role[]
   onSavePermissions?: (roleId: string, permissions: Permission[]) => void
+  onSaveUsers?: (roleId: string, users: User[]) => void
   onDeleteRole?: (roleId: string) => void
   onUpdateRole?: (roleId: string, newName: string, newDesc: string) => void
   className?: string
@@ -23,6 +25,7 @@ interface RoleCardFilterProps {
 export function RoleCardFilter({
   roles,
   onSavePermissions,
+  onSaveUsers,
   onDeleteRole,
   onUpdateRole,
   className,
