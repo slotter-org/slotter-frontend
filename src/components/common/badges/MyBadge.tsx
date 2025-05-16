@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils';
 interface MyBadgeProps {
   icon?: React.ReactNode;
   img?: string;
+  imgFallback?: string;
   title: string;
   color?: string;
   showCloseOnHover?: boolean;
@@ -19,6 +20,7 @@ interface MyBadgeProps {
 export function MyBadge({
   icon,
   img,
+  imgFallback,
   title,
   color = "#6366f1",
   showCloseOnHover = false,
