@@ -9,16 +9,18 @@ export function RolesPage() {
     <div className="flex flex-col flex-1 p-4">
       <div className="flex justify-between items-center mb-4 w-full">
         <h1 className="text-3xl font-bold">Role & Permission Management</h1>
-        <RoleCreateDialog
-          trigger={
-            <Button variant="outline" size="sm">
-              Create
-            </Button>
-          }
-          onSuccess={() => {
-            fetchMyRoles()
-          }}
-        />
+        <div className="ml-auto">
+          <RoleCreateDialog
+            trigger={
+              <Button variant="outline" size="sm">
+                Create
+              </Button>
+            }
+            onSuccess={() => {
+              fetchMyRoles()
+            }}
+          />
+        </div>
       </div>
       <RolesManagementContent />
     </div>
