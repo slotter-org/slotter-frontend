@@ -27,22 +27,11 @@ export function RoleCardFilter({
   className,
   allPermissions = [],
 }: RoleCardFilterProps) {
-  const { height: viewportHeight } = useViewport()
   const scrollRef = useRef<HTMLDivElement>(null)
   const [offsetTop, setOffsetTop] = useState(0)
   const [searchQuery, setSearchQuery] = useState("")
   const [categoryFilter, setCategoryFilter] = useState<string>("all")
   const [actionFilter, setActionFilter] = useState<string>("all")
-
-  useLayoutEffect(() => {
-    if (scrollRef.current) {
-      setOffsetTop(scrollRef.current.getBoundingClientRect().top)
-    }
-  }, [viewportHeight]);
-
-  const scrollHeight = viewportHeight != null
-    ? viewportHeight - offsetTop - 16
-    : undefined
 
   const permissionCategories = useMemo(() => {
     const categories = new Set<string>()
@@ -90,7 +79,7 @@ export function RoleCardFilter({
   })
 
   return (
-    <Card className={className}>
+    <Card className={`${classNam} ?? ''} h-full flex flex-col`}>
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle className="flex items-center gap-2">
           <Badge className="h-5 w-5" />
@@ -166,27 +155,29 @@ export function RoleCardFilter({
         )}
 
         {/* Roles List */}
-        <ScrollArea ref={scrollRef} className="pr-4" style={{ height: scrollHeight }}>
-          <div className="space-y-4">
-            {finalRoles.length > 0 ? (
-              finalRoles.map((role) => (
-                <RoleCard
-                  key={role.id}
-                  role={role}
-                  onSavePermissions={onSavePermissions}
-                  onDelete={onDeleteRole}
-                  onUpdateRole={onUpdateRole}
-                  // Pass allPermissions to each RoleCard
-                  allPermissions={allPermissions}
-                />
-              ))
-            ) : (
-              <div className="flex h-20 items-center justify-center rounded-md border border-dashed text-muted-foreground">
-                No roles found matching your search.
-              </div>
-            )}
-          </div>
-        </ScrollArea>
+        <div className="flex-1 overflow-hidden">
+          <ScrollArea ref={scrollRef} className="pr-4">
+            <div className="space-y-4">
+              {finalRoles.length > 0 ? (
+                finalRoles.map((role) => (
+                  <RoleCard
+                    key={role.id}
+                    role={role}
+                    onSavePermissions={onSavePermissions}
+                    onDelete={onDeleteRole}
+                    onUpdateRole={onUpdateRole}
+                    // Pass allPermissions to each RoleCard
+                    allPermissions={allPermissions}
+                  />
+                ))
+              ) : (
+                <div className="flex h-20 items-center justify-center rounded-md border border-dashed text-muted-foreground">
+                  No roles found matching your search.
+                </div>
+              )}
+            </div>
+          </ScrollArea>
+        </div>
       </CardContent>
     </Card>
   )
