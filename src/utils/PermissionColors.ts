@@ -12,3 +12,19 @@ export const getColorForCategory = (category: string): string => {
   }
 }
 
+
+export const getColorForInvitation = (status: string): string => {
+  switch (status) {
+    case "pending":
+      return "#CA8A04"
+    case "accepted":
+      return "#16A34A"
+    case "expired":
+      return "#6B7280"
+    case "canceled":
+      return "#DC2626"
+    case "rejected":
+      return "#BE185D"
+  }
+}
+
