@@ -230,10 +230,15 @@ export function MyCompanyProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!lastMessage) return;
     console.log('[MyCompanyProvider] SSE lastMessage =>', lastMessage)
-    if (me?.userType !== 'company' || !me.companyID) return;
+    if (me?.userType !== 'company' || !me.companyID) {
+      console.log('[MyCompanyProvider] skipping because user is not a "company" user');
+      return;
+    }
     const { event, channel } = lastMessage;
     const myChannel = `company:${me.companyID}`;
+    console.log('[MyCompanyProvider] myChannel=', myChannel, ' message.channel', channel);
     if (channel !== myChannel) return;
+    console.log('[MyCompanyProvider] event =>', event);
     switch (event) {
       case 'UserJoined':
       case 'UserLeft':
