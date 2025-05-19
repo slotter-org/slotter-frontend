@@ -1,6 +1,8 @@
-import { useState, useEffect } from 'react';
-import { Clock } from 'lucide-react';
-import { cn } from '@/lib/utils';
+"use client"
+
+import { useState, useEffect } from "react"
+import { Clock } from "lucide-react"
+import { cn } from "@/lib/utils"
 
 interface CountdownTimerProps {
   expiresAt: string
@@ -20,9 +22,9 @@ export function CountdownTimer({ expiresAt, onExpire, className, showIcon = true
 
   useEffect(() => {
     const calculateTimeLeft = () => {
-      const expirationDate = newDate(expiresAt)
+      const expirationDate = new Date(expiresAt)
       const now = new Date()
-      const difference = expirationDate.getTime() = now.getTime()
+      const difference = expirationDate.getTime() - now.getTime()
 
       if (difference <= 0) {
         if (!timeLeft.expired && onExpire) {
@@ -61,13 +63,15 @@ export function CountdownTimer({ expiresAt, onExpire, className, showIcon = true
 
   return (
     <div
-      className={cn("inline-flex items-center justify-center text-sm font-medium",
-      timeLeft.expired ? "text-red-600" : "text-amber-600",
-      className,
+      className={cn(
+        "inline-flex items-center justify-center text-sm font-medium",
+        timeLeft.expired ? "text-red-600 dark:text-red-400" : "text-amber-600 dark:text-amber-400",
+        className,
       )}
     >
-      {showIcon && <Clock className="mr-1.5 h-4 w-4 flex-shrink-0" />}
+      {showIcon && <Clock className="mr-1.5 h-3.5 w-3.5 flex-shrink-0" />}
       <span>{displayTime}</span>
     </div>
   )
 }
+
