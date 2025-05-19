@@ -8,6 +8,7 @@ import { Dashboard } from '@/pages/Dashboard';
 import { Slotting } from '@/pages/Slotting';
 import { Inventory } from '@/pages/Inventory';
 import { RolesPage } from '@/pages/Roles';
+import { InvitationPage } from '@/pages/Invitation';
 import { AppLayout } from '@/layouts/AppLayout';
 
 export function AppRouter() {
@@ -26,6 +27,7 @@ export function AppRouter() {
           <Route path="slotting" element={<RequireAuth><Slotting /></RequireAuth>} />
           <Route path="inventory" element={<RequireAuth><Inventory /></RequireAuth>} />
           <Route path="roles" element={<RequireAuth><RolesPage /></RequireAuth>} />
+          <Route path="invitation" element={<RequireAuth><InvitationPage /></RequireAuth>} />
         </Route>
       </Routes>
     </BrowserRouter>

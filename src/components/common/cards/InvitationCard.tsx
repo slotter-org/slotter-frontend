@@ -1,59 +1,281 @@
 import { useState } from 'react'
 import { formatDistanceToNow } from 'date-fns'
-import { Mail, Phone, CheckCircle, RefreshCw, X, AlertTriangle } from 'lucide-react'
+import { Mail, Phone, CheckCircle, RefreshCw, X, AlertTriangle, Clock } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
-import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Alert, AlertDescription } from "@/components/ui/alert"
 import { CountdownTimer } from '@/components/common/utils/CountdownTimer'
 import { MyBadge } from '@/components/common/badges/MyBadge'
+import { getColorForInvitation } from '@/utils/PermissionColors'
 import { cn } from '@/lib/utils'
 import type { Invitation } from '@/types/invitation'
-import type { Role } from '@/types/role'
 
 interface InvitationCardProps {
   invitation: Invitation
   onResend?: (invitationId: string) => void
   onCancel?: (invitationId: string) => void
   onExpire?: (invitationId: string) => void
-  allRoles?: Role[]
 }
 
-const deepClone = <T,>(obj: T): T => JSON.parse(JSON.stringify(obj))
-
-const areStatusEqual = (invitation1: Invitation, invitation2: Invitation) => {
-  if (invitiation1.status !== invitation2.status) {
-    return false
-  } else {
-    return true
-  }
-}
-
-export function InvitationCard({ invitation, onResend, onCancel, onExpire, allRoles = [] }: InvitationCardProps) {
-  const originalInvitationRef = useRef<Invitation>(deepClone(invitation))
-  const [localInvitation, setLocalInvitation] = useState<Invitation>(deepClone(invitation))
-  const [isEditingRole, setIsEditingRole] = useState(false)
-  const [selectedRole, setSelectedRole] = useState<Role>(deepClone(invitation.role || []))
+export function InvitationCard({ invitation, onResend, onCancel, onExpire }: InvitationCardProps) {
+  const [isLoading, setIsLoading] = useState(false)
   const [isStale, setIsStale] = useState(false)
+  const [localStatus, setLocalStatus] = useState<string>(invitation.status)
 
-  useEffect(() => {
-    console.log("Invitation Card received allRoles:", {
-      count: allRoles.length,
-      sample: allRoles.slice(0, 1),
-    })
-  }, [allRoles])
-
-  useEffect(() => {
-    const prev = originalInvitationRef.current
-    const incoming = invitation
-    const basicPropsChanged =
-      prev.name !== incoming.name || prev.description !== incoming.description || prev.avatarURL !== incoming.avatarURL
-    const statusChanged = !areStatusEqual(prev, incoming)
-    const roleChanged = !areRolesEqual(prev, incoming)
-
-    if (basicPropsChanged || statusChanged || roleChanged) {
-      setIsStale(true)
+  const handleResend = async () => {
+    if (!onResend) return
+    setIsLoading(true)
+    try {
+      await onResend(invitation.id)
+    } finally {
+      setIsLoading(false)
     }
-  })
+  }
+  const handleCancel = async () => {
+    if (!onCancel) return
+    setIsLoading(true)
+    try {
+      await onCancel(invitation.id)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+  const handleExpire = () => {
+    if (localStatus === "pending") {
+      setLocalStatus("expired")
+      onExpire?.(invitation.id)
+    }
+  }
+  const getInitials = (name: string) =>
+    name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase()
+      .substring(0, 2)
+  const getStatusBadge = () => {
+    const status = localStatus || invitation.status
+    const color = getColorForInvitation(status)
+    return <MyBadge title={status.charAt(0).toUpperCase() + status.slice(1)} color={color} />
+  }
+  const getInvitationTypeBadge = () => {
+    let title = ""
+    let color = "#6366f1"
+    switch (invitation.invitationType) {
+      case "join_company":
+        title = "Join Company"
+        color = "#8b5cf6"
+        break
+      case "join_wms":
+        title = "Join Wms"
+        color = "#0ea5e9"
+        break
+      case "join_wms_with_new_company":
+        title = "Join Wms With New Company"
+        color = "#14b8ac"
+        break
+    }
+    return <MyBadge title={title} color={color} />
+  }
+
+  const getTimeInfo = () => {
+    const status = localStatus || invitation.status
+    if (status === "pending" && invitation.expiresAt) {
+      return (
+        <div className="flex items-center mt-1.5">
+          <CountdownTimer expiresAt={invitation.expiresAt} onExpire={handleExpire} className="text-xs" />
+        </div>
+      )
+    }
+    if (status === "accepted" && invitation.acceptedAt) {
+      return (
+        <div className="flex items-center text-green dark:text-green-400 text-xs mt-1.5">
+          <CheckCircle className="h-3 w-3 mr-1.5" />
+          <span>Accepted {formatDistanceToNow(new Date(invitation.acceptedAt))} ago</span>
+        </div>
+      )
+    }
+    if (status === "canceled" && invitation.canceledAt) {
+      return (
+        <div className="flex items-center text-gray-600 dark:text-gray-400 text-xs mt-1.5">
+          <X className="h-3 w-3 mr-1.5" />
+          <span>Canceled {formatDistanceToNow(new Date(invitation.canceledAt))} ago</span>
+        </div>
+      )
+    }
+    if (status === "expired" && (invitation.expiredAt || invitation.expiresAt)) {
+      const expiredDate = invitation.expiredAt ? new Date(invitation.expiredAt) : new Date(invitation.expiresAt!)
+      return (
+        <div className="flex items-center text-red-600 dark:text-red-400 text-xs mt-1.5">
+          <AlertTriangle className="h-3 w-3 mr-1.5" />
+          <span>Expired {formatDistanceToNow(expiredDate)} ago</span>
+        </div>
+      )
+    }
+    if (status === "rejected" && invitation.rejectedAt) {
+      return (
+        <div className="flex items-center text-pink-600 dark:text-pink-400 text-xs mt-1.5">
+          <X className="h-3 w-3 mr-1.5" />
+          <span>Rejected {formatDistanceToNow(new Date(invitation.rejectedAt))} ago</span>
+        </div>
+      )
+    }
+    return null
+  }
+  const getActionButtons = () => {
+    const status = localStatus || invitation.status
+    if (status === "pending") {
+      return (
+        <Button
+          variant="outline"
+          size="sm"
+          className="text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:border-red-800 dark:hover:bg-red-950/30"
+          onClick={handleCancel}
+          disabled={isLoading || isStale}
+        >
+          <X className="h-3 w-3 mr-1" />
+          Cancel
+        </Button>
+      )
+    }
+    if (status === "canceled" || status === "expired" || status === "rejected") {
+      return (
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleResend}
+          disabled={isLoading || isStale}
+          className="text-blue-600 border-blue-200 hover:bg-blue-50 hover:text-blue-700 dark:text-blue-400 dark:border-blue-800 dark:hover:bg-blue-950/30"
+        >
+          <RefreshCw className="h-3 w-3 mr-1" />
+          Resend
+        </Button>
+      )
+    }
+    return null
+  }
+  const getContactInfo = () => {
+    if (invitation.email) {
+      return (
+        <div className="flex items-center text-sm text-muted-foreground mt-1">
+          <Mail className="h-3.5 w-3.5 mr-1.5 flex-shrink-0" />
+          <span className="truncate max-w-[200px]">{invitation.email}</span>
+        </div>
+      )
+    }
+    if (invitation.phoneNumber) {
+      return (
+        <div className="flex items-center text-sm text-muted-foreground mt-1">
+          <Phone className="h-3.5 w-3.5 mr-1.5 flex-shrink-0" />
+          <span>{invitation.phoneNumber}</span>
+        </div>
+      )
+    }
+    return null
+  }
+  const getCreatedInfo = () => {
+    if (invitation.createdAt) {
+      return (
+        <div className="text-xs text-muted-foreground flex items-center mt-1">
+          <Clock className="h-3 w-3 mr-1 flex-shrink-0" />
+          <span>Created {formatDistanceToNow(new Date(invitation.createdAt))} ago</span>
+        </div>
+      )
+    }
+    return null
+  }
+  const getCardBorderClass = () => {
+    const status = localStatus || invitation.status
+    if (isStale) return "border-amber-400"
+    switch (status) {
+      case "pending":
+        return "border-amber-200 dark:border-amber-800"
+      case "accepted":
+        return "border-green-200 dark:border-green-800"
+      case "canceled":
+        return "border-red-200 dark:border-red-800"
+      case "expired":
+        return "border-gray-200 dark:border-gray-800"
+      case "rejected":
+        return "border-pink-200 dark:border-pink-800"
+      default:
+        return ""
+    }
+  }
+  const getName = () => {
+    if (invitation.name) return invitation.name
+    return "Unnamed Invitation"
+  }
+  const getAvatarUrl = () => {
+    return invitation.avatarURL
+  }
+  return (
+    <Card
+      className={cn(
+        "w-full transition-all duration-200 overflow-hidden group",
+        getCardBorderClass(),
+      )}
+    >
+      {isStale && (
+        <Alert variant="warning" className="border-amber-400 bg-amber-50 dark:bg-amber-950/30 rounded-b-none">
+          <AlertTriangle className="h-4 w-4 text-amber-500" />
+          <div className="flex w-full items-center justify-between">
+            <AlertDescription className="text-amber-600 dark:text-amber-300">
+              This invitation has been updated elsewhere. Refresh to see the latest data.
+            </AlertDescription>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsStale(false)}
+              className="ml-4 border-amber-500 text-amber-700 hover:bg-amber-100 hover:text-amber-800 dark:text-amber-400 dark:hover:bg-amber-900/50"
+            >
+              <RefreshCw className="mr-2 h-4 w-4" />
+              Refresh
+            </Button>
+          </div>
+        </Alert>
+      )}
+      
+      <CardContent className="p-5">
+        <div className="flex items-start justify-between">
+          <div className="flex items-start space-x-4">
+            <Avatar className="h-12 w-12 ">
+              {getAvatarUrl() ? (
+                <AvatarImage src={getAvatarUrl() || "/placeholder.svg"} alt={getName()} />
+              ) : (
+                <AvatarFallback className="text-lg font-medium">
+                  {getName() ? getInitials(getName()) : "?"}
+                </AvatarFallback>
+              )}
+            </Avatar>
+            <div>
+              <div className="flex items-center gap-2 mb-0.5">
+                <h3 className="font-medium text-base">{getName()}</h3>
+                {getStatusBadge()}
+              </div>
+              {getContactInfo()}
+              {getTimeInfo()}
+              {getCreatedInfo()}
+            </div>
+          </div>
+
+          <div className="flex flex-col items-end space-y-2">
+            {getInvitationTypeBadge()}
+            {getActionButtons()}
+          </div>
+        </div>
+
+        {invitation.message && (
+          <div className="mt-4 text-sm text-muted-foreground border-t pt-3 border-dashed">
+            <p className="italic leading-relaxed">
+              {'"'}
+              {invitation.message}
+              {'"'}
+            </p>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  )
 }

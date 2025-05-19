@@ -1,4 +1,4 @@
-import { BarChart2, Box, Users, Settings, Share2, Lock, Package } from 'lucide-react';
+import { BarChart2, Box, Users, Settings, Share2, Lock, Package, Ticket,  } from 'lucide-react';
 
 
 export interface NavItem {
@@ -31,19 +31,19 @@ export const mainNav: NavItem[] = [
     href: "/inventory",
   },
   {
-    key: "invitations",
-    label: "Invitations",
-    icon: <Users />,
-    href: "/invitations",
-    requiredPermission: "manage_invitations",
-  },
-  {
     key: "roles",
     label: "Roles",
     icon: <Lock />,
     href: "/roles",
     requiredPermission: "manage_roles",
   },
+  {
+    key: "invitations",
+    label: "Invitations",
+    icon: <Ticket />,
+    href: "/invitations",
+    requiredPermission: "manage_invitations",
+  }
 ];
 
 
