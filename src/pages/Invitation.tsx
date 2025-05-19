@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Mail, Plus } from 'lucide-react'
 import { useMyCompany } from '@/contexts/MyCompanyProvider'
 
-export function InvitationsPage() {
+export function InvitationPage() {
   const { fetchMyInvitations } = useMyCompany()
   
   return (
