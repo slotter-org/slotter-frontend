@@ -229,6 +229,7 @@ export function MyCompanyProvider({ children }: { children: ReactNode }) {
   //---------------------------Listen to SSE events that indicate data change-------------------------
   useEffect(() => {
     if (!lastMessage) return;
+    console.log('[MyCompanyProvider] SSE lastMessage =>', lastMessage)
     if (me?.userType !== 'company' || !me.companyID) return;
     const { event, channel } = lastMessage;
     const myChannel = `company:${me.companyID}`;
@@ -266,6 +267,7 @@ export function MyCompanyProvider({ children }: { children: ReactNode }) {
       case 'InvitationDeleted':
       case 'InvitationAccepted':
       case 'InvitationExpired':
+      case 'InvitationResent':
         fetchMyInvitations();
         fetchMyUsers();
         break;
