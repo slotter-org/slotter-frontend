@@ -19,7 +19,7 @@ interface InvitationFilterCardProps {
   isLoading?: boolean
 }
 
-export function InvitationFilterCard({ invitations, onResendInvitation, onCancelInvitation, onExpireInvitation, className, isLoading = false }: InvitationFilterCardProps) {
+export function InvitationFilterCard({ invitations, onResendInvitation, onCancelInvitation, onExpireInvitation, onCreateInvitation, className, isLoading = false }: InvitationFilterCardProps) {
   const [searchQuery, setSearchQuery] = useState("")
   const [statusFilter, setStatusFilter] = useState<string>("all")
   const [typeFilter, setTypeFilter] = useState<string>("all")
