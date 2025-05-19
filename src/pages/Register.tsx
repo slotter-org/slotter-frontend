@@ -104,7 +104,7 @@ export function RegisterPage() {
     try {
       setIsLoading(true);
       
-      // Determine which email to use for login redirect
+      // Determine which email to use for login redirect and registration
       const emailToUse = invitation?.email || email;
       
       if (invitation && token) {
@@ -114,12 +114,9 @@ export function RegisterPage() {
           first_name: formData.firstName,
           last_name: formData.lastName,
           password: formData.password,
+          // Always include the email in the payload, whether from invitation or user input
+          email: emailToUse
         };
-        
-        // Add email if not provided in invitation
-        if (!invitation.email) {
-          registerData.email = email;
-        }
         
         // Add company name if invitation type is join_wms_with_new_company
         if (invitation.invitationType === "join_wms_with_new_company") {
