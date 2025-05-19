@@ -19,7 +19,6 @@ export interface RegisterData {
 export interface RegisterWithInvitationData {
   token: string;
   email?: string;
-  phone_number?: string;
   first_name: string;
   last_name: string;
   password: string;
