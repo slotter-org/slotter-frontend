@@ -234,7 +234,7 @@ export function MyCompanyProvider({ children }: { children: ReactNode }) {
       console.log('[MyCompanyProvider] skipping because user is not a "company" user');
       return;
     }
-    const { event, channel } = lastMessage;
+    const { event, channel, data } = lastMessage;
     const myChannel = `company:${me.companyID}`;
     console.log('[MyCompanyProvider] myChannel=', myChannel, ' message.channel', channel);
     if (channel !== myChannel) return;

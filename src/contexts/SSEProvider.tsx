@@ -12,6 +12,7 @@ import SSEService from '@/api/SSEService';
 export interface SSEMessage {
   event: string;
   channel: string;
+  data?: any;
 }
 
 export interface SSEContentValue {
@@ -75,13 +76,13 @@ export function SSEProvider({ children }: { children: React.ReactNode }) {
       console.error('[SSEProvider] onerror =>', err);
       setConnected(false);
       SSEService.close();
-      scheduleRetry(3000);
+      scheduleRetry(1000);
     });
     SSEService.onMessage((evt) => {
       try {
         const parsed = JSON.parse(evt.data);
         console.log(evt.data);
-        setLastMessage({ event: parsed.event, channel: parsed.channel });
+        setLastMessage({ event: parsed.event, channel: parsed.channel, data: parsed.data });
       } catch (error) {
         console.warn('[SSEProvider] Failed to parse SSE data =>', evt.data, error);
       }
