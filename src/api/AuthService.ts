@@ -16,6 +16,20 @@ export interface RegisterData {
   wms_id?: string;
 }
 
+export interface RegisterWithInvitationData {
+  token: string;
+  email?: string;
+  phone_number?: string;
+  first_name: string;
+  last_name: string;
+  password: string;
+  new_company_name?: string;
+}
+
+export interface RegisterWithInvitationResponse {
+  message: string;
+}
+
 export interface LoginRefreshResponse {
   access_token: string;
   refresh_token: string;
@@ -29,6 +43,11 @@ export async function loginUser(creds: AuthCredentials): Promise<LoginRefreshRes
 
 export async function registerUser(data: RegisterData) {
   const response = await axiosClient.post('/register', data);
+  return response.data;
+}
+
+export async function registerWithInvitation(data: RegisterWithInvitationData): Promise<RegisterWithInvitationResponse> {
+  const response = await axiosClient.post('/invitation/register', data);
   return response.data;
 }
 
