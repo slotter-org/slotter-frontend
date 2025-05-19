@@ -57,7 +57,6 @@ export function RolesManagementContent() {
     try {
       await deleteRole({ role_id: roleId })
       // Refresh roles after deletion
-      fetchMyRoles()
     } catch (error) {
       console.error("[handleDeleteRole] Error:", error)
     }
@@ -66,7 +65,6 @@ export function RolesManagementContent() {
   const handleUpdateRole = (roleId: string, newName: string, newDesc: string) => {
     // The actual API call is handled in the RoleCard component
     // We just need to refresh the roles after update
-    fetchMyRoles()
   }
   
   // If loading or no data, show loading state

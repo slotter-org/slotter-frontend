@@ -22,7 +22,7 @@ export function InvitationPage() {
               </Button>
             }
             onSuccess={() => {
-              fetchMyInvitations()
+
             }}
           />
         </div>

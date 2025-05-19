@@ -188,6 +188,139 @@ export function MyCompanyProvider({ children }: { children: ReactNode }) {
     }
   }, [me?.companyID]);
 
+  const mergeCompany = useCallback((updated: Company) => {
+    setMyCompany((old) => {
+      if (!old) return updated;
+      return updated;
+    });
+  }, []);
+  const mergeWarehouse = useCallback((wh: Warehouse) => {
+    setMyWarehouses((old) => {
+      if (!old) return [wh];
+      const index = old.findIndex((x) => x.id === wh.id);
+      if (index < 0) {
+        return [...old, wh];
+      }
+      const clone = [...old];
+      clone[index] = { ...clone[index], ...wh };
+      return clone;
+    });
+  }, []);
+  const removeWarehouse = useCallback((id: string) => {
+    setMyWarehouses((old) => old?.filter((w) => w.id !== id) || null);
+  }, []);
+  const mergeUser = useCallback((u: User) => {
+    setMyUsers((old) => {
+      if (!old) return [u];
+      const index = old.findIndex((x) => x.id === u.id);
+      if (index < 0) {
+        return [...old, u];
+      }
+      const clone = [...old];
+      clone[index] = { ...clone[index], ...u };
+      return clone;
+    });
+  }, []);
+  const removeUser = useCallback((id: string) => {
+    setMyUsers((old) => old?.filter((u) => u.id !== id) || null);
+  }, []);
+  const mergeRole = useCallback((r: Role) => {
+    setMyRoles((old) => {
+      if (!old) return [r];
+      const index = old.findIndex((x) => x.id === r.id);
+      if (index < 0) {
+        return [...old, r];
+      }
+      const clone = [...old];
+      clone[index] = { ...clone[index], ...r };
+      return clone;
+    });
+  }, []);
+  const removeRole = useCallback((id: string) => {
+    setMyRoles((old) => old?.filter((r) => r.id !== id) || null);
+  }, []);
+  const mergeInvitation = useCallback((inv: Invitation) => {
+    setMyInvitations((old) => {
+      if (!old) return [inv];
+      const index = old.findIndex((x) => x.id === inv.id);
+      if (index < 0) {
+        return [...old, inv];
+      }
+      const clone = [...old];
+      clone[index] = { ...clone[index], ...inv };
+      return clone
+    });
+  }, []);
+  const removeInvitation = useCallback((id: string) => {
+    setMyInvitations((old) => old?.filter((i) => i.id !== id) || null);
+  }, []);
+
+  const eventHandlers: Record<string, (payload: any) => void> = {
+    CompanyNameChanged: (co) => {
+      mergeCompany(co);
+    },
+    CompanyAvatarUpdated: (co) => {
+      mergeCompany(co);
+    },
+    CompanyDeleted: () => {
+      setMyCompany(null);
+    },
+    WarehouseCreated: (wh) => {
+      mergeWarehouse(wh);
+    },
+    WarehouseNameChanged: (wh) => {
+      mergeWarehouse(wh);
+    },
+    WarehouseDeleted: (wh) => {
+      removeWarehouse(wh.id);
+    },
+    UserJoined: (u) => {
+      mergeUser(u);
+    },
+    UserLeft: (u) => {
+      removeUser(u.id);
+    },
+    UserAvatarUpdated: (u) => {
+      mergeUser(u);
+    },
+    UserNameChanged: (u) => {
+      mergeUser(u);
+    },
+    UserRoleUpdated: (u) => {
+      mergeUser(u);
+    },
+    RoleCreated: (r) => {
+      mergeRole(r);
+    },
+    RoleUpdated: (r) => {
+      mergeRole(r);
+    },
+    RoleDeleted: (r) => {
+      removeRole(r.id);
+    },
+    RoleAssignmentChanged: (r) => {
+      mergeRole(r);
+    },
+    InvitationCreated: (inv) => {
+      mergeInvitation(inv);
+    },
+    InvitationCanceled: (inv) => {
+      mergeInvitation(inv);
+    },
+    InvitationDeleted: (inv) => {
+      removeInvitation(inv.id);
+    },
+    InvitationAccepted: (inv) => {
+      mergeInvitation(inv);
+    },
+    InvitationExpired: (inv) => {
+      mergeInvitation(inv);
+    },
+    InvitationResent: (inv) => {
+      mergeInvitation(inv);
+    },
+  };
+
   //-----------------------------Subscribe to "company" channel once--------------------------------
   useEffect(() => {
     if (!connected) return;
@@ -239,62 +372,13 @@ export function MyCompanyProvider({ children }: { children: ReactNode }) {
     console.log('[MyCompanyProvider] myChannel=', myChannel, ' message.channel', channel);
     if (channel !== myChannel) return;
     console.log('[MyCompanyProvider] event =>', event);
-    switch (event) {
-      case 'UserJoined':
-      case 'UserLeft':
-      case 'UserAvatarUpdated':
-      case 'UserNameChanged':
-        fetchMyUsers();
-        break;
-      case 'CompanyAvatarUpdated':
-      case 'CompanyNameChanged':
-      case 'CompanyDeleted':
-        fetchMyCompany();
-        break;
-      case 'WarehouseCreated':
-      case 'WarehouseDeleted':
-      case 'WarehouseNameChanged':
-        fetchMyWarehouses();
-        break;
-      case 'UserRoleUpdated':
-        fetchMyUsers();
-        fetchMyRoles();
-        break;
-      case 'RoleCreated':
-      case 'RoleUpdated':
-      case 'RoleDeleted':
-      case 'RoleAssignmentChanged':
-        fetchMyRoles();
-        fetchMyUsers();
-        break;
-      case 'InvitationCreated':
-        fetchMyInvitations();
-      case 'InvitationCanceled':
-        fetchMyInvitations();
-      case 'InvitationDeleted':
-        fetchMyInvitations();
-      case 'InvitationAccepted':
-        fetchMyInvitations();
-        fetchMyUsers();
-      case 'InvitationExpired':
-        fetchMyInvitations();
-      case 'InvitationResent':
-        fetchMyInvitations();
-        fetchMyUsers();
-        break;
-      default:
-        break;
+    const handler = eventHandlers[event];
+    if (handler) {
+      handler(data);
+    } else {
+      console.log('[MyCompanyProvider] unhandled event =>', event, data);
     }
-  }, [
-      lastMessage,
-      me?.userType,
-      me?.companyID,
-      fetchMyCompany,
-      fetchMyWarehouses,
-      fetchMyUsers,
-      fetchMyRoles,
-      fetchMyInvitations,
-    ]);
+  }, [lastMessage, me?.userType, me?.companyID, eventHandlers]);
   
   const value: MyCompanyContextValue = {
     myCompany,
