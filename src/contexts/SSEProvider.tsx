@@ -15,7 +15,7 @@ export interface SSEMessage {
   data?: any;
 }
 
-export interface SSEContentValue {
+export interface SSEContextValue {
   connected: boolean;
   lastMessage: SSEMessage | null;
   subscribeChannel: (channel: string) => Promise<void>;
