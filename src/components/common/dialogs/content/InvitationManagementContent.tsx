@@ -33,7 +33,6 @@ export function InvitationManagementContent() {
         invitation_id: invitationId
       });
       console.log("Invitation canceled successfully, refreshing invitations");
-      fetchMyInvitations();
     } catch (error) {
       console.error("[handleCancelInvitation] Error:", error);
     }
@@ -47,7 +46,6 @@ export function InvitationManagementContent() {
         invitation_id: invitationId
       });
       console.log("Invitation marked as expired successfully, refreshing invitations");
-      fetchMyInvitations();
     } catch (error) {
       console.error("[handleExpireInvitation] Error:", error);
     }
