@@ -119,31 +119,4 @@ export function InvitationManagementContent() {
     </div>
   );
 }
-This component:
 
-Gets invitations from your company context
-Provides handlers for resending, canceling, and expiring invitations
-Provides a handler for creating new invitations (you would expand this to show a dialog)
-Displays only the InvitationFilterCard, taking up the full width of the container
-Shows appropriate loading, error, and empty states
-Includes commented code for a potential invitation creation dialog
-
-You can use this component in a page similar to how you're using RolesManagementContent:
-jsximport { InvitationManagementContent } from '@/components/common/content/InvitationManagementContent';
-import { Button } from '@/components/ui/button';
-import { useMyCompany } from '@/contexts/MyCompanyProvider';
-
-export function InvitationsPage() {
-  const { fetchMyInvitations } = useMyCompany();
-  
-  return (
-    <div className="flex flex-col h-full p-4 overflow-hidden">
-      <div className="flex justify-between items-center mb-4 w-full shrink-0">
-        <h1 className="text-3xl font-bold">Invitation Management</h1>
-      </div>
-      <div className="flex-1 overflow-hidden">
-        <InvitationManagementContent />
-      </div>
-    </div>
-  );
-}
