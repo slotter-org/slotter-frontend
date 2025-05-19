@@ -14,6 +14,7 @@ interface InvitationFilterCardProps {
   onResendInvitation?: (invitationId: string) => Promise<void>
   onCancelInvitation?: (invitationId: string) => Promise<void>
   onExpireInvitation?: (invitationId: string) => Promise<void>
+  onCreateInvitation?: (invitationId: string) => Promise<void>
   className?: string
   isLoading?: boolean
 }
