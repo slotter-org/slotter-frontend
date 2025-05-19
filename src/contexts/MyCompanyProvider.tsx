@@ -195,17 +195,14 @@ export function MyCompanyProvider({ children }: { children: ReactNode }) {
   // ------------------------------ Merge Helpers with Bail-out --------------------------------------
 
   const mergeCompany = useCallback((incoming: Company) => {
-    setMyCompany(old => {
-      if (
-        old &&
-        old.id === incoming.id &&
-        old.name === incoming.name &&
-        old.avatarURL === incoming.avatarURL
-      ) {
-        return old; // no change
-      }
-      return incoming;
-    });
+    setMyCompany(old =>
+      old &&
+      old.id === incoming.id &&
+      old.name === incoming.name &&
+      old.avatarURL === incoming.avatarURL
+        ? old
+        : incoming
+    );
   }, []);
 
   const mergeWarehouse = useCallback((incoming: Warehouse) => {
@@ -224,6 +221,10 @@ export function MyCompanyProvider({ children }: { children: ReactNode }) {
       next[idx] = { ...existing, ...incoming };
       return next;
     });
+  }, []);
+
+  const removeWarehouse = useCallback((id: string) => {
+    setMyWarehouses(old => old?.filter(w => w.id !== id) || null);
   }, []);
 
   const mergeUser = useCallback((incoming: User) => {
@@ -246,13 +247,16 @@ export function MyCompanyProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
+  const removeUser = useCallback((id: string) => {
+    setMyUsers(old => old?.filter(u => u.id !== id) || null);
+  }, []);
+
   const mergeRole = useCallback((incoming: Role) => {
     setMyRoles(old => {
       if (!old) return [incoming];
       const idx = old.findIndex(r => r.id === incoming.id);
       if (idx === -1) return [...old, incoming];
       const existing = old[idx];
-      // shallow compare some key fields + length of arrays
       if (
         existing.name === incoming.name &&
         existing.description === incoming.description &&
@@ -297,31 +301,31 @@ export function MyCompanyProvider({ children }: { children: ReactNode }) {
   // ------------------------------ Memoized SSE Handlers --------------------------------------
 
   const eventHandlers = useMemo(() => ({
-    CompanyNameChanged: mergeCompany,
-    CompanyAvatarUpdated: mergeCompany,
-    CompanyDeleted: () => setMyCompany(null),
+    CompanyNameChanged:       mergeCompany,
+    CompanyAvatarUpdated:     mergeCompany,
+    CompanyDeleted:           () => setMyCompany(null),
 
-    WarehouseCreated: mergeWarehouse,
-    WarehouseNameChanged: mergeWarehouse,
-    WarehouseDeleted: (w: Warehouse) => removeWarehouse(w.id),
+    WarehouseCreated:         mergeWarehouse,
+    WarehouseNameChanged:     mergeWarehouse,
+    WarehouseDeleted:         (w: Warehouse) => removeWarehouse(w.id),
 
-    UserJoined: mergeUser,
-    UserLeft: (u: User) => removeUser(u.id),
-    UserAvatarUpdated: mergeUser,
-    UserNameChanged: mergeUser,
-    UserRoleUpdated: mergeUser,
+    UserJoined:               mergeUser,
+    UserLeft:                 (u: User) => removeUser(u.id),
+    UserAvatarUpdated:        mergeUser,
+    UserNameChanged:          mergeUser,
+    UserRoleUpdated:          mergeUser,
 
-    RoleCreated: mergeRole,
-    RoleUpdated: mergeRole,
-    RoleDeleted: (r: Role) => removeRole(r.id),
-    RoleAssignmentChanged: mergeRole,
+    RoleCreated:              mergeRole,
+    RoleUpdated:              mergeRole,
+    RoleDeleted:              (r: Role) => removeRole(r.id),
+    RoleAssignmentChanged:    mergeRole,
 
-    InvitationCreated: mergeInvitation,
-    InvitationCanceled: mergeInvitation,
-    InvitationDeleted: (i: Invitation) => removeInvitation(i.id),
-    InvitationAccepted: mergeInvitation,
-    InvitationExpired: mergeInvitation,
-    InvitationResent: mergeInvitation,
+    InvitationCreated:        mergeInvitation,
+    InvitationCanceled:       mergeInvitation,
+    InvitationDeleted:        (i: Invitation) => removeInvitation(i.id),
+    InvitationAccepted:       mergeInvitation,
+    InvitationExpired:        mergeInvitation,
+    InvitationResent:         mergeInvitation,
   }), [
     mergeCompany,
     mergeWarehouse, removeWarehouse,
@@ -379,18 +383,14 @@ export function MyCompanyProvider({ children }: { children: ReactNode }) {
       JSON.stringify(lastMessage.data ?? {})
     ].join('|');
 
-    if (key === lastProcessedRef.current) {
-      return; // already handled
-    }
+    if (key === lastProcessedRef.current) return;
     lastProcessedRef.current = key;
 
     const myChannel = `company:${me.companyID}`;
     if (lastMessage.channel !== myChannel) return;
 
     const handler = (eventHandlers as Record<string, any>)[lastMessage.event];
-    if (handler) {
-      handler(lastMessage.data);
-    }
+    if (handler) handler(lastMessage.data);
   }, [lastMessage, me?.userType, me?.companyID, eventHandlers]);
 
   const value: MyCompanyContextValue = {
