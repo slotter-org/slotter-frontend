@@ -268,10 +268,16 @@ export function MyCompanyProvider({ children }: { children: ReactNode }) {
         fetchMyUsers();
         break;
       case 'InvitationCreated':
+        fetchMyInvitations();
       case 'InvitationCanceled':
+        fetchMyInvitations();
       case 'InvitationDeleted':
+        fetchMyInvitations();
       case 'InvitationAccepted':
+        fetchMyInvitations();
+        fetchMyUsers();
       case 'InvitationExpired':
+        fetchMyInvitations();
       case 'InvitationResent':
         fetchMyInvitations();
         fetchMyUsers();
