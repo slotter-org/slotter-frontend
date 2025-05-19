@@ -80,6 +80,7 @@ export function SSEProvider({ children }: { children: React.ReactNode }) {
     SSEService.onMessage((evt) => {
       try {
         const parsed = JSON.parse(evt.data);
+        console.log(evt.data);
         setLastMessage({ event: parsed.event, channel: parsed.channel });
       } catch (error) {
         console.warn('[SSEProvider] Failed to parse SSE data =>', evt.data, error);
