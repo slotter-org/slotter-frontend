@@ -1,10 +1,9 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { formatDistanceToNow } from 'date-fns'
 import { Mail, Phone, CheckCircle, RefreshCw, X, AlertTriangle, Clock } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Alert, AlertDescription } from "@/components/ui/alert"
 import { CountdownTimer } from '@/components/common/utils/CountdownTimer'
 import { MyBadge } from '@/components/common/badges/MyBadge'
 import { getColorForInvitation } from '@/utils/PermissionColors'
@@ -18,89 +17,50 @@ interface InvitationCardProps {
   onExpire?: (invitationId: string) => void
 }
 
-// Deep clone helper for comparing current and previous states
-const deepClone = <T,>(obj: T): T => JSON.parse(JSON.stringify(obj))
-
 export function InvitationCard({ invitation, onResend, onCancel, onExpire }: InvitationCardProps) {
-  const originalInvitationRef = useRef<Invitation>(deepClone(invitation))
-  const [localInvitation, setLocalInvitation] = useState<Invitation>(deepClone(invitation))
   const [isLoading, setIsLoading] = useState(false)
-  const [isStale, setIsStale] = useState(false)
-
-  // Effect to detect changes from props and update local state
+  
+  // Reset loading state when invitation props change
   useEffect(() => {
-    const prev = originalInvitationRef.current
-    const incoming = invitation
-    
-    // Check if important properties have changed
-    const statusChanged = prev.status !== incoming.status
-    const canceledAtChanged = prev.canceledAt !== incoming.canceledAt
-    const basicPropsChanged = 
-      prev.name !== incoming.name || 
-      prev.email !== incoming.email || 
-      prev.expiresAt !== incoming.expiresAt ||
-      prev.expiredAt !== incoming.expiredAt ||
-      prev.acceptedAt !== incoming.acceptedAt ||
-      prev.rejectedAt !== incoming.rejectedAt
-    
-    if (statusChanged || canceledAtChanged || basicPropsChanged) {
-      if (isLoading) {
-        // We're in the middle of an operation, just mark as stale
-        setIsStale(true)
-      } else {
-        // Not doing anything, update our state
-        setLocalInvitation(deepClone(incoming))
-        originalInvitationRef.current = deepClone(incoming)
-        setIsStale(false)
-      }
-    }
-  }, [invitation, isLoading])
-
+    setIsLoading(false)
+  }, [invitation.status])
+  
   const handleResend = async () => {
     if (!onResend) return
     setIsLoading(true)
     try {
       await onResend(invitation.id)
-      // Don't update state here - wait for the prop change to trigger the effect
+      // Loading state will be reset by the useEffect when props change
     } catch (error) {
       console.error("Error resending invitation:", error)
       setIsLoading(false)
     }
   }
-
+  
   const handleCancel = async () => {
     if (!onCancel) return
     setIsLoading(true)
     try {
       await onCancel(invitation.id)
-      // Don't update state here - wait for the prop change to trigger the effect
+      // Loading state will be reset by the useEffect when props change
     } catch (error) {
       console.error("Error canceling invitation:", error)
       setIsLoading(false)
     }
   }
-
+  
   const handleExpire = () => {
     if (!onExpire) return
     setIsLoading(true)
     try {
       onExpire?.(invitation.id)
-      // Don't update state here - wait for the prop change to trigger the effect
+      // Loading state will be reset by the useEffect when props change
     } catch (error) {
       console.error("Error expiring invitation:", error)
       setIsLoading(false)
     }
   }
-
-  // Update local state if stale but not loading
-  const handleRefresh = () => {
-    if (isStale && !isLoading) {
-      setLocalInvitation(deepClone(invitation))
-      originalInvitationRef.current = deepClone(invitation)
-      setIsStale(false)
-    }
-  }
-
+  
   const getInitials = (name: string) =>
     name
       .split(" ")
@@ -108,17 +68,17 @@ export function InvitationCard({ invitation, onResend, onCancel, onExpire }: Inv
       .join("")
       .toUpperCase()
       .substring(0, 2)
-
+      
   const getStatusBadge = () => {
-    const status = localInvitation.status
+    const status = invitation.status
     const color = getColorForInvitation(status)
     return <MyBadge title={status.charAt(0).toUpperCase() + status.slice(1)} color={color} />
   }
-
+  
   const getInvitationTypeBadge = () => {
     let title = ""
     let color = "#6366f1"
-    switch (localInvitation.invitationType) {
+    switch (invitation.invitationType) {
       case "join_company":
         title = "Join Company"
         color = "#8b5cf6"
@@ -134,34 +94,34 @@ export function InvitationCard({ invitation, onResend, onCancel, onExpire }: Inv
     }
     return <MyBadge title={title} color={color} />
   }
-
+  
   const getTimeInfo = () => {
-    const status = localInvitation.status
-    if (status === "pending" && localInvitation.expiresAt) {
+    const status = invitation.status
+    if (status === "pending" && invitation.expiresAt) {
       return (
         <div className="flex items-center mt-1.5">
-          <CountdownTimer expiresAt={localInvitation.expiresAt} onExpire={handleExpire} className="text-xs" />
+          <CountdownTimer expiresAt={invitation.expiresAt} onExpire={handleExpire} className="text-xs" />
         </div>
       )
     }
-    if (status === "accepted" && localInvitation.acceptedAt) {
+    if (status === "accepted" && invitation.acceptedAt) {
       return (
         <div className="flex items-center text-green dark:text-green-400 text-xs mt-1.5">
           <CheckCircle className="h-3 w-3 mr-1.5" />
-          <span>Accepted {formatDistanceToNow(new Date(localInvitation.acceptedAt))} ago</span>
+          <span>Accepted {formatDistanceToNow(new Date(invitation.acceptedAt))} ago</span>
         </div>
       )
     }
-    if (status === "canceled" && localInvitation.canceledAt) {
+    if (status === "canceled" && invitation.canceledAt) {
       return (
         <div className="flex items-center text-gray-600 dark:text-gray-400 text-xs mt-1.5">
           <X className="h-3 w-3 mr-1.5" />
-          <span>Canceled {formatDistanceToNow(new Date(localInvitation.canceledAt))} ago</span>
+          <span>Canceled {formatDistanceToNow(new Date(invitation.canceledAt))} ago</span>
         </div>
       )
     }
-    if (status === "expired" && (localInvitation.expiredAt || localInvitation.expiresAt)) {
-      const expiredDate = localInvitation.expiredAt ? new Date(localInvitation.expiredAt) : new Date(localInvitation.expiresAt!)
+    if (status === "expired" && (invitation.expiredAt || invitation.expiresAt)) {
+      const expiredDate = invitation.expiredAt ? new Date(invitation.expiredAt) : new Date(invitation.expiresAt!)
       return (
         <div className="flex items-center text-red-600 dark:text-red-400 text-xs mt-1.5">
           <AlertTriangle className="h-3 w-3 mr-1.5" />
@@ -169,19 +129,19 @@ export function InvitationCard({ invitation, onResend, onCancel, onExpire }: Inv
         </div>
       )
     }
-    if (status === "rejected" && localInvitation.rejectedAt) {
+    if (status === "rejected" && invitation.rejectedAt) {
       return (
         <div className="flex items-center text-pink-600 dark:text-pink-400 text-xs mt-1.5">
           <X className="h-3 w-3 mr-1.5" />
-          <span>Rejected {formatDistanceToNow(new Date(localInvitation.rejectedAt))} ago</span>
+          <span>Rejected {formatDistanceToNow(new Date(invitation.rejectedAt))} ago</span>
         </div>
       )
     }
     return null
   }
-
+  
   const getActionButtons = () => {
-    const status = localInvitation.status
+    const status = invitation.status
     if (status === "pending") {
       return (
         <Button
@@ -189,7 +149,7 @@ export function InvitationCard({ invitation, onResend, onCancel, onExpire }: Inv
           size="sm"
           className="text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:border-red-800 dark:hover:bg-red-950/30"
           onClick={handleCancel}
-          disabled={isLoading || isStale}
+          disabled={isLoading}
         >
           <X className="h-3 w-3 mr-1" />
           Cancel
@@ -202,7 +162,7 @@ export function InvitationCard({ invitation, onResend, onCancel, onExpire }: Inv
           variant="outline"
           size="sm"
           onClick={handleResend}
-          disabled={isLoading || isStale}
+          disabled={isLoading}
           className="text-blue-600 border-blue-200 hover:bg-blue-50 hover:text-blue-700 dark:text-blue-400 dark:border-blue-800 dark:hover:bg-blue-950/30"
         >
           <RefreshCw className="h-3 w-3 mr-1" />
@@ -212,47 +172,46 @@ export function InvitationCard({ invitation, onResend, onCancel, onExpire }: Inv
     }
     return null
   }
-
+  
   const getContactInfo = () => {
-    if (localInvitation.email) {
+    if (invitation.email) {
       return (
         <div className="flex items-center text-sm text-muted-foreground mt-1">
           <Mail className="h-3.5 w-3.5 mr-1.5 flex-shrink-0" />
-          <span className="truncate max-w-[200px]">{localInvitation.email}</span>
+          <span className="truncate max-w-[200px]">{invitation.email}</span>
         </div>
       )
     }
-    if (localInvitation.phoneNumber) {
+    if (invitation.phoneNumber) {
       return (
         <div className="flex items-center text-sm text-muted-foreground mt-1">
           <Phone className="h-3.5 w-3.5 mr-1.5 flex-shrink-0" />
-          <span>{localInvitation.phoneNumber}</span>
+          <span>{invitation.phoneNumber}</span>
         </div>
       )
     }
     return null
   }
-
+  
   const getCreatedInfo = () => {
-    if (localInvitation.createdAt) {
+    if (invitation.createdAt) {
       return (
         <div className="text-xs text-muted-foreground flex items-center mt-1">
           <Clock className="h-3 w-3 mr-1 flex-shrink-0" />
-          <span>Created {formatDistanceToNow(new Date(localInvitation.createdAt))} ago</span>
+          <span>Created {formatDistanceToNow(new Date(invitation.createdAt))} ago</span>
         </div>
       )
     }
     return null
   }
-
+  
   const getCardBorderClass = () => {
-    const status = localInvitation.status
-    if (isStale) return "border-amber-400"
+    const status = invitation.status
     switch (status) {
       case "pending":
         return "border-amber-200 dark:border-amber-800"
       case "accepted":
-        return "border-green-200 dark:border-green-800"
+        return "border-green-200 dark:border-green-800" 
       case "canceled":
         return "border-red-200 dark:border-red-800"
       case "expired":
@@ -263,16 +222,16 @@ export function InvitationCard({ invitation, onResend, onCancel, onExpire }: Inv
         return ""
     }
   }
-
+  
   const getName = () => {
-    if (localInvitation.name) return localInvitation.name
+    if (invitation.name) return invitation.name
     return "Unnamed Invitation"
   }
-
+  
   const getAvatarUrl = () => {
-    return localInvitation.avatarURL
+    return invitation.avatarURL
   }
-
+  
   return (
     <Card
       className={cn(
@@ -280,26 +239,6 @@ export function InvitationCard({ invitation, onResend, onCancel, onExpire }: Inv
         getCardBorderClass(),
       )}
     >
-      {isStale && (
-        <Alert variant="warning" className="border-amber-400 bg-amber-50 dark:bg-amber-950/30 rounded-b-none">
-          <AlertTriangle className="h-4 w-4 text-amber-500" />
-          <div className="flex w-full items-center justify-between">
-            <AlertDescription className="text-amber-600 dark:text-amber-300">
-              This invitation has been updated elsewhere. Refresh to see the latest data.
-            </AlertDescription>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleRefresh}
-              className="ml-4 border-amber-500 text-amber-700 hover:bg-amber-100 hover:text-amber-800 dark:text-amber-400 dark:hover:bg-amber-900/50"
-            >
-              <RefreshCw className="mr-2 h-4 w-4" />
-              Refresh
-            </Button>
-          </div>
-        </Alert>
-      )}
-      
       <CardContent className="p-5">
         <div className="flex items-start justify-between">
           <div className="flex items-start space-x-4">
@@ -327,11 +266,11 @@ export function InvitationCard({ invitation, onResend, onCancel, onExpire }: Inv
             {getActionButtons()}
           </div>
         </div>
-        {localInvitation.message && (
+        {invitation.message && (
           <div className="mt-4 text-sm text-muted-foreground border-t pt-3 border-dashed">
             <p className="italic leading-relaxed">
               {'"'}
-              {localInvitation.message}
+              {invitation.message}
               {'"'}
             </p>
           </div>
