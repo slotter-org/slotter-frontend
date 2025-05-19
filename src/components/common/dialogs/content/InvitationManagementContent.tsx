@@ -88,7 +88,7 @@ export function InvitationManagementContent() {
   // Log invitations for debugging
   console.log("InvitationManagementContent has invitations:", {
     count: myInvitations.length,
-    sample: myInvitations.slice(0, 3),
+    sample: myInvitations.slice(0, 0),
   });
 
   return (
