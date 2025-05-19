@@ -103,6 +103,10 @@ export function RegisterPage() {
   const handleSignUp = async () => {
     try {
       setIsLoading(true);
+      
+      // Determine which email to use for login redirect
+      const emailToUse = invitation?.email || email;
+      
       if (invitation && token) {
         // Register with invitation
         const registerData = {
@@ -111,18 +115,19 @@ export function RegisterPage() {
           last_name: formData.lastName,
           password: formData.password,
         };
+        
         // Add email if not provided in invitation
         if (!invitation.email) {
           registerData.email = email;
         }
+        
         // Add company name if invitation type is join_wms_with_new_company
         if (invitation.invitationType === "join_wms_with_new_company") {
           registerData.new_company_name = formData.companyName;
         }
+        
         await registerWithInvitation(registerData);
         console.log("Registration with invitation successful");
-        // Redirect to login with email and autoSubmit params
-        navigate(`/login?email=${encodeURIComponent(email)}&autoSubmit=true`);
       } else {
         // Regular registration using AuthContext
         await register(
@@ -134,9 +139,10 @@ export function RegisterPage() {
           activeTab === "wms" ? formData.wmsName : undefined
         );
         console.log("Registration successful");
-        // Redirect to login with email and autoSubmit params
-        navigate(`/login?email=${encodeURIComponent(email)}&autoSubmit=true`);
       }
+      
+      // Redirect to login with email and autoSubmit params
+      navigate(`/login?email=${encodeURIComponent(emailToUse)}&autoSubmit=true`);
     } catch (error) {
       console.error("Registration failed:", error);
       // Handle error (show error message)
@@ -150,6 +156,7 @@ export function RegisterPage() {
     if (!invitation) return null;
     const avatarUrl = invitation.wms?.avatarURL || invitation.company?.avatarURL || "";
     const entityName = invitation.wms?.name || invitation.company?.name || "";
+    
     return (
       <div className="space-y-6">
         <div className="flex flex-col items-center space-y-3">
@@ -160,6 +167,11 @@ export function RegisterPage() {
           <div className="text-center">
             <p className="text-sm text-muted-foreground">You've been invited to join</p>
             <p className="font-medium">{entityName}</p>
+            {invitation.email && (
+              <p className="text-sm text-muted-foreground mt-1">
+                Email: {invitation.email}
+              </p>
+            )}
           </div>
         </div>
         <div className="space-y-4">
