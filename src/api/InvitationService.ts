@@ -1,6 +1,19 @@
 import axiosClient from './axiosClient';
 import type { Invitation, InvitationType } from '@/types/invitation';
 
+export interface ExpireInvitationRequest {
+  invitation_id: string;
+}
+
+export interface ExpireInvitationResponse {
+  message: string;
+}
+
+export async function expireInvitation(req: ExpireInvitationRequest): Promise<ExpireInvitationResponse> {
+  const response = await axiosClient.post("/invitation/expire", req);
+  return response.data;
+}
+
 export interface SendInvitationRequest {
   email?: string;
   phone_number?: string;
