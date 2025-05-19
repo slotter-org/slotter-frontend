@@ -1,4 +1,4 @@
-import { InvitationManagementContent } from '@/components/common/content/InvitationManagementContent'
+import { InvitationManagementContent } from '@/components/common/dialogs/content/InvitationManagementContent'
 import { InvitationCreateDialog } from '@/components/common/dialogs/InvitationCreateDialog'
 import { Button } from '@/components/ui/button'
 import { Mail, Plus } from 'lucide-react'
