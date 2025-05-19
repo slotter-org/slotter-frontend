@@ -27,7 +27,7 @@ export function AppRouter() {
           <Route path="slotting" element={<RequireAuth><Slotting /></RequireAuth>} />
           <Route path="inventory" element={<RequireAuth><Inventory /></RequireAuth>} />
           <Route path="roles" element={<RequireAuth><RolesPage /></RequireAuth>} />
-          <Route path="invitation" element={<RequireAuth><InvitationPage /></RequireAuth>} />
+          <Route path="invitations" element={<RequireAuth><InvitationPage /></RequireAuth>} />
         </Route>
       </Routes>
     </BrowserRouter>
