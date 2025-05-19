@@ -3,9 +3,8 @@ import React, {
   useCallback,
   useContext,
   useEffect,
-  useMemo,
-  useRef,
   useState,
+  useMemo,
   ReactNode,
 } from 'react';
 import { Company } from '@/types/company';
@@ -23,7 +22,7 @@ import {
   getMyCompanyInvitations,
   getMyCompanyPermissions,
 } from '@/api/MyCompanyService';
-import { useSSEContext, SSEMessage } from '@/contexts/SSEProvider';
+import { useSSEContext } from '@/contexts/SSEProvider';
 
 interface MyCompanyContextValue {
   myCompany: Company | null;
@@ -66,7 +65,6 @@ export function useMyCompany() {
 export function MyCompanyProvider({ children }: { children: ReactNode }) {
   const { me } = useContext(MeContext);
   const { connected, lastMessage, subscribeChannel, unsubscribeChannel } = useSSEContext();
-
   const [myCompany, setMyCompany] = useState<Company | null>(null);
   const [myWarehouses, setMyWarehouses] = useState<Warehouse[] | null>(null);
   const [myUsers, setMyUsers] = useState<User[] | null>(null);
@@ -76,8 +74,7 @@ export function MyCompanyProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // ------------------------------ Fetch Helpers --------------------------------------
-
+  //------------------------------Fetch Helpers--------------------------------------
   const fetchMyCompany = useCallback(async () => {
     if (!me?.companyID) {
       setMyCompany(null);
@@ -86,11 +83,11 @@ export function MyCompanyProvider({ children }: { children: ReactNode }) {
     setLoading(true);
     setError(null);
     try {
-      const { myCompany } = await getMyCompany();
-      setMyCompany(myCompany);
+      const resp = await getMyCompany();
+      setMyCompany(resp.myCompany);
     } catch (err: any) {
-      console.error(err);
-      setError(err.message || 'Failed to fetch company');
+      console.error('[MyCompanyProvider] fetchMyCompany error:', err);
+      setError(err.message || 'Failed to fetch myCompany');
       setMyCompany(null);
     } finally {
       setLoading(false);
@@ -105,11 +102,11 @@ export function MyCompanyProvider({ children }: { children: ReactNode }) {
     setLoading(true);
     setError(null);
     try {
-      const { myWarehouses } = await getMyCompanyWarehouses();
-      setMyWarehouses(myWarehouses);
+      const resp = await getMyCompanyWarehouses();
+      setMyWarehouses(resp.myWarehouses);
     } catch (err: any) {
-      console.error(err);
-      setError(err.message || 'Failed to fetch warehouses');
+      console.error('[MyCompanyProvider] fetchMyWarehouses error:', err);
+      setError(err.message || 'Failed to fetch myWarehouses');
       setMyWarehouses(null);
     } finally {
       setLoading(false);
@@ -124,11 +121,11 @@ export function MyCompanyProvider({ children }: { children: ReactNode }) {
     setLoading(true);
     setError(null);
     try {
-      const { myUsers } = await getMyCompanyUsers();
-      setMyUsers(myUsers);
+      const resp = await getMyCompanyUsers();
+      setMyUsers(resp.myUsers);
     } catch (err: any) {
-      console.error(err);
-      setError(err.message || 'Failed to fetch users');
+      console.error('[MyCompanyProvider] fetchMyUsers error:', err);
+      setError(err.message || 'Failed to fetch myUsers');
       setMyUsers(null);
     } finally {
       setLoading(false);
@@ -143,11 +140,11 @@ export function MyCompanyProvider({ children }: { children: ReactNode }) {
     setLoading(true);
     setError(null);
     try {
-      const { myRoles } = await getMyCompanyRoles();
-      setMyRoles(myRoles);
+      const resp = await getMyCompanyRoles();
+      setMyRoles(resp.myRoles)
     } catch (err: any) {
-      console.error(err);
-      setError(err.message || 'Failed to fetch roles');
+      console.error('[MyCompanyProvider] fetchMyRoles error:', err);
+      setError(err.message || 'Failed to fetch myRoles');
       setMyRoles(null);
     } finally {
       setLoading(false);
@@ -162,11 +159,11 @@ export function MyCompanyProvider({ children }: { children: ReactNode }) {
     setLoading(true);
     setError(null);
     try {
-      const { myPermissions } = await getMyCompanyPermissions();
-      setMyPermissions(myPermissions);
+      const resp = await getMyCompanyPermissions();
+      setMyPermissions(resp.myPermissions);
     } catch (err: any) {
-      console.error(err);
-      setError(err.message || 'Failed to fetch permissions');
+      console.error('[MyCompanyProvider] fetchMyPermissions error:', err);
+      setError(err.message || 'Failed to fetch myPermissions');
       setMyPermissions(null);
     } finally {
       setLoading(false);
@@ -181,171 +178,183 @@ export function MyCompanyProvider({ children }: { children: ReactNode }) {
     setLoading(true);
     setError(null);
     try {
-      const { myInvitations } = await getMyCompanyInvitations();
-      setMyInvitations(myInvitations);
+      const resp = await getMyCompanyInvitations();
+      setMyInvitations(resp.myInvitations);
     } catch (err: any) {
-      console.error(err);
-      setError(err.message || 'Failed to fetch invitations');
+      console.error('[MyCompanyProvider] fetchMyInvitations error:', err);
+      setError(err.message || 'Failed to fetch myInvitations');
       setMyInvitations(null);
     } finally {
       setLoading(false);
     }
   }, [me?.companyID]);
 
-  // ------------------------------ Merge Helpers with Bail-out --------------------------------------
-
-  const mergeCompany = useCallback((incoming: Company) => {
-    setMyCompany(old =>
-      old &&
-      old.id === incoming.id &&
-      old.name === incoming.name &&
-      old.avatarURL === incoming.avatarURL
-        ? old
-        : incoming
-    );
+  const mergeCompany = useCallback((updated: Company) => {
+    setMyCompany((old) => {
+      if (!old) return updated;
+      return updated;
+    });
   }, []);
 
-  const mergeWarehouse = useCallback((incoming: Warehouse) => {
-    setMyWarehouses(old => {
-      if (!old) return [incoming];
-      const idx = old.findIndex(w => w.id === incoming.id);
-      if (idx === -1) return [...old, incoming];
-      const existing = old[idx];
-      if (
-        existing.name === incoming.name &&
-        existing.location === incoming.location
-      ) {
-        return old;
+  const mergeWarehouse = useCallback((wh: Warehouse) => {
+    setMyWarehouses((old) => {
+      if (!old) return [wh];
+      const index = old.findIndex((x) => x.id === wh.id);
+      if (index < 0) {
+        return [...old, wh];
       }
-      const next = [...old];
-      next[idx] = { ...existing, ...incoming };
-      return next;
+      const clone = [...old];
+      clone[index] = { ...clone[index], ...wh };
+      return clone;
     });
   }, []);
 
   const removeWarehouse = useCallback((id: string) => {
-    setMyWarehouses(old => old?.filter(w => w.id !== id) || null);
+    setMyWarehouses((old) => old?.filter((w) => w.id !== id) || null);
   }, []);
 
-  const mergeUser = useCallback((incoming: User) => {
-    setMyUsers(old => {
-      if (!old) return [incoming];
-      const idx = old.findIndex(u => u.id === incoming.id);
-      if (idx === -1) return [...old, incoming];
-      const existing = old[idx];
-      if (
-        existing.firstName === incoming.firstName &&
-        existing.lastName === incoming.lastName &&
-        existing.avatarURL === incoming.avatarURL &&
-        existing.roleId === incoming.roleId
-      ) {
-        return old;
+  const mergeUser = useCallback((u: User) => {
+    setMyUsers((old) => {
+      if (!old) return [u];
+      const index = old.findIndex((x) => x.id === u.id);
+      if (index < 0) {
+        return [...old, u];
       }
-      const next = [...old];
-      next[idx] = { ...existing, ...incoming };
-      return next;
+      const clone = [...old];
+      clone[index] = { ...clone[index], ...u };
+      return clone;
     });
   }, []);
 
   const removeUser = useCallback((id: string) => {
-    setMyUsers(old => old?.filter(u => u.id !== id) || null);
+    setMyUsers((old) => old?.filter((u) => u.id !== id) || null);
   }, []);
 
-  const mergeRole = useCallback((incoming: Role) => {
-    setMyRoles(old => {
-      if (!old) return [incoming];
-      const idx = old.findIndex(r => r.id === incoming.id);
-      if (idx === -1) return [...old, incoming];
-      const existing = old[idx];
-      if (
-        existing.name === incoming.name &&
-        existing.description === incoming.description &&
-        existing.avatarURL === incoming.avatarURL &&
-        (existing.permissions?.length || 0) === (incoming.permissions?.length || 0) &&
-        (existing.users?.length || 0) === (incoming.users?.length || 0)
-      ) {
-        return old;
+  const mergeRole = useCallback((r: Role) => {
+    setMyRoles((old) => {
+      if (!old) return [r];
+      const index = old.findIndex((x) => x.id === r.id);
+      if (index < 0) {
+        return [...old, r];
       }
-      const next = [...old];
-      next[idx] = { ...existing, ...incoming };
-      return next;
+      const clone = [...old];
+      clone[index] = { ...clone[index], ...r };
+      return clone;
     });
   }, []);
 
   const removeRole = useCallback((id: string) => {
-    setMyRoles(old => old?.filter(r => r.id !== id) || null);
+    setMyRoles((old) => old?.filter((r) => r.id !== id) || null);
   }, []);
 
-  const mergeInvitation = useCallback((incoming: Invitation) => {
-    setMyInvitations(old => {
-      if (!old) return [incoming];
-      const idx = old.findIndex(i => i.id === incoming.id);
-      if (idx === -1) return [...old, incoming];
-      const existing = old[idx];
-      if (
-        existing.email === incoming.email &&
-        existing.status === incoming.status
-      ) {
-        return old;
+  const mergeInvitation = useCallback((inv: Invitation) => {
+    setMyInvitations((old) => {
+      if (!old) return [inv];
+      const index = old.findIndex((x) => x.id === inv.id);
+      if (index < 0) {
+        return [...old, inv];
       }
-      const next = [...old];
-      next[idx] = { ...existing, ...incoming };
-      return next;
+      const clone = [...old];
+      clone[index] = { ...clone[index], ...inv };
+      return clone
     });
   }, []);
 
   const removeInvitation = useCallback((id: string) => {
-    setMyInvitations(old => old?.filter(i => i.id !== id) || null);
+    setMyInvitations((old) => old?.filter((i) => i.id !== id) || null);
   }, []);
 
-  // ------------------------------ Memoized SSE Handlers --------------------------------------
-
   const eventHandlers = useMemo(() => ({
-    CompanyNameChanged:       mergeCompany,
-    CompanyAvatarUpdated:     mergeCompany,
-    CompanyDeleted:           () => setMyCompany(null),
-
-    WarehouseCreated:         mergeWarehouse,
-    WarehouseNameChanged:     mergeWarehouse,
-    WarehouseDeleted:         (w: Warehouse) => removeWarehouse(w.id),
-
-    UserJoined:               mergeUser,
-    UserLeft:                 (u: User) => removeUser(u.id),
-    UserAvatarUpdated:        mergeUser,
-    UserNameChanged:          mergeUser,
-    UserRoleUpdated:          mergeUser,
-
-    RoleCreated:              mergeRole,
-    RoleUpdated:              mergeRole,
-    RoleDeleted:              (r: Role) => removeRole(r.id),
-    RoleAssignmentChanged:    mergeRole,
-
-    InvitationCreated:        mergeInvitation,
-    InvitationCanceled:       mergeInvitation,
-    InvitationDeleted:        (i: Invitation) => removeInvitation(i.id),
-    InvitationAccepted:       mergeInvitation,
-    InvitationExpired:        mergeInvitation,
-    InvitationResent:         mergeInvitation,
+    CompanyNameChanged: (co: Company) => {
+      mergeCompany(co);
+    },
+    CompanyAvatarUpdated: (co: Company) => {
+      mergeCompany(co);
+    },
+    CompanyDeleted: () => {
+      setMyCompany(null);
+    },
+    WarehouseCreated: (wh: Warehouse) => {
+      mergeWarehouse(wh);
+    },
+    WarehouseNameChanged: (wh: Warehouse) => {
+      mergeWarehouse(wh);
+    },
+    WarehouseDeleted: (wh: {id: string}) => {
+      removeWarehouse(wh.id);
+    },
+    UserJoined: (u: User) => {
+      mergeUser(u);
+    },
+    UserLeft: (u: {id: string}) => {
+      removeUser(u.id);
+    },
+    UserAvatarUpdated: (u: User) => {
+      mergeUser(u);
+    },
+    UserNameChanged: (u: User) => {
+      mergeUser(u);
+    },
+    UserRoleUpdated: (u: User) => {
+      mergeUser(u);
+    },
+    RoleCreated: (r: Role) => {
+      mergeRole(r);
+    },
+    RoleUpdated: (r: Role) => {
+      mergeRole(r);
+    },
+    RoleDeleted: (r: {id: string}) => {
+      removeRole(r.id);
+    },
+    RoleAssignmentChanged: (r: Role) => {
+      mergeRole(r);
+    },
+    InvitationCreated: (inv: Invitation) => {
+      mergeInvitation(inv);
+    },
+    InvitationCanceled: (inv: Invitation) => {
+      mergeInvitation(inv);
+    },
+    InvitationDeleted: (inv: {id: string}) => {
+      removeInvitation(inv.id);
+    },
+    InvitationAccepted: (inv: Invitation) => {
+      mergeInvitation(inv);
+    },
+    InvitationExpired: (inv: Invitation) => {
+      mergeInvitation(inv);
+    },
+    InvitationResent: (inv: Invitation) => {
+      mergeInvitation(inv);
+    },
   }), [
-    mergeCompany,
-    mergeWarehouse, removeWarehouse,
-    mergeUser, removeUser,
-    mergeRole, removeRole,
-    mergeInvitation, removeInvitation,
+    mergeCompany, 
+    mergeWarehouse, 
+    removeWarehouse,
+    mergeUser,
+    removeUser,
+    mergeRole,
+    removeRole,
+    mergeInvitation,
+    removeInvitation
   ]);
 
-  // ----------------------------- Subscribe / Auto‐fetch on mount --------------------------------
-
+  //-----------------------------Subscribe to "company" channel once--------------------------------
   useEffect(() => {
-    if (connected && me?.userType === 'company' && me.companyID) {
-      const ch = `company:${me.companyID}`;
-      subscribeChannel(ch);
-      return () => { unsubscribeChannel(ch); };
+    if (!connected) return;
+    if (me?.userType === "company" && me.companyID) {
+      const companyChannel = `company:${me.companyID}`;
+      subscribeChannel(companyChannel);
+      return () => {
+        unsubscribeChannel(companyChannel);
+      };
     }
   }, [connected, me?.userType, me?.companyID, subscribeChannel, unsubscribeChannel]);
 
+  //-----------------------------Auto-fetch data once we know we are a "company" user------------------
   useEffect(() => {
-    if (me?.userType === 'company' && me.companyID) {
+    if (me?.userType === "company" && me.companyID) {
       fetchMyCompany();
       fetchMyWarehouses();
       fetchMyUsers();
@@ -370,29 +379,27 @@ export function MyCompanyProvider({ children }: { children: ReactNode }) {
     fetchMyInvitations,
   ]);
 
-  // --------------------------- Deduped SSE Listener ----------------------------
-
-  const lastProcessedRef = useRef<string | null>(null);
-
+  //---------------------------Listen to SSE events that indicate data change-------------------------
   useEffect(() => {
-    if (!lastMessage || me?.userType !== 'company' || !me.companyID) return;
-
-    const key = [
-      lastMessage.event,
-      lastMessage.channel,
-      JSON.stringify(lastMessage.data ?? {})
-    ].join('|');
-
-    if (key === lastProcessedRef.current) return;
-    lastProcessedRef.current = key;
-
+    if (!lastMessage) return;
+    console.log('[MyCompanyProvider] SSE lastMessage =>', lastMessage)
+    if (me?.userType !== 'company' || !me.companyID) {
+      console.log('[MyCompanyProvider] skipping because user is not a "company" user');
+      return;
+    }
+    const { event, channel, data } = lastMessage;
     const myChannel = `company:${me.companyID}`;
-    if (lastMessage.channel !== myChannel) return;
-
-    const handler = (eventHandlers as Record<string, any>)[lastMessage.event];
-    if (handler) handler(lastMessage.data);
-  }, [lastMessage, me?.userType, me?.companyID, eventHandlers]);
-
+    console.log('[MyCompanyProvider] myChannel=', myChannel, ' message.channel', channel);
+    if (channel !== myChannel) return;
+    console.log('[MyCompanyProvider] event =>', event);
+    const handler = eventHandlers[event];
+    if (handler) {
+      handler(data);
+    } else {
+      console.log('[MyCompanyProvider] unhandled event =>', event, data);
+    }
+  }, [lastMessage, me?.userType, me?.companyID]);
+  
   const value: MyCompanyContextValue = {
     myCompany,
     myWarehouses,
@@ -416,4 +423,3 @@ export function MyCompanyProvider({ children }: { children: ReactNode }) {
     </MyCompanyContext.Provider>
   );
 }
-
