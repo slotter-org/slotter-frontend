@@ -15,9 +15,16 @@ interface InvitationCardProps {
   onResend?: (invitationId: string) => void
   onCancel?: (invitationId: string) => void
   onExpire?: (invitationId: string) => void
+  isGridView?: boolean
 }
 
-export function InvitationCard({ invitation, onResend, onCancel, onExpire }: InvitationCardProps) {
+export function InvitationCard({ 
+  invitation, 
+  onResend, 
+  onCancel, 
+  onExpire, 
+  isGridView = false 
+}: InvitationCardProps) {
   const [isLoading, setIsLoading] = useState(false)
   
   // Reset loading state when invitation props change
@@ -72,7 +79,7 @@ export function InvitationCard({ invitation, onResend, onCancel, onExpire }: Inv
   const getStatusBadge = () => {
     const status = invitation.status
     const color = getColorForInvitation(status)
-    return <MyBadge title={status.charAt(0).toUpperCase() + status.slice(1)} color={color} />
+    return <MyBadge title={status.charAt(0).toUpperCase() + status.slice(1)} color={color} size={isGridView ? "xs" : "sm"} />
   }
   
   const getInvitationTypeBadge = () => {
@@ -92,7 +99,13 @@ export function InvitationCard({ invitation, onResend, onCancel, onExpire }: Inv
         color = "#14b8ac"
         break
     }
-    return <MyBadge title={title} color={color} />
+    
+    // In grid view, shorten long titles
+    if (isGridView && title === "Join Wms With New Company") {
+      title = "Join WMS+Co";
+    }
+    
+    return <MyBadge title={title} color={color} size={isGridView ? "xs" : "sm"} />
   }
   
   const getTimeInfo = () => {
@@ -146,12 +159,15 @@ export function InvitationCard({ invitation, onResend, onCancel, onExpire }: Inv
       return (
         <Button
           variant="outline"
-          size="sm"
-          className="text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:border-red-800 dark:hover:bg-red-950/30"
+          size={isGridView ? "xs" : "sm"}
+          className={cn(
+            "text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:border-red-800 dark:hover:bg-red-950/30",
+            isGridView && "px-2 py-1 text-xs"
+          )}
           onClick={handleCancel}
           disabled={isLoading}
         >
-          <X className="h-3 w-3 mr-1" />
+          <X className={isGridView ? "h-2.5 w-2.5 mr-0.5" : "h-3 w-3 mr-1"} />
           Cancel
         </Button>
       )
@@ -160,12 +176,15 @@ export function InvitationCard({ invitation, onResend, onCancel, onExpire }: Inv
       return (
         <Button
           variant="outline"
-          size="sm"
+          size={isGridView ? "xs" : "sm"}
           onClick={handleResend}
           disabled={isLoading}
-          className="text-blue-600 border-blue-200 hover:bg-blue-50 hover:text-blue-700 dark:text-blue-400 dark:border-blue-800 dark:hover:bg-blue-950/30"
+          className={cn(
+            "text-blue-600 border-blue-200 hover:bg-blue-50 hover:text-blue-700 dark:text-blue-400 dark:border-blue-800 dark:hover:bg-blue-950/30",
+            isGridView && "px-2 py-1 text-xs"
+          )}
         >
-          <RefreshCw className="h-3 w-3 mr-1" />
+          <RefreshCw className={isGridView ? "h-2.5 w-2.5 mr-0.5" : "h-3 w-3 mr-1"} />
           Resend
         </Button>
       )
@@ -178,7 +197,7 @@ export function InvitationCard({ invitation, onResend, onCancel, onExpire }: Inv
       return (
         <div className="flex items-center text-sm text-muted-foreground mt-1">
           <Mail className="h-3.5 w-3.5 mr-1.5 flex-shrink-0" />
-          <span className="truncate max-w-[200px]">{invitation.email}</span>
+          <span className="truncate max-w-full">{invitation.email}</span>
         </div>
       )
     }
@@ -232,6 +251,55 @@ export function InvitationCard({ invitation, onResend, onCancel, onExpire }: Inv
     return invitation.avatarURL
   }
   
+  // Render grid view layout
+  if (isGridView) {
+    return (
+      <Card
+        className={cn(
+          "w-full h-full transition-all duration-200 overflow-hidden group",
+          getCardBorderClass(),
+        )}
+      >
+        <CardContent className="p-4 h-full flex flex-col">
+          <div className="flex flex-col h-full">
+            {/* Header with avatar and badges */}
+            <div className="flex items-start justify-between mb-2">
+              <div className="flex items-center">
+                <Avatar className="h-10 w-10">
+                  {getAvatarUrl() ? (
+                    <AvatarImage src={getAvatarUrl() || "/placeholder.svg"} alt={getName()} />
+                  ) : (
+                    <AvatarFallback className="text-md font-medium">
+                      {getName() ? getInitials(getName()) : "?"}
+                    </AvatarFallback>
+                  )}
+                </Avatar>
+                <div className="ml-2 mr-1">
+                  <h3 className="font-medium text-sm truncate max-w-[120px]">{getName()}</h3>
+                  <div className="mt-0.5">{getStatusBadge()}</div>
+                </div>
+              </div>
+              <div>{getInvitationTypeBadge()}</div>
+            </div>
+            
+            {/* Contact info and metadata */}
+            <div className="flex-grow min-h-0">
+              {getContactInfo()}
+              {getTimeInfo()}
+              {!isGridView && getCreatedInfo()}
+            </div>
+            
+            {/* Action buttons */}
+            <div className="mt-2 pt-2 border-t border-dashed border-gray-200 dark:border-gray-800 flex justify-end">
+              {getActionButtons()}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+  
+  // Render list view layout (original layout)
   return (
     <Card
       className={cn(

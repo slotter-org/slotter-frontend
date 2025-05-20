@@ -127,58 +127,61 @@ export function InvitationFilterCard({
           />
         </div>
         
-        {/* Filter Dropdowns */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 shrink-0">
-          {/* Status Filter */}
-          <div>
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger>
-                <div className="flex items-center gap-2">
-                  <Filter className="h-4 w-4" />
-                  <SelectValue placeholder="Filter by Status" />
-                </div>
-              </SelectTrigger>
-              <SelectContent>
-                {statusOptions.map((status) => (
-                  <SelectItem key={status} value={status}>
-                    {status === "all" ? "All Statuses" : status.charAt(0).toUpperCase() + status.slice(1)}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          
-          {/* Type Filter */}
-          <div>
-            <Select value={typeFilter} onValueChange={setTypeFilter}>
-              <SelectTrigger>
-                <div className="flex items-center gap-2">
-                  <Filter className="h-4 w-4" />
-                  <SelectValue placeholder="Filter by Type" />
-                </div>
-              </SelectTrigger>
-              <SelectContent>
-                {typeOptions.map((type) => (
-                  <SelectItem key={type} value={type}>
-                    {type === "all" 
-                      ? "All Types" 
-                      : type === "join_company" 
-                        ? "Join Company" 
-                        : type === "join_wms" 
-                          ? "Join WMS" 
-                          : type === "join_wms_with_new_company" 
-                            ? "Join WMS With Company" 
-                            : type.replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase())}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+        {/* Filter Dropdowns and Grid Button */}
+        <div className="flex items-center space-x-4 mb-4 shrink-0">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 flex-1">
+            {/* Status Filter */}
+            <div>
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger>
+                  <div className="flex items-center gap-2">
+                    <Filter className="h-4 w-4" />
+                    <SelectValue placeholder="Filter by Status" />
+                  </div>
+                </SelectTrigger>
+                <SelectContent>
+                  {statusOptions.map((status) => (
+                    <SelectItem key={status} value={status}>
+                      {status === "all" ? "All Statuses" : status.charAt(0).toUpperCase() + status.slice(1)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            
+            {/* Type Filter */}
+            <div>
+              <Select value={typeFilter} onValueChange={setTypeFilter}>
+                <SelectTrigger>
+                  <div className="flex items-center gap-2">
+                    <Filter className="h-4 w-4" />
+                    <SelectValue placeholder="Filter by Type" />
+                  </div>
+                </SelectTrigger>
+                <SelectContent>
+                  {typeOptions.map((type) => (
+                    <SelectItem key={type} value={type}>
+                      {type === "all" 
+                        ? "All Types" 
+                        : type === "join_company" 
+                          ? "Join Company" 
+                          : type === "join_wms" 
+                            ? "Join WMS" 
+                            : type === "join_wms_with_new_company" 
+                              ? "Join WMS With Company" 
+                              : type.replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase())}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
+          {/* Grid/List View Toggle Button */}
           <Button
             variant="outline"
             size="icon"
-            className="h-10 w-10"
+            className="h-10 w-10 shrink-0"
             onClick={() => setIsGridView(!isGridView)}
             title={isGridView ? "Switch to List View" : "Switch to Grid View"}
           >
@@ -223,6 +226,7 @@ export function InvitationFilterCard({
                   onResend={onResendInvitation}
                   onCancel={onCancelInvitation}
                   onExpire={onExpireInvitation}
+                  isGridView={isGridView}
                 />
               ))
             ) : (
