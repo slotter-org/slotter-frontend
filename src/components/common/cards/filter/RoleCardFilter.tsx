@@ -168,7 +168,7 @@ export function RoleCardFilter({
                   // Pass allPermissions to each RoleCard
                   allPermissions={allPermissions}
                   allUsers={allUsers}
-                  compact={true}
+                  compact={false}
                 />
               ))
             ) : (
