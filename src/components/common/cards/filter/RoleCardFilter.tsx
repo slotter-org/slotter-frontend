@@ -1,5 +1,5 @@
 import { useState, useMemo, useRef, useLayoutEffect } from 'react';
-import { Search, Filter, Badge } from 'lucide-react';
+import { Search, Filter, Badge, List, Grid } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -32,9 +32,14 @@ export function RoleCardFilter({
   allPermissions = [],
   allUsers = [],
 }: RoleCardFilterProps) {
+  const { isBelowSm, isBelowMd, isBelowLg, isBelowXl, isBelowXxl } = useViewport()
   const [searchQuery, setSearchQuery] = useState("")
   const [categoryFilter, setCategoryFilter] = useState<string>("all")
   const [actionFilter, setActionFilter] = useState<string>("all")
+  const [isGridView, setIsGridView] = useState(false);
+  const [rolesCompact, setRolesCompact] = useState(false);
+  const [roleButtonTitles, setRoleButtonTitles] = useState(true);
+  const [showGridButton, setShowGridButton] = useState(true);
   
   const permissionCategories = useMemo(() => {
     const categories = new Set<string>()
@@ -79,6 +84,51 @@ export function RoleCardFilter({
     count: allPermissions.length,
     sample: allPermissions.slice(0, 3),
   })
+
+  useEffect(() => {
+    if (isBelowSm) {
+      setRolesCompact(true);
+      setIsGridView(false);
+      setRoleButtonTitles(false);
+      setShowGridButton(false);
+    }
+    else if (isBelowMd && !isBelowSm) {
+      setRolesCompact(true);
+      setIsGridView(true);
+      setRoleButtonTitles(false);
+      setShowGridButton(true);
+    }
+    else if (isBelowLg && !isBelowMd) {
+      setRolesCompact(false);
+      setRoleButtonTitles(false);
+      setIsGridView(true);
+      setShowGridButton(true);
+    }
+    else if (isBelowXl && !isBelowLg) {
+      setRolesCompact(false);
+      setRoleButtonTitles(true);
+      setIsGridView(true);
+      setShowGridButton(true);
+    }
+    else {
+      setRolesCompact(false);
+      setRoleButtonTitles(true);
+      setIsGridView(true);
+      setShowGridButton(true);
+    }
+  }, [isBelowSm, isBelowMd, isBelowLg, isBelowXl, isBelowXxl]);
+
+  const handleToggleGridView = () => {
+    if (showGridButton) {
+      setIsGridView(!isGridView);
+    }
+  };
+  
+  const gridColumns = useMemo(() => {
+    if (isBelowMd) return 1;
+    if (isBelowLg) return 2;
+    return 3;
+  }, [isBelowMd, isBelowLg]);
   
   return (
     <Card className={`${className ?? ''} h-full flex flex-col`}>
@@ -103,45 +153,58 @@ export function RoleCardFilter({
           />
         </div>
         {/* Filter Dropdowns */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 shrink-0">
-          {/* Category Filter */}
-          <div>
-            <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-              <SelectTrigger>
-                <div className="flex items-center gap-2">
-                  <Filter className="h-4 w-4" />
-                  <SelectValue placeholder="Filter by Category" />
-                </div>
-              </SelectTrigger>
-              <SelectContent>
-                {permissionCategories.map((category) => (
-                  <SelectItem key={category} value={category}>
-                    {category === "all" ? "All Categories" : category.charAt(0).toUpperCase() + category.slice(1)}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+        <div className="flex items-center space-x-4 mb-4 shrink-0">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 flex-1">
+            {/* Category Filter */}
+            <div>
+              <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                <SelectTrigger>
+                  <div className="flex items-center gap-2">
+                    <Filter className="h-4 w-4" />
+                    <SelectValue placeholder="Filter by Category" />
+                  </div>
+                </SelectTrigger>
+                <SelectContent>
+                  {permissionCategories.map((category) => (
+                    <SelectItem key={category} value={category}>
+                      {category === "all" ? "All Categories" : category.charAt(0).toUpperCase() + category.slice(1)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            {/* Action Filter */}
+            <div>
+              <Select value={actionFilter} onValueChange={setActionFilter}>
+                <SelectTrigger>
+                  <div className="flex items-center gap-2">
+                    <Filter className="h-4 w-4" />
+                    <SelectValue placeholder="Filter by Action" />
+                  </div>
+                </SelectTrigger>
+                <SelectContent>
+                  {permissionActions.map((action) => (
+                    <SelectItem key={action} value={action}>
+                      {action === "all" ? "All Actions" : action.charAt(0).toUpperCase() + action.slice(1)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
-          {/* Action Filter */}
-          <div>
-            <Select value={actionFilter} onValueChange={setActionFilter}>
-              <SelectTrigger>
-                <div className="flex items-center gap-2">
-                  <Filter className="h-4 w-4" />
-                  <SelectValue placeholder="Filter by Action" />
-                </div>
-              </SelectTrigger>
-              <SelectContent>
-                {permissionActions.map((action) => (
-                  <SelectItem key={action} value={action}>
-                    {action === "all" ? "All Actions" : action.charAt(0).toUpperCase() + action.slice(1)}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          {showGridButton && (
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-8 w-8"
+              onClick={handleToggleGridView}
+              title={isGridView ? "Switch to List View" : "Switch to Grid View"}
+            >
+              {isGridView ? <List className="h-4 w-4" /> : <Grid className="h-4 w-4" />}
+            </Button>
+          )}
         </div>
-        {/* Active Filters Display */}
+          {/* Active Filters Display */}
         {(categoryFilter !== "all" || actionFilter !== "all") && (
           <div className="flex flex-wrap gap-2 text-sm mb-4 shrink-0">
             <span className="text-muted-foreground">Active filters:</span>
@@ -155,7 +218,10 @@ export function RoleCardFilter({
         )}
         {/* Roles List */}
         <ScrollArea className="flex-1 overflow-auto pr-4">
-          <div className="space-y-4">
+          <div className={isGridView
+            ? `grid grid-cols-1 ${gridColumns > 1 ? 'md:grid-cols-2' : ''} ${gridColumns > 2 ? 'lg:grid-cols-3' : ''} gap-4`
+            : "space-y-4"
+          }>
             {finalRoles.length > 0 ? (
               finalRoles.map((role) => (
                 <RoleCard
@@ -168,7 +234,8 @@ export function RoleCardFilter({
                   // Pass allPermissions to each RoleCard
                   allPermissions={allPermissions}
                   allUsers={allUsers}
-                  compact={false}
+                  compact={rolesCompact}
+                  showButtonTitles={roleButtonTitles}
                 />
               ))
             ) : (

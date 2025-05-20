@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { Pencil, Trash2, Save, KeyRound, RefreshCw, AlertTriangle, Users, ChevronDown, ChevronUp, MoreVertical } from 'lucide-react';
+import { Pencil, Trash2, Save, KeyRound, RefreshCw, AlertTriangle, Users, ChevronDown, ChevronUp, Ellipsis } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -28,6 +28,7 @@ interface RoleCardProps {
   allPermissions?: Permission[]
   allUsers?: User[]
   compact?: boolean
+  showButtonTitles?: boolean
 }
 
 // Add enhanced drop zone components that work with the original ones
@@ -125,7 +126,8 @@ export function RoleCard({
   onSaveUsers, 
   allPermissions = [], 
   allUsers = [],
-  compact = false
+  compact = false,
+  showButtonTitles = true
 }: RoleCardProps) {
   const originalRoleRef = useRef<Role>(deepClone(role));
   const [localRole, setLocalRole] = useState<Role>(deepClone(role));
@@ -398,7 +400,7 @@ export function RoleCard({
                 className="ml-4 border-amber-500 text-amber-700 hover:bg-amber-100 hover:text-amber-800 dark:text-amber-400 dark:hover:bg-amber-900/50"
               >
                 <RefreshCw className="mr-2 h-4 w-4" />
-                Refresh
+                {showButtonTitles && "Refresh"}
               </Button>
             </div>
           </Alert>
@@ -421,59 +423,62 @@ export function RoleCard({
             
             {compact ? (
               // Compact mode: Single dropdown menu
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="sm" 
-                    className={cn(isStale && "opacity-50 cursor-not-allowed")}
-                    disabled={isStale}>
-                    <MoreVertical className="h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem 
-                    onClick={handleTogglePermissionsEditMode}
-                    disabled={isStalePermissions}
-                    className={cn(isStalePermissions && "opacity-50 cursor-not-allowed")}>
-                    {isEditingPermissions ? 
-                      <><Save className="h-4 w-4 mr-2" /> Save Permissions</> : 
-                      <><KeyRound className="h-4 w-4 mr-2" /> Edit Permissions</>}
-                  </DropdownMenuItem>
-                  
-                  <DropdownMenuItem 
-                    onClick={handleToggleUsersEditMode}
-                    disabled={isStaleUsers}
-                    className={cn(isStaleUsers && "opacity-50 cursor-not-allowed")}>
-                    {isEditingUsers ? 
-                      <><Save className="h-4 w-4 mr-2" /> Save Users</> : 
-                      <><Users className="h-4 w-4 mr-2" /> Edit Users</>}
-                  </DropdownMenuItem>
-                  
-                  <DropdownMenuItem 
-                    onClick={handleOpenUpdateDialog}
-                    disabled={isStale}
-                    className={cn(isStale && "opacity-50 cursor-not-allowed")}>
-                    <Pencil className="h-4 w-4 mr-2" /> Update
-                  </DropdownMenuItem>
-                  
-                  <DropdownMenuSeparator />
-                  
-                  <DropdownMenuItem 
-                    onClick={handleDelete}
-                    disabled={isStale}
-                    className={cn("text-destructive", isStale && "opacity-50 cursor-not-allowed")}>
-                    <Trash2 className="h-4 w-4 mr-2" /> Delete
-                  </DropdownMenuItem>
-                  
-                  {isStale && (
-                    <>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem onClick={handleRefresh}>
-                        <RefreshCw className="h-4 w-4 mr-2" /> Refresh
-                      </DropdownMenuItem>
-                    </>
-                  )}
-                </DropdownMenuContent>
-              </DropdownMenu>
+              <div className="flex justify-end">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="sm" 
+                      className={cn(isStale && "opacity-50 cursor-not-allowed")}
+                      disabled={isStale}>
+                      <Ellipsis className="h-4 w-4" />
+                      {showButtonTitles && "More"}
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem 
+                      onClick={handleTogglePermissionsEditMode}
+                      disabled={isStalePermissions}
+                      className={cn(isStalePermissions && "opacity-50 cursor-not-allowed")}>
+                      {isEditingPermissions ? 
+                        <><ShieldCheck className="h-4 w-4" /> {showButtonTitles && <span className="ml-2">Save Permissions</span>}</> : 
+                        <><ShieldPlus className="h-4 w-4" /> {showButtonTitles && <span className="ml-2">Edit Permissions</span>}</>}
+                    </DropdownMenuItem>
+                    
+                    <DropdownMenuItem 
+                      onClick={handleToggleUsersEditMode}
+                      disabled={isStaleUsers}
+                      className={cn(isStaleUsers && "opacity-50 cursor-not-allowed")}>
+                      {isEditingUsers ? 
+                        <><UserCheck className="h-4 w-4" /> {showButtonTitles && <span className="ml-2">Save Users</span>}</> : 
+                        <><UserPlus className="h-4 w-4" /> {showButtonTitles && <span className="ml-2">Edit Users</span>}</>}
+                    </DropdownMenuItem>
+                    
+                    <DropdownMenuItem 
+                      onClick={handleOpenUpdateDialog}
+                      disabled={isStale}
+                      className={cn(isStale && "opacity-50 cursor-not-allowed")}>
+                      <Pencil className="h-4 w-4" /> {showButtonTitles && <span className="ml-2">Update</span>}
+                    </DropdownMenuItem>
+                    
+                    <DropdownMenuSeparator />
+                    
+                    <DropdownMenuItem 
+                      onClick={handleDelete}
+                      disabled={isStale}
+                      className={cn("text-destructive", isStale && "opacity-50 cursor-not-allowed")}>
+                      <Trash2 className="h-4 w-4" /> {showButtonTitles && <span className="ml-2">Delete</span>}
+                    </DropdownMenuItem>
+                    
+                    {isStale && (
+                      <>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={handleRefresh}>
+                          <RefreshCw className="h-4 w-4" /> {showButtonTitles && <span className="ml-2">Refresh</span>}
+                        </DropdownMenuItem>
+                      </>
+                    )}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
             ) : (
               // Standard mode: Individual buttons
               <div className="flex items-center gap-2">
@@ -491,13 +496,13 @@ export function RoleCard({
                       >
                         {isEditingPermissions ? (
                           <>
-                            <Save className="h-4 w-4" />
-                            <span className="hidden sm:inline">Save Permissions</span>
+                            <ShieldCheck className="h-4 w-4" />
+                            {showButtonTitles && <span>Save Permissions</span>}
                           </>
                         ) : (
                           <>
-                            <KeyRound className="h-4 w-4" />
-                            <span className="hidden sm:inline">Edit Permissions</span>
+                            <ShieldPlus className="h-4 w-4" />
+                            {showButtonTitles && <span>Edit Permissions</span>}
                           </>
                         )}
                       </Button>
@@ -528,13 +533,13 @@ export function RoleCard({
                       >
                         {isEditingUsers ? (
                           <>
-                            <Save className="h-4 w-4" />
-                            <span className="hidden sm:inline">Save Users</span>
+                            <UserCheck className="h-4 w-4" />
+                            {showButtonTitles && <span>Save Users</span>}
                           </>
                         ) : (
                           <>
-                            <Users className="h-4 w-4" />
-                            <span className="hidden sm:inline">Edit Users</span>
+                            <UserPlus className="h-4 w-4" />
+                            {showButtonTitles && <span>Edit Users</span>}
                           </>
                         )}
                       </Button>
@@ -564,7 +569,7 @@ export function RoleCard({
                         aria-label="Update role"
                       >
                         <Pencil className="h-4 w-4" />
-                        <span className="hidden sm:inline">Update</span>
+                        {showButtonTitles && <span>Update</span>}
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent>
@@ -589,7 +594,7 @@ export function RoleCard({
                         aria-label="Delete role"
                       >
                         <Trash2 className="h-4 w-4" />
-                        <span className="hidden sm:inline">Delete</span>
+                        {showButtonTitles && <span>Delete</span>}
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent>{isStale ? "Refresh required before deleting" : "Delete this role"}</TooltipContent>
