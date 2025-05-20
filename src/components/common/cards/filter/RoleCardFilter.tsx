@@ -142,7 +142,7 @@ export function RoleCardFilter({
       setRoleButtonTitles(true);
       setShowGridButton(true);
     }
-  }, [isBelowSm, isBelowMd, isBelowLg, isBelowXl, isBelowXxl]);
+  }, [isBelowSm, isBelowMd, isBelowLg, isBelowXl, isBelowXxl, isGridView]);
 
   const handleToggleGridView = () => {
     if (showGridButton) {
