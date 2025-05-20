@@ -105,10 +105,11 @@ export function RoleCardFilter({
         setRolesCompact(true);
         setRoleButtonTitles(true);
         setShowGridButton(true);
+      } else {
+        setRolesCompact(false);
+        setRoleButtonTitles(false);
+        setShowGridButton(true);
       }
-      setRolesCompact(false);
-      setRoleButtonTitles(false);
-      setShowGridButton(true);
     }
     else if (isBelowLg && !isBelowMd) {
       if (isGridView) {
