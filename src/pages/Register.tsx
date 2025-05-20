@@ -151,8 +151,8 @@ export function RegisterPage() {
   // Render invitation form based on invitation type
   const renderInvitationForm = () => {
     if (!invitation) return null;
-    const avatarUrl = invitation.wms?.avatarURL || invitation.company?.avatarURL || "";
-    const entityName = invitation.wms?.name || invitation.company?.name || "";
+    const avatarUrl = invitation.Wms?.avatarURL || invitation.Company?.avatarURL || "";
+    const entityName = invitation.Wms?.name || invitation.Company?.name || "";
     
     return (
       <div className="space-y-6">
