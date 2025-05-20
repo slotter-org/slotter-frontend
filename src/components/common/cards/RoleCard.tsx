@@ -1,12 +1,12 @@
+
 import { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { Pencil, Trash2, Save, KeyRound, RefreshCw, AlertTriangle, Users, MoreVertical } from 'lucide-react';
+import { Pencil, Trash2, Save, KeyRound, RefreshCw, AlertTriangle, Users, ChevronDown, ChevronUp } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -17,7 +17,7 @@ import type { User } from '@/types/user';
 import { PermissionDropZone } from '@/components/common/utils/PermissionDropZone';
 import { UserDropZone } from '@/components/common/utils/UserDropZone';
 import { cn } from '@/lib/utils';
-import { updateRoleNameDesc } from '@/api/RoleService';
+import { updateRoleNameDesc, update } from '@/api/RoleService';
 
 interface RoleCardProps {
   role: Role
@@ -28,6 +28,75 @@ interface RoleCardProps {
   allPermissions?: Permission[]
   allUsers?: User[]
 }
+
+// Add enhanced drop zone components that work with the original ones
+const EnhancedPermissionDropZone = ({ 
+  title, 
+  selectedPermissions, 
+  onPermissionDrop, 
+  onPermissionRemove, 
+  isEditing, 
+  allPermissions,
+  isOpen,
+  onToggle
+}) => {
+  return (
+    <div className="border rounded-md overflow-hidden">
+      <div 
+        className={`flex items-center justify-between p-3 border-b cursor-pointer bg-slate-50 dark:bg-slate-900 ${isOpen ? 'border-b' : ''}`}
+        onClick={onToggle}
+      >
+        <h3 className="font-medium">{title}</h3>
+        {isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+      </div>
+      
+      <div className={`overflow-hidden transition-all duration-300 ease-in-out ${isOpen ? 'max-h-[1000px] opacity-100' : 'max-h-0 opacity-0'}`}>
+        <PermissionDropZone
+          title=""
+          selectedPermissions={selectedPermissions}
+          onPermissionDrop={onPermissionDrop}
+          onPermissionRemove={onPermissionRemove}
+          isEditing={isEditing}
+          allPermissions={allPermissions}
+        />
+      </div>
+    </div>
+  );
+};
+
+const EnhancedUserDropZone = ({ 
+  title, 
+  selectedUsers, 
+  onUserDrop, 
+  onUserRemove, 
+  isEditing, 
+  allUsers,
+  isOpen,
+  onToggle
+}) => {
+  return (
+    <div className="border rounded-md overflow-hidden">
+      <div 
+        className={`flex items-center justify-between p-3 border-b cursor-pointer bg-slate-50 dark:bg-slate-900 ${isOpen ? 'border-b' : ''}`}
+        onClick={onToggle}
+      >
+        <h3 className="font-medium">{title}</h3>
+        {isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+      </div>
+      
+      <div className={`overflow-hidden transition-all duration-300 ease-in-out ${isOpen ? 'max-h-[1000px] opacity-100' : 'max-h-0 opacity-0'}`}>
+        <UserDropZone
+          title=""
+          selectedUsers={selectedUsers}
+          onUserDrop={onUserDrop}
+          onUserRemove={onUserRemove}
+          isEditing={isEditing}
+          allUsers={allUsers}
+        />
+      </div>
+    </div>
+  );
+};
 
 const deepClone = <T,>(obj: T): T => JSON.parse(JSON.stringify(obj));
 
@@ -67,31 +136,16 @@ export function RoleCard({
   const [isStaleUsers, setIsStaleUsers] = useState(false);
   const [activeTab, setActiveTab] = useState<string>("permissions"); // Default to permissions tab
   
+  // New state for collapsible sections
+  const [isPermissionsOpen, setIsPermissionsOpen] = useState(true);
+  const [isUsersOpen, setIsUsersOpen] = useState(false);
+  
   // Update dialog
   const [updateDialogOpen, setUpdateDialogOpen] = useState(false);
   const [roleName, setRoleName] = useState(role.name);
   const [roleDescription, setRoleDescription] = useState(role.description || "");
   const [permissionsChanged, setPermissionsChanged] = useState(false);
   const [usersChanged, setUsersChanged] = useState(false);
-  
-  // Responsive state
-  const [isMobile, setIsMobile] = useState(false);
-  
-  // Check if we're on mobile
-  useEffect(() => {
-    const checkIfMobile = () => {
-      setIsMobile(window.innerWidth < 640); // 640px is the 'sm' breakpoint in Tailwind
-    };
-    
-    // Initial check
-    checkIfMobile();
-    
-    // Add resize event listener
-    window.addEventListener('resize', checkIfMobile);
-    
-    // Cleanup
-    return () => window.removeEventListener('resize', checkIfMobile);
-  }, []);
   
   // Log allPermissions when the component mounts or when it changes
   useEffect(() => {
@@ -107,6 +161,28 @@ export function RoleCard({
       sample: allUsers.slice(0, 3),
     });
   }, [allUsers]);
+  
+  // New effect to automatically open the relevant section when tab changes
+  useEffect(() => {
+    if (activeTab === "permissions" && !isPermissionsOpen) {
+      setIsPermissionsOpen(true);
+    } else if (activeTab === "users" && !isUsersOpen) {
+      setIsUsersOpen(true);
+    }
+  }, [activeTab]);
+  
+  // New effect to automatically open the relevant section when entering edit mode
+  useEffect(() => {
+    if (isEditingPermissions && !isPermissionsOpen) {
+      setIsPermissionsOpen(true);
+    }
+  }, [isEditingPermissions]);
+  
+  useEffect(() => {
+    if (isEditingUsers && !isUsersOpen) {
+      setIsUsersOpen(true);
+    }
+  }, [isEditingUsers]);
   
   // If new data arrives from the parent
   useEffect(() => {
@@ -211,9 +287,10 @@ export function RoleCard({
     
     setIsEditingPermissions(!isEditingPermissions);
     
-    // If enabling edit mode, switch to permissions tab
+    // If enabling edit mode, switch to permissions tab and ensure it's open
     if (!isEditingPermissions) {
       setActiveTab("permissions");
+      setIsPermissionsOpen(true);
     }
   };
   
@@ -230,9 +307,10 @@ export function RoleCard({
     
     setIsEditingUsers(!isEditingUsers);
     
-    // If enabling edit mode, switch to users tab
+    // If enabling edit mode, switch to users tab and ensure it's open
     if (!isEditingUsers) {
       setActiveTab("users");
+      setIsUsersOpen(true);
     }
   };
   
@@ -299,236 +377,6 @@ export function RoleCard({
       
   const isStale = isStalePermissions || isStaleUsers;
   
-  // Render full action buttons for larger screens
-  const renderFullActionButtons = () => (
-    <div className="flex items-center gap-2">
-      {/* Toggle Edit Permissions */}
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleTogglePermissionsEditMode}
-              className={cn(isStalePermissions && "opacity-50 cursor-not-allowed")}
-              disabled={isStalePermissions}
-              aria-label={isEditingPermissions ? "Save Permissions" : "Edit Permissions"}
-            >
-              {isEditingPermissions ? (
-                <>
-                  <Save className="h-4 w-4 mr-1.5" />
-                  <span>Save Permissions</span>
-                </>
-              ) : (
-                <>
-                  <KeyRound className="h-4 w-4 mr-1.5" />
-                  <span>Edit Permissions</span>
-                </>
-              )}
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>
-            {isEditingPermissions
-              ? isStalePermissions
-                ? "Refresh required before saving"
-                : "Save permission changes"
-              : isStalePermissions
-                ? "Refresh required before editing"
-                : "Edit role permissions"}
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
-      
-      {/* Toggle Edit Users */}
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleToggleUsersEditMode}
-              className={cn(isStaleUsers && "opacity-50 cursor-not-allowed")}
-              disabled={isStaleUsers}
-              aria-label={isEditingUsers ? "Save Users" : "Edit Users"}
-            >
-              {isEditingUsers ? (
-                <>
-                  <Save className="h-4 w-4 mr-1.5" />
-                  <span>Save Users</span>
-                </>
-              ) : (
-                <>
-                  <Users className="h-4 w-4 mr-1.5" />
-                  <span>Edit Users</span>
-                </>
-              )}
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>
-            {isEditingUsers
-              ? isStaleUsers
-                ? "Refresh required before saving"
-                : "Save user changes"
-              : isStaleUsers
-                ? "Refresh required before editing"
-                : "Edit role users"}
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
-      
-      {/* Update Role */}
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleOpenUpdateDialog}
-              className={cn(isStale && "opacity-50 cursor-not-allowed")}
-              disabled={isStale}
-              aria-label="Update role"
-            >
-              <Pencil className="h-4 w-4 mr-1.5" />
-              <span>Update</span>
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>
-            {isStale ? "Refresh required before updating" : "Update role details"}
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
-      
-      {/* Delete */}
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleDelete}
-              className={cn(
-                "text-destructive hover:bg-destructive hover:text-destructive-foreground",
-                isStale && "opacity-50 cursor-not-allowed",
-              )}
-              disabled={isStale}
-              aria-label="Delete role"
-            >
-              <Trash2 className="h-4 w-4 mr-1.5" />
-              <span>Delete</span>
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>{isStale ? "Refresh required before deleting" : "Delete this role"}</TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
-    </div>
-  );
-
-  // Render compact action buttons for smaller screens
-  const renderCompactActionButtons = () => {
-    // Button for the active edit mode
-    const renderActiveEditButton = () => {
-      if (isEditingPermissions) {
-        return (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleTogglePermissionsEditMode}
-            className={cn(isStalePermissions && "opacity-50 cursor-not-allowed")}
-            disabled={isStalePermissions}
-          >
-            <Save className="h-4 w-4 mr-1" />
-            <span>Save</span>
-          </Button>
-        );
-      }
-      
-      if (isEditingUsers) {
-        return (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleToggleUsersEditMode}
-            className={cn(isStaleUsers && "opacity-50 cursor-not-allowed")}
-            disabled={isStaleUsers}
-          >
-            <Save className="h-4 w-4 mr-1" />
-            <span>Save</span>
-          </Button>
-        );
-      }
-      
-      return null;
-    };
-    
-    return (
-      <div className="flex items-center gap-2">
-        {/* Show save button when in edit mode */}
-        {renderActiveEditButton()}
-        
-        {/* Dropdown menu for other actions */}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="icon" className="h-8 w-8">
-              <MoreVertical className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            {!isEditingPermissions && !isEditingUsers && (
-              <>
-                <DropdownMenuItem 
-                  onClick={handleTogglePermissionsEditMode}
-                  disabled={isStalePermissions}
-                  className={cn(isStalePermissions && "opacity-50 cursor-not-allowed")}
-                >
-                  <KeyRound className="h-4 w-4 mr-2" />
-                  Edit Permissions
-                </DropdownMenuItem>
-                <DropdownMenuItem 
-                  onClick={handleToggleUsersEditMode}
-                  disabled={isStaleUsers}
-                  className={cn(isStaleUsers && "opacity-50 cursor-not-allowed")}
-                >
-                  <Users className="h-4 w-4 mr-2" />
-                  Edit Users
-                </DropdownMenuItem>
-                <DropdownMenuItem 
-                  onClick={handleOpenUpdateDialog}
-                  disabled={isStale}
-                  className={cn(isStale && "opacity-50 cursor-not-allowed")}
-                >
-                  <Pencil className="h-4 w-4 mr-2" />
-                  Update Role
-                </DropdownMenuItem>
-                <DropdownMenuItem 
-                  onClick={handleDelete}
-                  disabled={isStale}
-                  className={cn(
-                    "text-destructive",
-                    isStale && "opacity-50 cursor-not-allowed"
-                  )}
-                >
-                  <Trash2 className="h-4 w-4 mr-2" />
-                  Delete Role
-                </DropdownMenuItem>
-              </>
-            )}
-            {(isEditingPermissions || isEditingUsers) && (
-              <DropdownMenuItem 
-                onClick={() => {
-                  setIsEditingPermissions(false);
-                  setIsEditingUsers(false);
-                }}
-              >
-                <X className="h-4 w-4 mr-2" />
-                Cancel Editing
-              </DropdownMenuItem>
-            )}
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
-    );
-  };
-  
   return (
     <>
       <Card className={cn("w-full", isStale && "border-amber-400")}>
@@ -536,7 +384,7 @@ export function RoleCard({
           <Alert variant="warning" className="border-amber-400 bg-amber-50 dark:bg-amber-950/30 rounded-b-none">
             <AlertTriangle className="h-4 w-4 text-amber-500" />
             <div className="flex w-full items-center justify-between">
-              <AlertDescription className="text-amber-600 dark:text-amber-300 text-sm">
+              <AlertDescription className="text-amber-600 dark:text-amber-300">
                 {(isEditingPermissions || isEditingUsers)
                   ? "This role has been updated elsewhere. Please refresh before continuing."
                   : "This role has been updated elsewhere. Refresh to see the latest data."}
@@ -547,48 +395,150 @@ export function RoleCard({
                 onClick={handleRefresh}
                 className="ml-4 border-amber-500 text-amber-700 hover:bg-amber-100 hover:text-amber-800 dark:text-amber-400 dark:hover:bg-amber-900/50"
               >
-                <RefreshCw className="h-4 w-4 mr-1" />
-                <span className="hidden sm:inline">Refresh</span>
+                <RefreshCw className="mr-2 h-4 w-4" />
+                Refresh
               </Button>
             </div>
           </Alert>
         )}
-        <CardHeader className={cn("pb-2", isMobile ? "px-3 py-3" : "")}>
-          <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-            <div className="flex items-center gap-3 justify-between">
-              <div className="flex items-center gap-3">
-                <Avatar className={cn("flex-shrink-0", isMobile ? "h-8 w-8" : "h-10 w-10")}>
-                  {localRole.avatarURL ? (
-                    <AvatarImage src={localRole.avatarURL || "/placeholder.svg"} alt={localRole.name} />
-                  ) : (
-                    <AvatarFallback>{getInitials(localRole.name)}</AvatarFallback>
-                  )}
-                </Avatar>
-                <div className="capitalize">
-                  <h3 className={cn("font-semibold line-clamp-1", isMobile ? "text-base" : "text-lg")}>
-                    {localRole.name}
-                  </h3>
-                  {localRole.description && (
-                    <p className="text-sm text-muted-foreground line-clamp-1">
-                      {localRole.description}
-                    </p>
-                  )}
-                </div>
-              </div>
-              
-              {/* Action buttons - show dropdown on mobile, full buttons on desktop */}
-              <div className="sm:hidden">
-                {renderCompactActionButtons()}
+        <CardHeader className="pb-2">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Avatar className="h-10 w-10">
+                {localRole.avatarURL ? (
+                  <AvatarImage src={localRole.avatarURL || "/placeholder.svg"} alt={localRole.name} />
+                ) : (
+                  <AvatarFallback>{getInitials(localRole.name)}</AvatarFallback>
+                )}
+              </Avatar>
+              <div className="capitalize">
+                <h3 className="text-lg font-semibold">{localRole.name}</h3>
+                {localRole.description && <p className="text-sm text-muted-foreground">{localRole.description}</p>}
               </div>
             </div>
-            
-            {/* Action buttons for desktop */}
-            <div className="hidden sm:flex ml-auto">
-              {renderFullActionButtons()}
+            <div className="flex items-center gap-2">
+              {/* Toggle Edit Permissions */}
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleTogglePermissionsEditMode}
+                      className={cn(isStalePermissions && "opacity-50 cursor-not-allowed")}
+                      disabled={isStalePermissions}
+                      aria-label={isEditingPermissions ? "Save Permissions" : "Edit Permissions"}
+                    >
+                      {isEditingPermissions ? (
+                        <>
+                          <Save className="h-4 w-4" />
+                          <span className="hidden sm:inline">Save Permissions</span>
+                        </>
+                      ) : (
+                        <>
+                          <KeyRound className="h-4 w-4" />
+                          <span className="hidden sm:inline">Edit Permissions</span>
+                        </>
+                      )}
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    {isEditingPermissions
+                      ? isStalePermissions
+                        ? "Refresh required before saving"
+                        : "Save permission changes"
+                      : isStalePermissions
+                        ? "Refresh required before editing"
+                        : "Edit role permissions"}
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+              
+              {/* Toggle Edit Users */}
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleToggleUsersEditMode}
+                      className={cn(isStaleUsers && "opacity-50 cursor-not-allowed")}
+                      disabled={isStaleUsers}
+                      aria-label={isEditingUsers ? "Save Users" : "Edit Users"}
+                    >
+                      {isEditingUsers ? (
+                        <>
+                          <Save className="h-4 w-4" />
+                          <span className="hidden sm:inline">Save Users</span>
+                        </>
+                      ) : (
+                        <>
+                          <Users className="h-4 w-4" />
+                          <span className="hidden sm:inline">Edit Users</span>
+                        </>
+                      )}
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    {isEditingUsers
+                      ? isStaleUsers
+                        ? "Refresh required before saving"
+                        : "Save user changes"
+                      : isStaleUsers
+                        ? "Refresh required before editing"
+                        : "Edit role users"}
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+              
+              {/* Update Role */}
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleOpenUpdateDialog}
+                      className={cn(isStale && "opacity-50 cursor-not-allowed")}
+                      disabled={isStale}
+                      aria-label="Update role"
+                    >
+                      <Pencil className="h-4 w-4" />
+                      <span className="hidden sm:inline">Update</span>
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    {isStale ? "Refresh required before updating" : "Update role details"}
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+              
+              {/* Delete */}
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleDelete}
+                      className={cn(
+                        "text-destructive hover:bg-destructive hover:text-destructive-foreground",
+                        isStale && "opacity-50 cursor-not-allowed",
+                      )}
+                      disabled={isStale}
+                      aria-label="Delete role"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                      <span className="hidden sm:inline">Delete</span>
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>{isStale ? "Refresh required before deleting" : "Delete this role"}</TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             </div>
           </div>
         </CardHeader>
-        <CardContent className={isMobile ? "p-3" : ""}>
+        <CardContent>
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="grid grid-cols-2 mb-4">
               <TabsTrigger value="permissions">Permissions</TabsTrigger>
@@ -596,13 +546,15 @@ export function RoleCard({
             </TabsList>
             
             <TabsContent value="permissions">
-              <PermissionDropZone
+              <EnhancedPermissionDropZone
                 title={isEditingPermissions ? "Editing Role Permissions..." : "Role Permissions"}
                 selectedPermissions={selectedPermissions}
                 onPermissionDrop={isEditingPermissions && !isStalePermissions ? handlePermissionDrop : undefined}
                 onPermissionRemove={isEditingPermissions && !isStalePermissions ? handlePermissionRemove : undefined}
                 isEditing={isEditingPermissions}
                 allPermissions={allPermissions}
+                isOpen={isPermissionsOpen}
+                onToggle={() => setIsPermissionsOpen(!isPermissionsOpen)}
               />
               
               {/* If stale while editing permissions */}
@@ -624,13 +576,15 @@ export function RoleCard({
             </TabsContent>
             
             <TabsContent value="users">
-              <UserDropZone
+              <EnhancedUserDropZone
                 title={isEditingUsers ? "Editing Role Users..." : "Role Users"}
                 selectedUsers={selectedUsers}
                 onUserDrop={isEditingUsers && !isStaleUsers ? handleUserDrop : undefined}
                 onUserRemove={isEditingUsers && !isStaleUsers ? handleUserRemove : undefined}
                 isEditing={isEditingUsers}
                 allUsers={allUsers}
+                isOpen={isUsersOpen}
+                onToggle={() => setIsUsersOpen(!isUsersOpen)}
               />
               
               {/* If stale while editing users */}
@@ -668,40 +622,36 @@ export function RoleCard({
             </Alert>
           )}
           <div className="grid gap-4 py-4">
-            <div className={cn("grid items-center gap-4", isMobile ? "grid-cols-1" : "grid-cols-4")}>
-              <Label htmlFor="name" className={cn(isMobile ? "" : "text-right")}>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="name" className="text-right">
                 Name
               </Label>
               <Input
                 id="name"
                 value={roleName}
                 onChange={(e) => setRoleName(e.target.value)}
-                className={isMobile ? "col-span-1" : "col-span-3"}
+                className="col-span-3"
                 disabled={isStale}
               />
             </div>
-            <div className={cn("grid items-center gap-4", isMobile ? "grid-cols-1" : "grid-cols-4")}>
-              <Label htmlFor="description" className={cn(isMobile ? "" : "text-right")}>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="description" className="text-right">
                 Description
               </Label>
               <Textarea
                 id="description"
                 value={roleDescription}
                 onChange={(e) => setRoleDescription(e.target.value)}
-                className={isMobile ? "col-span-1" : "col-span-3"}
+                className="col-span-3"
                 disabled={isStale}
               />
             </div>
           </div>
-          <DialogFooter className={isMobile ? "flex-col space-y-2" : ""}>
-            <Button variant="outline" onClick={() => setUpdateDialogOpen(false)} className={isMobile ? "w-full" : ""}>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setUpdateDialogOpen(false)}>
               Cancel
             </Button>
-            <Button 
-              onClick={handleUpdateRole} 
-              disabled={isStale || !roleName.trim()}
-              className={isMobile ? "w-full" : ""}
-            >
+            <Button onClick={handleUpdateRole} disabled={isStale || !roleName.trim()}>
               Save
             </Button>
           </DialogFooter>
