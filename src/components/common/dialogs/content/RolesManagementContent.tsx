@@ -9,10 +9,12 @@ import { PermissionFilterCard } from '@/components/common/cards/filter/Permissio
 import { UserFilterCard } from '@/components/common/cards/filter/UserFilterCard'
 import { RoleCardFilter } from '@/components/common/cards/filter/RoleCardFilter';
 import { updateRolePermissions, deleteRole, updateRoleUsers } from '@/api/RoleService';
+import { useViewport } from '@/contexts/ViewportProvider'
 
 export function RolesManagementContent() {
   const { me } = useContext(MeContext)
   const { myRoles, myPermissions, myUsers, loading, error, fetchMyRoles, fetchMyPermissions, fetchMyUsers } = useMyCompany()
+  const { isBelowSm, isBelowMd, isBelowLg, isBelowXl, isBelowXxl } = useViewport()
   
   // Update the handleSaveRolePermissions function to properly handle permission updates
   const handleSaveRolePermissions = async (roleId: string, updatedPermissions: Permission[]) => {
@@ -102,6 +104,7 @@ export function RolesManagementContent() {
   return (
     <div className="flex w-full h-full gap-4 mx-auto overflow-hidden">
       {/* Left column - 40% width */}
+      {!isBelowMd &&
       <div className="w-[40%] h-full flex flex-col gap-4 overflow-hidden">
         <div className="flex-1 overflow-hidden">
           <PermissionFilterCard
@@ -121,6 +124,7 @@ export function RolesManagementContent() {
           />
         </div>
       </div>
+      }
       
       {/* Right column - 60% width */}
       <div className="flex-1 h-full overflow-hidden">

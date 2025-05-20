@@ -86,6 +86,12 @@ export function RoleCardFilter({
     sample: allPermissions.slice(0, 3),
   })
 
+  //const SM_BREAKPOINT = 640;
+  //const MD_BREAKPOINT = 768;
+  //const LG_BREAKPOINT = 1024;
+  //const XL_BREAKPOINT = 1280;
+  //const XXL_BREAKPOINT = 1536;
+  //
   useEffect(() => {
     if (isBelowSm) {
       setRolesCompact(true);
@@ -97,24 +103,38 @@ export function RoleCardFilter({
       setRolesCompact(true);
       setIsGridView(true);
       setRoleButtonTitles(false);
-      setShowGridButton(true);
+      setShowGridButton(false);
     }
     else if (isBelowLg && !isBelowMd) {
-      setRolesCompact(false);
-      setRoleButtonTitles(false);
-      setIsGridView(true);
-      setShowGridButton(true);
+      if (isGridView) {
+        setRolesCompact(true);
+        setRoleButtonTitles(false);
+        setShowGridButton(true);
+      } else {
+        setRolesCompact(false);
+        setRoleButton(false);
+        setShowGridButton(true);
+      }
     }
     else if (isBelowXl && !isBelowLg) {
-      setRolesCompact(false);
-      setRoleButtonTitles(true);
-      setIsGridView(true);
-      setShowGridButton(true);
+      if (isGridView) {
+        setRolesCompact(true);
+        setRoleButtonTitles(false);
+        setShowGridButton(true);
+      } else {
+        setRolesCompact(false);
+        setRoleButtonTitles(true);
+        setShowGridButton(true);
+      }
     }
     else {
+      if (isGridView) {
+        setRolesCompact(true);
+        setRoleButtonTitles(false);
+        setShowGridButton(true);
+      }
       setRolesCompact(false);
       setRoleButtonTitles(true);
-      setIsGridView(true);
       setShowGridButton(true);
     }
   }, [isBelowSm, isBelowMd, isBelowLg, isBelowXl, isBelowXxl]);
@@ -128,7 +148,7 @@ export function RoleCardFilter({
   const gridColumns = useMemo(() => {
     if (isBelowMd) return 1;
     if (isBelowLg) return 2;
-    return 3;
+    return 2;
   }, [isBelowMd, isBelowLg]);
   
   return (
