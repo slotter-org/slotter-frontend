@@ -1,78 +1,85 @@
-import { useState, useMemo } from 'react'
-import { Search, Filter, Plus, Ticket } from 'lucide-react'
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { ScrollArea } from '@/components/ui/scroll-area'
-import { Button } from '@/components/ui/button'
-import { Skeleton } from '@/components/ui/skeleton'
-import { InvitationCard } from '@/components/common/cards/InvitationCard'
-import type { Invitation } from '@/types/invitation'
+import { useState, useMemo } from 'react';
+import { Search, Filter, Ticket } from 'lucide-react';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Skeleton } from '@/components/ui/skeleton';
+import { InvitationCard } from '@/components/common/cards/InvitationCard';
+import type { Invitation } from '@/types/invitation';
 
 interface InvitationFilterCardProps {
   invitations: Invitation[]
   onResendInvitation?: (invitationId: string) => Promise<void>
   onCancelInvitation?: (invitationId: string) => Promise<void>
   onExpireInvitation?: (invitationId: string) => Promise<void>
-  onCreateInvitation?: (invitationId: string) => Promise<void>
+  onCreateInvitation?: () => void
   className?: string
   isLoading?: boolean
 }
 
-export function InvitationFilterCard({ invitations, onResendInvitation, onCancelInvitation, onExpireInvitation, onCreateInvitation, className, isLoading = false }: InvitationFilterCardProps) {
-  const [searchQuery, setSearchQuery] = useState("")
-  const [statusFilter, setStatusFilter] = useState<string>("all")
-  const [typeFilter, setTypeFilter] = useState<string>("all")
+export function InvitationFilterCard({ 
+  invitations, 
+  onResendInvitation, 
+  onCancelInvitation, 
+  onExpireInvitation, 
+  onCreateInvitation, 
+  className, 
+  isLoading = false 
+}: InvitationFilterCardProps) {
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [typeFilter, setTypeFilter] = useState<string>("all");
   
   const statusOptions = useMemo(() => {
-    const statuses = new Set<string>()
+    const statuses = new Set<string>();
     invitations.forEach((invitation) => {
       if (invitation.status) {
-        statuses.add(invitation.status)
+        statuses.add(invitation.status);
       }
-    })
-    return ["all", ...Array.from(statuses)]
-  }, [invitations])
+    });
+    return ["all", ...Array.from(statuses)];
+  }, [invitations]);
   
   const typeOptions = useMemo(() => {
-    const types = new Set<string>()
+    const types = new Set<string>();
     invitations.forEach((invitation) => {
       if (invitation.invitationType) {
-        types.add(invitation.invitationType)
+        types.add(invitation.invitationType);
       }
-    })
-    return ["all", ...Array.from(types)]
-  }, [invitations])
-
+    });
+    return ["all", ...Array.from(types)];
+  }, [invitations]);
+  
   const filteredInvitations = useMemo(() => {
     return invitations.filter((invitation) => {
       const matchesSearch =
         searchQuery === "" ||
         (invitation.name && invitation.name.toLowerCase().includes(searchQuery.toLowerCase())) ||
         (invitation.email && invitation.email.toLowerCase().includes(searchQuery.toLowerCase())) ||
-        (invitation.phoneNumber && invitation.phoneNumber.includes(searchQuery))
-      const matchesStatus = statusFilter === "all" || invitation.status === statusFilter
-      const matchesType = typeFilter === "all" || invitation.invitationType === typeFilter
-      return matchesSearch && matchesStatus && matchesType
-    })
-  }, [invitations, searchQuery, statusFilter, typeFilter])
-
+        (invitation.phoneNumber && invitation.phoneNumber.includes(searchQuery));
+      const matchesStatus = statusFilter === "all" || invitation.status === statusFilter;
+      const matchesType = typeFilter === "all" || invitation.invitationType === typeFilter;
+      return matchesSearch && matchesStatus && matchesType;
+    });
+  }, [invitations, searchQuery, statusFilter, typeFilter]);
+  
   const finalInvitations = useMemo(() => {
     return [...filteredInvitations].sort((a, b) => {
-      if (a.status === "pending" && b.status !== "pending") return -1
-      if (a.status !== "pending" && b.status === "pending") return 1
-      const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0
-      const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0
-      return dateB - dateA
-    })
-  }, [filteredInvitations])
-
-    if (isLoading) {
+      if (a.status === "pending" && b.status !== "pending") return -1;
+      if (a.status !== "pending" && b.status === "pending") return 1;
+      const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+      const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+      return dateB - dateA;
+    });
+  }, [filteredInvitations]);
+  
+  if (isLoading) {
     return (
       <Card className={`${className ?? ''} h-full flex flex-col`}>
         <CardHeader className="flex flex-row items-center justify-between shrink-0">
           <CardTitle className="flex items-center gap-2">
-            <Mail className="h-5 w-5" />
+            <Ticket className="h-5 w-5" />
             <Skeleton className="h-6 w-32" />
           </CardTitle>
           <Skeleton className="h-6 w-24" />
@@ -92,7 +99,7 @@ export function InvitationFilterCard({ invitations, onResendInvitation, onCancel
           </div>
         </CardContent>
       </Card>
-    )
+    );
   }
   
   return (
@@ -102,16 +109,8 @@ export function InvitationFilterCard({ invitations, onResendInvitation, onCancel
           <Ticket className="h-5 w-5" />
           Invitations
         </CardTitle>
-        <div className="flex items-center gap-2">
-          <div className="text-sm text-muted-foreground">
-            {finalInvitations.length} of {invitations.length} invitations
-          </div>
-          {onCreateInvitation && (
-            <Button size="sm" onClick={onCreateInvitation}>
-              <Plus className="h-4 w-4 mr-1" />
-              Invite
-            </Button>
-          )}
+        <div className="text-sm text-muted-foreground">
+          {finalInvitations.length} of {invitations.length} invitations
         </div>
       </CardHeader>
       <CardContent className="flex flex-col flex-1 overflow-hidden p-6">
@@ -220,5 +219,5 @@ export function InvitationFilterCard({ invitations, onResendInvitation, onCancel
         </ScrollArea>
       </CardContent>
     </Card>
-  )
+  );
 }

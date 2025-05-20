@@ -4,13 +4,15 @@ import { useMyCompany } from '@/contexts/MyCompanyProvider';
 import { useMyWms } from '@/contexts/MyWmsProvider';
 import type { Invitation } from '@/types/invitation';
 import { InvitationFilterCard } from '@/components/common/cards/filter/InvitationFilterCard';
+import { Button } from '@/components/ui/button';
+import { Plus } from 'lucide-react';
 import { resendInvitation, cancelInvitation, expireInvitation } from '@/api/InvitationService';
 
 export function InvitationManagementContent() {
   const { me } = useContext(MeContext);
   const { myInvitations, loading, error, fetchMyInvitations } = useMyCompany();
   const [isCreatingInvitation, setIsCreatingInvitation] = useState(false);
-
+  
   // Handle resending an invitation
   const handleResendInvitation = async (invitationId: string) => {
     try {
@@ -24,7 +26,7 @@ export function InvitationManagementContent() {
       console.error("[handleResendInvitation] Error:", error);
     }
   };
-
+  
   // Handle canceling an invitation
   const handleCancelInvitation = async (invitationId: string) => {
     try {
@@ -33,11 +35,12 @@ export function InvitationManagementContent() {
         invitation_id: invitationId
       });
       console.log("Invitation canceled successfully, refreshing invitations");
+      fetchMyInvitations();
     } catch (error) {
       console.error("[handleCancelInvitation] Error:", error);
     }
   };
-
+  
   // Handle expiring an invitation
   const handleExpireInvitation = async (invitationId: string) => {
     try {
@@ -46,11 +49,12 @@ export function InvitationManagementContent() {
         invitation_id: invitationId
       });
       console.log("Invitation marked as expired successfully, refreshing invitations");
+      fetchMyInvitations();
     } catch (error) {
       console.error("[handleExpireInvitation] Error:", error);
     }
   };
-
+  
   // Handle creating a new invitation
   const handleCreateInvitation = () => {
     setIsCreatingInvitation(true);
@@ -59,12 +63,12 @@ export function InvitationManagementContent() {
     // For this example, we'll just log it
     // In a real implementation, you'd show a dialog or navigate to a form
   };
-
+  
   // If loading, show loading state
   if (loading) {
     return <div className="flex justify-center items-center h-full">Loading...</div>;
   }
-
+  
   // If error, show error state
   if (error) {
     return (
@@ -73,7 +77,7 @@ export function InvitationManagementContent() {
       </div>
     );
   }
-
+  
   // If no invitations, still show the component but it will display empty state internally
   if (!myInvitations) {
     return (
@@ -82,23 +86,21 @@ export function InvitationManagementContent() {
       </div>
     );
   }
-
-  // Log invitations for debugging
-  console.log("InvitationManagementContent has invitations:", {
-    count: myInvitations.length,
-    sample: myInvitations.slice(0, 0),
-  });
-
+  
   return (
     <div className="w-full h-full mx-auto overflow-hidden p-4">
-      {/* Only the invitation filter, taking up the full width */}
+      <div className="flex justify-end mb-4">
+        <Button onClick={handleCreateInvitation} size="sm">
+          <Plus className="h-4 w-4 mr-1" />
+          Invite
+        </Button>
+      </div>
       <div className="h-full w-full overflow-hidden">
         <InvitationFilterCard
           invitations={myInvitations}
           onResendInvitation={handleResendInvitation}
           onCancelInvitation={handleCancelInvitation}
           onExpireInvitation={handleExpireInvitation}
-          onCreateInvitation={handleCreateInvitation}
           isLoading={loading}
         />
       </div>
