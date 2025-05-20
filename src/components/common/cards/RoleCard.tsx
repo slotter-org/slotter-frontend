@@ -136,7 +136,7 @@ export function RoleCard({
   const [activeTab, setActiveTab] = useState<string>("permissions"); // Default to permissions tab
   
   // New state for collapsible sections
-  const [isPermissionsOpen, setIsPermissionsOpen] = useState(true);
+  const [isPermissionsOpen, setIsPermissionsOpen] = useState(false);
   const [isUsersOpen, setIsUsersOpen] = useState(false);
   
   // Update dialog
