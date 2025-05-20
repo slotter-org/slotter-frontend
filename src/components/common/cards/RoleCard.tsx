@@ -2,10 +2,29 @@ import { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { Pencil, Trash2, Save, KeyRound, RefreshCw, AlertTriangle, Users, ChevronDown, ChevronUp } from 'lucide-react';
+import { 
+  Pencil, 
+  Trash2, 
+  Save, 
+  KeyRound, 
+  RefreshCw, 
+  AlertTriangle, 
+  Users, 
+  ChevronDown, 
+  ChevronUp,
+  MoreVertical,
+  Settings
+} from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { 
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuItem, 
+  DropdownMenuSeparator, 
+  DropdownMenuTrigger 
+} from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -26,9 +45,10 @@ interface RoleCardProps {
   onSaveUsers?: (roleId: string, users: User[]) => void
   allPermissions?: Permission[]
   allUsers?: User[]
+  compact?: boolean
 }
 
-// Add enhanced drop zone components that work with the original ones
+// Enhanced drop zone components that work with the original ones
 const EnhancedPermissionDropZone = ({ 
   title, 
   selectedPermissions, 
@@ -122,7 +142,8 @@ export function RoleCard({
   onSavePermissions, 
   onSaveUsers, 
   allPermissions = [], 
-  allUsers = [] 
+  allUsers = [],
+  compact = false
 }: RoleCardProps) {
   const originalRoleRef = useRef<Role>(deepClone(role));
   const [localRole, setLocalRole] = useState<Role>(deepClone(role));
@@ -135,7 +156,7 @@ export function RoleCard({
   const [isStaleUsers, setIsStaleUsers] = useState(false);
   const [activeTab, setActiveTab] = useState<string>("permissions"); // Default to permissions tab
   
-  // New state for collapsible sections
+  // State for collapsible sections - both start closed by default
   const [isPermissionsOpen, setIsPermissionsOpen] = useState(false);
   const [isUsersOpen, setIsUsersOpen] = useState(false);
   
@@ -161,7 +182,7 @@ export function RoleCard({
     });
   }, [allUsers]);
   
-  // New effect to automatically open the relevant section when tab changes
+  // Automatically open the relevant section when tab changes
   useEffect(() => {
     if (activeTab === "permissions" && !isPermissionsOpen) {
       setIsPermissionsOpen(true);
@@ -170,7 +191,7 @@ export function RoleCard({
     }
   }, [activeTab]);
   
-  // New effect to automatically open the relevant section when entering edit mode
+  // Automatically open the relevant section when entering edit mode
   useEffect(() => {
     if (isEditingPermissions && !isPermissionsOpen) {
       setIsPermissionsOpen(true);
@@ -376,6 +397,222 @@ export function RoleCard({
       
   const isStale = isStalePermissions || isStaleUsers;
   
+  // Render action buttons based on compact mode
+  const renderActionButtons = () => {
+    if (compact) {
+      return (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="outline"
+              size="sm"
+              className={cn(isStale && "opacity-50 cursor-not-allowed")}
+              disabled={isStale}
+            >
+              <Settings className="h-4 w-4 mr-2" />
+              <span>Actions</span>
+              <ChevronDown className="h-4 w-4 ml-1" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem
+              onClick={handleTogglePermissionsEditMode}
+              disabled={isStalePermissions}
+              className={isStalePermissions ? "opacity-50 cursor-not-allowed" : ""}
+            >
+              {isEditingPermissions ? (
+                <>
+                  <Save className="h-4 w-4 mr-2" />
+                  Save Permissions
+                </>
+              ) : (
+                <>
+                  <KeyRound className="h-4 w-4 mr-2" />
+                  Edit Permissions
+                </>
+              )}
+            </DropdownMenuItem>
+            
+            <DropdownMenuItem
+              onClick={handleToggleUsersEditMode}
+              disabled={isStaleUsers}
+              className={isStaleUsers ? "opacity-50 cursor-not-allowed" : ""}
+            >
+              {isEditingUsers ? (
+                <>
+                  <Save className="h-4 w-4 mr-2" />
+                  Save Users
+                </>
+              ) : (
+                <>
+                  <Users className="h-4 w-4 mr-2" />
+                  Edit Users
+                </>
+              )}
+            </DropdownMenuItem>
+            
+            <DropdownMenuItem
+              onClick={handleOpenUpdateDialog}
+              disabled={isStale}
+              className={isStale ? "opacity-50 cursor-not-allowed" : ""}
+            >
+              <Pencil className="h-4 w-4 mr-2" />
+              Update Role
+            </DropdownMenuItem>
+            
+            <DropdownMenuSeparator />
+            
+            <DropdownMenuItem
+              onClick={handleDelete}
+              disabled={isStale}
+              className={cn(
+                "text-destructive focus:text-destructive",
+                isStale && "opacity-50 cursor-not-allowed"
+              )}
+            >
+              <Trash2 className="h-4 w-4 mr-2" />
+              Delete Role
+            </DropdownMenuItem>
+            
+            {isStale && (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={handleRefresh}>
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  Refresh Data
+                </DropdownMenuItem>
+              </>
+            )}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      );
+    }
+    
+    // Standard mode with individual action buttons
+    return (
+      <div className="flex items-center gap-2">
+        {/* Toggle Edit Permissions */}
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleTogglePermissionsEditMode}
+                className={cn(isStalePermissions && "opacity-50 cursor-not-allowed")}
+                disabled={isStalePermissions}
+                aria-label={isEditingPermissions ? "Save Permissions" : "Edit Permissions"}
+              >
+                {isEditingPermissions ? (
+                  <>
+                    <Save className="h-4 w-4" />
+                    <span className="hidden sm:inline">Save Permissions</span>
+                  </>
+                ) : (
+                  <>
+                    <KeyRound className="h-4 w-4" />
+                    <span className="hidden sm:inline">Edit Permissions</span>
+                  </>
+                )}
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              {isEditingPermissions
+                ? isStalePermissions
+                  ? "Refresh required before saving"
+                  : "Save permission changes"
+                : isStalePermissions
+                  ? "Refresh required before editing"
+                  : "Edit role permissions"}
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+        
+        {/* Toggle Edit Users */}
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleToggleUsersEditMode}
+                className={cn(isStaleUsers && "opacity-50 cursor-not-allowed")}
+                disabled={isStaleUsers}
+                aria-label={isEditingUsers ? "Save Users" : "Edit Users"}
+              >
+                {isEditingUsers ? (
+                  <>
+                    <Save className="h-4 w-4" />
+                    <span className="hidden sm:inline">Save Users</span>
+                  </>
+                ) : (
+                  <>
+                    <Users className="h-4 w-4" />
+                    <span className="hidden sm:inline">Edit Users</span>
+                  </>
+                )}
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              {isEditingUsers
+                ? isStaleUsers
+                  ? "Refresh required before saving"
+                  : "Save user changes"
+                : isStaleUsers
+                  ? "Refresh required before editing"
+                  : "Edit role users"}
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+        
+        {/* Update Role */}
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleOpenUpdateDialog}
+                className={cn(isStale && "opacity-50 cursor-not-allowed")}
+                disabled={isStale}
+                aria-label="Update role"
+              >
+                <Pencil className="h-4 w-4" />
+                <span className="hidden sm:inline">Update</span>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              {isStale ? "Refresh required before updating" : "Update role details"}
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+        
+        {/* Delete */}
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleDelete}
+                className={cn(
+                  "text-destructive hover:bg-destructive hover:text-destructive-foreground",
+                  isStale && "opacity-50 cursor-not-allowed",
+                )}
+                disabled={isStale}
+                aria-label="Delete role"
+              >
+                <Trash2 className="h-4 w-4" />
+                <span className="hidden sm:inline">Delete</span>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>{isStale ? "Refresh required before deleting" : "Delete this role"}</TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      </div>
+    );
+  };
+  
   return (
     <>
       <Card className={cn("w-full", isStale && "border-amber-400")}>
@@ -415,126 +652,7 @@ export function RoleCard({
                 {localRole.description && <p className="text-sm text-muted-foreground">{localRole.description}</p>}
               </div>
             </div>
-            <div className="flex items-center gap-2">
-              {/* Toggle Edit Permissions */}
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={handleTogglePermissionsEditMode}
-                      className={cn(isStalePermissions && "opacity-50 cursor-not-allowed")}
-                      disabled={isStalePermissions}
-                      aria-label={isEditingPermissions ? "Save Permissions" : "Edit Permissions"}
-                    >
-                      {isEditingPermissions ? (
-                        <>
-                          <Save className="h-4 w-4" />
-                          <span className="hidden sm:inline">Save Permissions</span>
-                        </>
-                      ) : (
-                        <>
-                          <KeyRound className="h-4 w-4" />
-                          <span className="hidden sm:inline">Edit Permissions</span>
-                        </>
-                      )}
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    {isEditingPermissions
-                      ? isStalePermissions
-                        ? "Refresh required before saving"
-                        : "Save permission changes"
-                      : isStalePermissions
-                        ? "Refresh required before editing"
-                        : "Edit role permissions"}
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-              
-              {/* Toggle Edit Users */}
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={handleToggleUsersEditMode}
-                      className={cn(isStaleUsers && "opacity-50 cursor-not-allowed")}
-                      disabled={isStaleUsers}
-                      aria-label={isEditingUsers ? "Save Users" : "Edit Users"}
-                    >
-                      {isEditingUsers ? (
-                        <>
-                          <Save className="h-4 w-4" />
-                          <span className="hidden sm:inline">Save Users</span>
-                        </>
-                      ) : (
-                        <>
-                          <Users className="h-4 w-4" />
-                          <span className="hidden sm:inline">Edit Users</span>
-                        </>
-                      )}
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    {isEditingUsers
-                      ? isStaleUsers
-                        ? "Refresh required before saving"
-                        : "Save user changes"
-                      : isStaleUsers
-                        ? "Refresh required before editing"
-                        : "Edit role users"}
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-              
-              {/* Update Role */}
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={handleOpenUpdateDialog}
-                      className={cn(isStale && "opacity-50 cursor-not-allowed")}
-                      disabled={isStale}
-                      aria-label="Update role"
-                    >
-                      <Pencil className="h-4 w-4" />
-                      <span className="hidden sm:inline">Update</span>
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    {isStale ? "Refresh required before updating" : "Update role details"}
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-              
-              {/* Delete */}
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={handleDelete}
-                      className={cn(
-                        "text-destructive hover:bg-destructive hover:text-destructive-foreground",
-                        isStale && "opacity-50 cursor-not-allowed",
-                      )}
-                      disabled={isStale}
-                      aria-label="Delete role"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                      <span className="hidden sm:inline">Delete</span>
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>{isStale ? "Refresh required before deleting" : "Delete this role"}</TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            </div>
+            {renderActionButtons()}
           </div>
         </CardHeader>
         <CardContent>
