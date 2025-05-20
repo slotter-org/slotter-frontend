@@ -104,7 +104,7 @@ export function RolesManagementContent() {
   return (
     <div className="flex w-full h-full gap-4 mx-auto overflow-hidden">
       {/* Left column - 40% width */}
-      {!isBelowMd &&
+      {!isBelowLg &&
       <div className="w-[40%] h-full flex flex-col gap-4 overflow-hidden">
         <div className="flex-1 overflow-hidden">
           <PermissionFilterCard
