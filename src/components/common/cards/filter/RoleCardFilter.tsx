@@ -112,7 +112,7 @@ export function RoleCardFilter({
         setShowGridButton(true);
       } else {
         setRolesCompact(false);
-        setRoleButton(false);
+        setRoleButtonTitles(false);
         setShowGridButton(true);
       }
     }
