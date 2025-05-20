@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { Pencil, Trash2, Save, KeyRound, RefreshCw, AlertTriangle, Users, ChevronDown, ChevronUp, Ellipsis } from 'lucide-react';
+import { Pencil, Trash2, Save, KeyRound, RefreshCw, AlertTriangle, Users, ChevronDown, ChevronUp, Ellipsis, ShieldPlus, UserPlus, ShieldCheck, UserCheck } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
