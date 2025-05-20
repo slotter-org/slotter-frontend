@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Search, Filter, Ticket, List, Grid } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -32,6 +32,29 @@ export function InvitationFilterCard({
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [typeFilter, setTypeFilter] = useState<string>("all");
   const [isGridView, setIsGridView] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+  
+  // Handle responsive behavior
+  useEffect(() => {
+    // Function to check if viewport width is mobile
+    const checkIfMobile = () => {
+      setIsMobile(window.innerWidth < 640); // 640px is the 'sm' breakpoint in Tailwind
+    };
+    
+    // Initial check
+    checkIfMobile();
+    
+    // If mobile, force list view
+    if (isMobile && isGridView) {
+      setIsGridView(false);
+    }
+    
+    // Add resize event listener
+    window.addEventListener('resize', checkIfMobile);
+    
+    // Cleanup
+    return () => window.removeEventListener('resize', checkIfMobile);
+  }, [isMobile, isGridView]);
   
   const statusOptions = useMemo(() => {
     const statuses = new Set<string>();
@@ -176,17 +199,19 @@ export function InvitationFilterCard({
               </Select>
             </div>
           </div>
-
-          {/* Grid/List View Toggle Button */}
-          <Button
-            variant="outline"
-            size="icon"
-            className="h-10 w-10 shrink-0"
-            onClick={() => setIsGridView(!isGridView)}
-            title={isGridView ? "Switch to List View" : "Switch to Grid View"}
-          >
-            {isGridView ? <List className="h-4 w-4" /> : <Grid className="h-4 w-4" />}
-          </Button>
+          
+          {/* Grid/List View Toggle Button - Hidden on mobile */}
+          {!isMobile && (
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-10 w-10 shrink-0"
+              onClick={() => setIsGridView(!isGridView)}
+              title={isGridView ? "Switch to List View" : "Switch to Grid View"}
+            >
+              {isGridView ? <List className="h-4 w-4" /> : <Grid className="h-4 w-4" />}
+            </Button>
+          )}
         </div>
         
         {/* Active Filters Display */}
@@ -214,7 +239,7 @@ export function InvitationFilterCard({
         
         {/* Invitations List */}
         <ScrollArea className="flex-1 overflow-auto pr-4">
-          <div className={isGridView
+          <div className={(!isMobile && isGridView)
             ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
             : "space-y-4"
           }>
@@ -226,7 +251,7 @@ export function InvitationFilterCard({
                   onResend={onResendInvitation}
                   onCancel={onCancelInvitation}
                   onExpire={onExpireInvitation}
-                  isGridView={isGridView}
+                  isGridView={!isMobile && isGridView}
                 />
               ))
             ) : (
