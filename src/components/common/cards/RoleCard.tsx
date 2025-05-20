@@ -2,10 +2,11 @@ import { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { Pencil, Trash2, Save, KeyRound, RefreshCw, AlertTriangle, Users } from 'lucide-react';
+import { Pencil, Trash2, Save, KeyRound, RefreshCw, AlertTriangle, Users, MoreVertical } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -16,7 +17,7 @@ import type { User } from '@/types/user';
 import { PermissionDropZone } from '@/components/common/utils/PermissionDropZone';
 import { UserDropZone } from '@/components/common/utils/UserDropZone';
 import { cn } from '@/lib/utils';
-import { updateRoleNameDesc, update } from '@/api/RoleService';
+import { updateRoleNameDesc } from '@/api/RoleService';
 
 interface RoleCardProps {
   role: Role
@@ -28,23 +29,23 @@ interface RoleCardProps {
   allUsers?: User[]
 }
 
-const deepClone = <T,>(obj: T): T => JSON.parse(JSON.stringify(obj))
+const deepClone = <T,>(obj: T): T => JSON.parse(JSON.stringify(obj));
 
 const arePermissionsEqual = (perms1: Permission[] = [], perms2: Permission[] = []) => {
-  if (perms1.length !== perms2.length) return false
-  const ids1 = new Set(perms1.map((p) => p.id))
-  const ids2 = new Set(perms2.map((p) => p.id))
-  if (ids1.size !== ids2.size) return false
-  return [...ids1].every((id) => ids2.has(id))
-}
+  if (perms1.length !== perms2.length) return false;
+  const ids1 = new Set(perms1.map((p) => p.id));
+  const ids2 = new Set(perms2.map((p) => p.id));
+  if (ids1.size !== ids2.size) return false;
+  return [...ids1].every((id) => ids2.has(id));
+};
 
 const areUsersEqual = (users1: User[] = [], users2: User[] = []) => {
-  if (users1.length !== users2.length) return false
-  const ids1 = new Set(users1.map((u) => u.id))
-  const ids2 = new Set(users2.map((u) => u.id))
-  if (ids1.size !== ids2.size) return false
-  return [...ids1].every((id) => ids2.has(id))
-}
+  if (users1.length !== users2.length) return false;
+  const ids1 = new Set(users1.map((u) => u.id));
+  const ids2 = new Set(users2.map((u) => u.id));
+  if (ids1.size !== ids2.size) return false;
+  return [...ids1].every((id) => ids2.has(id));
+};
 
 export function RoleCard({ 
   role, 
@@ -55,203 +56,222 @@ export function RoleCard({
   allPermissions = [], 
   allUsers = [] 
 }: RoleCardProps) {
-  const originalRoleRef = useRef<Role>(deepClone(role))
-  const [localRole, setLocalRole] = useState<Role>(deepClone(role))
-  const [selectedPermissions, setSelectedPermissions] = useState<Permission[]>(deepClone(role.permissions || []))
-  const [selectedUsers, setSelectedUsers] = useState<User[]>(deepClone(role.users || []))
+  const originalRoleRef = useRef<Role>(deepClone(role));
+  const [localRole, setLocalRole] = useState<Role>(deepClone(role));
+  const [selectedPermissions, setSelectedPermissions] = useState<Permission[]>(deepClone(role.permissions || []));
+  const [selectedUsers, setSelectedUsers] = useState<User[]>(deepClone(role.users || []));
   
-  const [isEditingPermissions, setIsEditingPermissions] = useState(false)
-  const [isEditingUsers, setIsEditingUsers] = useState(false)
-  const [isStalePermissions, setIsStalePermissions] = useState(false)
-  const [isStaleUsers, setIsStaleUsers] = useState(false)
-  const [activeTab, setActiveTab] = useState<string>("permissions") // Default to permissions tab
+  const [isEditingPermissions, setIsEditingPermissions] = useState(false);
+  const [isEditingUsers, setIsEditingUsers] = useState(false);
+  const [isStalePermissions, setIsStalePermissions] = useState(false);
+  const [isStaleUsers, setIsStaleUsers] = useState(false);
+  const [activeTab, setActiveTab] = useState<string>("permissions"); // Default to permissions tab
   
   // Update dialog
-  const [updateDialogOpen, setUpdateDialogOpen] = useState(false)
-  const [roleName, setRoleName] = useState(role.name)
-  const [roleDescription, setRoleDescription] = useState(role.description || "")
-  const [permissionsChanged, setPermissionsChanged] = useState(false)
-  const [usersChanged, setUsersChanged] = useState(false)
+  const [updateDialogOpen, setUpdateDialogOpen] = useState(false);
+  const [roleName, setRoleName] = useState(role.name);
+  const [roleDescription, setRoleDescription] = useState(role.description || "");
+  const [permissionsChanged, setPermissionsChanged] = useState(false);
+  const [usersChanged, setUsersChanged] = useState(false);
+  
+  // Responsive state
+  const [isMobile, setIsMobile] = useState(false);
+  
+  // Check if we're on mobile
+  useEffect(() => {
+    const checkIfMobile = () => {
+      setIsMobile(window.innerWidth < 640); // 640px is the 'sm' breakpoint in Tailwind
+    };
+    
+    // Initial check
+    checkIfMobile();
+    
+    // Add resize event listener
+    window.addEventListener('resize', checkIfMobile);
+    
+    // Cleanup
+    return () => window.removeEventListener('resize', checkIfMobile);
+  }, []);
   
   // Log allPermissions when the component mounts or when it changes
   useEffect(() => {
     console.log("RoleCard received allPermissions:", {
       count: allPermissions.length,
       sample: allPermissions.slice(0, 3),
-    })
-  }, [allPermissions])
+    });
+  }, [allPermissions]);
   
   useEffect(() => {
     console.log("RoleCard received allUsers:", {
       count: allUsers.length,
       sample: allUsers.slice(0, 3),
-    })
-  }, [allUsers])
+    });
+  }, [allUsers]);
   
   // If new data arrives from the parent
   useEffect(() => {
-    const prev = originalRoleRef.current
-    const incoming = role
+    const prev = originalRoleRef.current;
+    const incoming = role;
     const basicPropsChanged =
-      prev.name !== incoming.name || prev.description !== incoming.description || prev.avatarURL !== incoming.avatarURL
-    const permsChanged = !arePermissionsEqual(prev.permissions || [], incoming.permissions || [])
-    const usersChanged = !areUsersEqual(prev.users || [], incoming.users || [])
+      prev.name !== incoming.name || prev.description !== incoming.description || prev.avatarURL !== incoming.avatarURL;
+    const permsChanged = !arePermissionsEqual(prev.permissions || [], incoming.permissions || []);
+    const usersChanged = !areUsersEqual(prev.users || [], incoming.users || []);
     
     if (basicPropsChanged || permsChanged) {
-      setIsStalePermissions(true)
+      setIsStalePermissions(true);
     }
     
     if (basicPropsChanged || usersChanged) {
-      setIsStaleUsers(true)
+      setIsStaleUsers(true);
     }
     
     // if not editing permissions or users (and no open update dialog), re-sync
     if (!isEditingPermissions && !isEditingUsers && !updateDialogOpen) {
-      setLocalRole(deepClone(incoming))
-      setSelectedPermissions(deepClone(incoming.permissions || []))
-      setSelectedUsers(deepClone(incoming.users || []))
-      setRoleName(incoming.name)
-      setRoleDescription(incoming.description || "")
+      setLocalRole(deepClone(incoming));
+      setSelectedPermissions(deepClone(incoming.permissions || []));
+      setSelectedUsers(deepClone(incoming.users || []));
+      setRoleName(incoming.name);
+      setRoleDescription(incoming.description || "");
       
       if (isStalePermissions) {
-        setIsStalePermissions(false)
+        setIsStalePermissions(false);
       }
       
       if (isStaleUsers) {
-        setIsStaleUsers(false)
+        setIsStaleUsers(false);
       }
       
-      originalRoleRef.current = deepClone(incoming)
+      originalRoleRef.current = deepClone(incoming);
     }
-  }, [role, isEditingPermissions, isEditingUsers, updateDialogOpen, isStalePermissions, isStaleUsers])
+  }, [role, isEditingPermissions, isEditingUsers, updateDialogOpen, isStalePermissions, isStaleUsers]);
   
   // Whenever selectedPermissions changes, check if it differs from original
   useEffect(() => {
-    const origPerms = originalRoleRef.current.permissions || []
-    setPermissionsChanged(!arePermissionsEqual(selectedPermissions, origPerms))
-  }, [selectedPermissions])
+    const origPerms = originalRoleRef.current.permissions || [];
+    setPermissionsChanged(!arePermissionsEqual(selectedPermissions, origPerms));
+  }, [selectedPermissions]);
   
   // Whenever selectedUsers changes, check if it differs from original
   useEffect(() => {
-    const origUsers = originalRoleRef.current.users || []
-    setUsersChanged(!areUsersEqual(selectedUsers, origUsers))
-  }, [selectedUsers])
+    const origUsers = originalRoleRef.current.users || [];
+    setUsersChanged(!areUsersEqual(selectedUsers, origUsers));
+  }, [selectedUsers]);
   
   // Called by PermissionDropZone
   const handlePermissionDrop = (permission: Permission) => {
-    console.log("Permission received in RoleCard:", permission)
+    console.log("Permission received in RoleCard:", permission);
     // Check if this permission is already in the role
     if (!selectedPermissions.some((p) => p.id === permission.id)) {
-      const newPerms = [...selectedPermissions, deepClone(permission)]
-      console.log("Updated permissions:", newPerms)
-      setSelectedPermissions(newPerms)
-      setLocalRole((prev) => ({ ...prev, permissions: newPerms }))
-      setPermissionsChanged(true) // Explicitly mark as changed
+      const newPerms = [...selectedPermissions, deepClone(permission)];
+      console.log("Updated permissions:", newPerms);
+      setSelectedPermissions(newPerms);
+      setLocalRole((prev) => ({ ...prev, permissions: newPerms }));
+      setPermissionsChanged(true); // Explicitly mark as changed
     } else {
-      console.log("Permission already exists in role")
+      console.log("Permission already exists in role");
     }
-  }
+  };
   
   // Called by UserDropZone
   const handleUserDrop = (user: User) => {
-    console.log("User received in RoleCard:", user)
+    console.log("User received in RoleCard:", user);
     if (!selectedUsers.some((u) => u.id === user.id)) {
-      const newUsers = [...selectedUsers, deepClone(user)]
-      console.log("Updated users:", newUsers)
-      setSelectedUsers(newUsers)
-      setLocalRole((prev) => ({ ...prev, users: newUsers }))
-      setUsersChanged(true)
+      const newUsers = [...selectedUsers, deepClone(user)];
+      console.log("Updated users:", newUsers);
+      setSelectedUsers(newUsers);
+      setLocalRole((prev) => ({ ...prev, users: newUsers }));
+      setUsersChanged(true);
     } else {
-      console.log("User already exists in role")
+      console.log("User already exists in role");
     }
-  }
+  };
   
   const handlePermissionRemove = (permission: Permission) => {
-    const newPerms = selectedPermissions.filter((p) => p.id !== permission.id)
-    setSelectedPermissions(newPerms)
-    setLocalRole((prev) => ({ ...prev, permissions: newPerms }))
-  }
+    const newPerms = selectedPermissions.filter((p) => p.id !== permission.id);
+    setSelectedPermissions(newPerms);
+    setLocalRole((prev) => ({ ...prev, permissions: newPerms }));
+  };
   
   const handleUserRemove = (user: User) => {
-    const newUsers = selectedUsers.filter((u) => u.id !== user.id)
-    setSelectedUsers(newUsers)
-    setLocalRole((prev) => ({ ...prev, users: newUsers }))
-  }
+    const newUsers = selectedUsers.filter((u) => u.id !== user.id);
+    setSelectedUsers(newUsers);
+    setLocalRole((prev) => ({ ...prev, users: newUsers }));
+  };
   
   // Toggle permission edit mode
   const handleTogglePermissionsEditMode = () => {
-    if (isStalePermissions) return
+    if (isStalePermissions) return;
     
     if (isEditingPermissions && permissionsChanged) {
-      console.log("Saving permissions:", selectedPermissions)
-      onSavePermissions?.(localRole.id, selectedPermissions)
-      originalRoleRef.current = { ...deepClone(localRole), permissions: deepClone(selectedPermissions) }
-      setPermissionsChanged(false)
+      console.log("Saving permissions:", selectedPermissions);
+      onSavePermissions?.(localRole.id, selectedPermissions);
+      originalRoleRef.current = { ...deepClone(localRole), permissions: deepClone(selectedPermissions) };
+      setPermissionsChanged(false);
     }
     
-    setIsEditingPermissions(!isEditingPermissions)
+    setIsEditingPermissions(!isEditingPermissions);
     
     // If enabling edit mode, switch to permissions tab
     if (!isEditingPermissions) {
-      setActiveTab("permissions")
+      setActiveTab("permissions");
     }
-  }
+  };
   
   // Toggle users edit mode
   const handleToggleUsersEditMode = () => {
-    if (isStaleUsers) return
+    if (isStaleUsers) return;
     
     if (isEditingUsers && usersChanged) {
-      console.log("Saving users:", selectedUsers)
-      onSaveUsers?.(localRole.id, selectedUsers)
-      originalRoleRef.current = { ...deepClone(localRole), users: deepClone(selectedUsers) }
-      setUsersChanged(false)
+      console.log("Saving users:", selectedUsers);
+      onSaveUsers?.(localRole.id, selectedUsers);
+      originalRoleRef.current = { ...deepClone(localRole), users: deepClone(selectedUsers) };
+      setUsersChanged(false);
     }
     
-    setIsEditingUsers(!isEditingUsers)
+    setIsEditingUsers(!isEditingUsers);
     
     // If enabling edit mode, switch to users tab
     if (!isEditingUsers) {
-      setActiveTab("users")
+      setActiveTab("users");
     }
-  }
+  };
   
   const handleOpenUpdateDialog = () => {
-    if (isStalePermissions || isStaleUsers) return
-    setRoleName(localRole.name)
-    setRoleDescription(localRole.description || "")
-    setUpdateDialogOpen(true)
-  }
+    if (isStalePermissions || isStaleUsers) return;
+    setRoleName(localRole.name);
+    setRoleDescription(localRole.description || "");
+    setUpdateDialogOpen(true);
+  };
   
   const handleDelete = () => {
-    if (isStalePermissions || isStaleUsers) return
-    onDelete?.(localRole.id)
-  }
+    if (isStalePermissions || isStaleUsers) return;
+    onDelete?.(localRole.id);
+  };
   
   // Revert everything
   const handleRefresh = () => {
-    const fresh = deepClone(role)
-    setLocalRole(fresh)
-    setSelectedPermissions(deepClone(fresh.permissions || []))
-    setSelectedUsers(deepClone(fresh.users || []))
-    setRoleName(fresh.name)
-    setRoleDescription(fresh.description || "")
-    originalRoleRef.current = deepClone(fresh)
-    setIsStalePermissions(false)
-    setIsStaleUsers(false)
-    setIsEditingPermissions(false)
-    setIsEditingUsers(false)
-    setUpdateDialogOpen(false)
-  }
+    const fresh = deepClone(role);
+    setLocalRole(fresh);
+    setSelectedPermissions(deepClone(fresh.permissions || []));
+    setSelectedUsers(deepClone(fresh.users || []));
+    setRoleName(fresh.name);
+    setRoleDescription(fresh.description || "");
+    originalRoleRef.current = deepClone(fresh);
+    setIsStalePermissions(false);
+    setIsStaleUsers(false);
+    setIsEditingPermissions(false);
+    setIsEditingUsers(false);
+    setUpdateDialogOpen(false);
+  };
   
   const handleUpdateRole = async () => {
     if (!onUpdateRole || (isStalePermissions || isStaleUsers) || !roleName.trim()) {
-      setUpdateDialogOpen(false)
-      return
+      setUpdateDialogOpen(false);
+      return;
     }
     
-    const changedName = roleName.trim() !== originalRoleRef.current.name
-    const changedDesc = roleDescription.trim() !== (originalRoleRef.current.description || "")
+    const changedName = roleName.trim() !== originalRoleRef.current.name;
+    const changedDesc = roleDescription.trim() !== (originalRoleRef.current.description || "");
     
     if (changedName || changedDesc) {
       try {
@@ -259,15 +279,15 @@ export function RoleCard({
           role_id: localRole.id,
           name: changedName ? roleName.trim() : undefined,
           description: changedDesc ? roleDescription.trim() : undefined,
-        })
-        onUpdateRole(localRole.id, roleName.trim(), roleDescription.trim())
+        });
+        onUpdateRole(localRole.id, roleName.trim(), roleDescription.trim());
       } catch (error) {
-        console.error("Error updating role:", error)
+        console.error("Error updating role:", error);
       }
     }
     
-    setUpdateDialogOpen(false)
-  }
+    setUpdateDialogOpen(false);
+  };
   
   const getInitials = (name: string) =>
     name
@@ -275,9 +295,239 @@ export function RoleCard({
       .map((n) => n[0])
       .join("")
       .toUpperCase()
-      .substring(0, 2)
+      .substring(0, 2);
       
-  const isStale = isStalePermissions || isStaleUsers
+  const isStale = isStalePermissions || isStaleUsers;
+  
+  // Render full action buttons for larger screens
+  const renderFullActionButtons = () => (
+    <div className="flex items-center gap-2">
+      {/* Toggle Edit Permissions */}
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleTogglePermissionsEditMode}
+              className={cn(isStalePermissions && "opacity-50 cursor-not-allowed")}
+              disabled={isStalePermissions}
+              aria-label={isEditingPermissions ? "Save Permissions" : "Edit Permissions"}
+            >
+              {isEditingPermissions ? (
+                <>
+                  <Save className="h-4 w-4 mr-1.5" />
+                  <span>Save Permissions</span>
+                </>
+              ) : (
+                <>
+                  <KeyRound className="h-4 w-4 mr-1.5" />
+                  <span>Edit Permissions</span>
+                </>
+              )}
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            {isEditingPermissions
+              ? isStalePermissions
+                ? "Refresh required before saving"
+                : "Save permission changes"
+              : isStalePermissions
+                ? "Refresh required before editing"
+                : "Edit role permissions"}
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+      
+      {/* Toggle Edit Users */}
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleToggleUsersEditMode}
+              className={cn(isStaleUsers && "opacity-50 cursor-not-allowed")}
+              disabled={isStaleUsers}
+              aria-label={isEditingUsers ? "Save Users" : "Edit Users"}
+            >
+              {isEditingUsers ? (
+                <>
+                  <Save className="h-4 w-4 mr-1.5" />
+                  <span>Save Users</span>
+                </>
+              ) : (
+                <>
+                  <Users className="h-4 w-4 mr-1.5" />
+                  <span>Edit Users</span>
+                </>
+              )}
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            {isEditingUsers
+              ? isStaleUsers
+                ? "Refresh required before saving"
+                : "Save user changes"
+              : isStaleUsers
+                ? "Refresh required before editing"
+                : "Edit role users"}
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+      
+      {/* Update Role */}
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleOpenUpdateDialog}
+              className={cn(isStale && "opacity-50 cursor-not-allowed")}
+              disabled={isStale}
+              aria-label="Update role"
+            >
+              <Pencil className="h-4 w-4 mr-1.5" />
+              <span>Update</span>
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            {isStale ? "Refresh required before updating" : "Update role details"}
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+      
+      {/* Delete */}
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleDelete}
+              className={cn(
+                "text-destructive hover:bg-destructive hover:text-destructive-foreground",
+                isStale && "opacity-50 cursor-not-allowed",
+              )}
+              disabled={isStale}
+              aria-label="Delete role"
+            >
+              <Trash2 className="h-4 w-4 mr-1.5" />
+              <span>Delete</span>
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>{isStale ? "Refresh required before deleting" : "Delete this role"}</TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+    </div>
+  );
+
+  // Render compact action buttons for smaller screens
+  const renderCompactActionButtons = () => {
+    // Button for the active edit mode
+    const renderActiveEditButton = () => {
+      if (isEditingPermissions) {
+        return (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleTogglePermissionsEditMode}
+            className={cn(isStalePermissions && "opacity-50 cursor-not-allowed")}
+            disabled={isStalePermissions}
+          >
+            <Save className="h-4 w-4 mr-1" />
+            <span>Save</span>
+          </Button>
+        );
+      }
+      
+      if (isEditingUsers) {
+        return (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleToggleUsersEditMode}
+            className={cn(isStaleUsers && "opacity-50 cursor-not-allowed")}
+            disabled={isStaleUsers}
+          >
+            <Save className="h-4 w-4 mr-1" />
+            <span>Save</span>
+          </Button>
+        );
+      }
+      
+      return null;
+    };
+    
+    return (
+      <div className="flex items-center gap-2">
+        {/* Show save button when in edit mode */}
+        {renderActiveEditButton()}
+        
+        {/* Dropdown menu for other actions */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" size="icon" className="h-8 w-8">
+              <MoreVertical className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            {!isEditingPermissions && !isEditingUsers && (
+              <>
+                <DropdownMenuItem 
+                  onClick={handleTogglePermissionsEditMode}
+                  disabled={isStalePermissions}
+                  className={cn(isStalePermissions && "opacity-50 cursor-not-allowed")}
+                >
+                  <KeyRound className="h-4 w-4 mr-2" />
+                  Edit Permissions
+                </DropdownMenuItem>
+                <DropdownMenuItem 
+                  onClick={handleToggleUsersEditMode}
+                  disabled={isStaleUsers}
+                  className={cn(isStaleUsers && "opacity-50 cursor-not-allowed")}
+                >
+                  <Users className="h-4 w-4 mr-2" />
+                  Edit Users
+                </DropdownMenuItem>
+                <DropdownMenuItem 
+                  onClick={handleOpenUpdateDialog}
+                  disabled={isStale}
+                  className={cn(isStale && "opacity-50 cursor-not-allowed")}
+                >
+                  <Pencil className="h-4 w-4 mr-2" />
+                  Update Role
+                </DropdownMenuItem>
+                <DropdownMenuItem 
+                  onClick={handleDelete}
+                  disabled={isStale}
+                  className={cn(
+                    "text-destructive",
+                    isStale && "opacity-50 cursor-not-allowed"
+                  )}
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Delete Role
+                </DropdownMenuItem>
+              </>
+            )}
+            {(isEditingPermissions || isEditingUsers) && (
+              <DropdownMenuItem 
+                onClick={() => {
+                  setIsEditingPermissions(false);
+                  setIsEditingUsers(false);
+                }}
+              >
+                <X className="h-4 w-4 mr-2" />
+                Cancel Editing
+              </DropdownMenuItem>
+            )}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+    );
+  };
   
   return (
     <>
@@ -286,7 +536,7 @@ export function RoleCard({
           <Alert variant="warning" className="border-amber-400 bg-amber-50 dark:bg-amber-950/30 rounded-b-none">
             <AlertTriangle className="h-4 w-4 text-amber-500" />
             <div className="flex w-full items-center justify-between">
-              <AlertDescription className="text-amber-600 dark:text-amber-300">
+              <AlertDescription className="text-amber-600 dark:text-amber-300 text-sm">
                 {(isEditingPermissions || isEditingUsers)
                   ? "This role has been updated elsewhere. Please refresh before continuing."
                   : "This role has been updated elsewhere. Refresh to see the latest data."}
@@ -297,150 +547,48 @@ export function RoleCard({
                 onClick={handleRefresh}
                 className="ml-4 border-amber-500 text-amber-700 hover:bg-amber-100 hover:text-amber-800 dark:text-amber-400 dark:hover:bg-amber-900/50"
               >
-                <RefreshCw className="mr-2 h-4 w-4" />
-                Refresh
+                <RefreshCw className="h-4 w-4 mr-1" />
+                <span className="hidden sm:inline">Refresh</span>
               </Button>
             </div>
           </Alert>
         )}
-        <CardHeader className="pb-2">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Avatar className="h-10 w-10">
-                {localRole.avatarURL ? (
-                  <AvatarImage src={localRole.avatarURL || "/placeholder.svg"} alt={localRole.name} />
-                ) : (
-                  <AvatarFallback>{getInitials(localRole.name)}</AvatarFallback>
-                )}
-              </Avatar>
-              <div className="capitalize">
-                <h3 className="text-lg font-semibold">{localRole.name}</h3>
-                {localRole.description && <p className="text-sm text-muted-foreground">{localRole.description}</p>}
+        <CardHeader className={cn("pb-2", isMobile ? "px-3 py-3" : "")}>
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+            <div className="flex items-center gap-3 justify-between">
+              <div className="flex items-center gap-3">
+                <Avatar className={cn("flex-shrink-0", isMobile ? "h-8 w-8" : "h-10 w-10")}>
+                  {localRole.avatarURL ? (
+                    <AvatarImage src={localRole.avatarURL || "/placeholder.svg"} alt={localRole.name} />
+                  ) : (
+                    <AvatarFallback>{getInitials(localRole.name)}</AvatarFallback>
+                  )}
+                </Avatar>
+                <div className="capitalize">
+                  <h3 className={cn("font-semibold line-clamp-1", isMobile ? "text-base" : "text-lg")}>
+                    {localRole.name}
+                  </h3>
+                  {localRole.description && (
+                    <p className="text-sm text-muted-foreground line-clamp-1">
+                      {localRole.description}
+                    </p>
+                  )}
+                </div>
+              </div>
+              
+              {/* Action buttons - show dropdown on mobile, full buttons on desktop */}
+              <div className="sm:hidden">
+                {renderCompactActionButtons()}
               </div>
             </div>
-            <div className="flex items-center gap-2">
-              {/* Toggle Edit Permissions */}
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={handleTogglePermissionsEditMode}
-                      className={cn(isStalePermissions && "opacity-50 cursor-not-allowed")}
-                      disabled={isStalePermissions}
-                      aria-label={isEditingPermissions ? "Save Permissions" : "Edit Permissions"}
-                    >
-                      {isEditingPermissions ? (
-                        <>
-                          <Save className="h-4 w-4" />
-                          <span className="hidden sm:inline">Save Permissions</span>
-                        </>
-                      ) : (
-                        <>
-                          <KeyRound className="h-4 w-4" />
-                          <span className="hidden sm:inline">Edit Permissions</span>
-                        </>
-                      )}
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    {isEditingPermissions
-                      ? isStalePermissions
-                        ? "Refresh required before saving"
-                        : "Save permission changes"
-                      : isStalePermissions
-                        ? "Refresh required before editing"
-                        : "Edit role permissions"}
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-              
-              {/* Toggle Edit Users */}
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={handleToggleUsersEditMode}
-                      className={cn(isStaleUsers && "opacity-50 cursor-not-allowed")}
-                      disabled={isStaleUsers}
-                      aria-label={isEditingUsers ? "Save Users" : "Edit Users"}
-                    >
-                      {isEditingUsers ? (
-                        <>
-                          <Save className="h-4 w-4" />
-                          <span className="hidden sm:inline">Save Users</span>
-                        </>
-                      ) : (
-                        <>
-                          <Users className="h-4 w-4" />
-                          <span className="hidden sm:inline">Edit Users</span>
-                        </>
-                      )}
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    {isEditingUsers
-                      ? isStaleUsers
-                        ? "Refresh required before saving"
-                        : "Save user changes"
-                      : isStaleUsers
-                        ? "Refresh required before editing"
-                        : "Edit role users"}
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-              
-              {/* Update Role */}
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={handleOpenUpdateDialog}
-                      className={cn(isStale && "opacity-50 cursor-not-allowed")}
-                      disabled={isStale}
-                      aria-label="Update role"
-                    >
-                      <Pencil className="h-4 w-4" />
-                      <span className="hidden sm:inline">Update</span>
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    {isStale ? "Refresh required before updating" : "Update role details"}
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-              
-              {/* Delete */}
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={handleDelete}
-                      className={cn(
-                        "text-destructive hover:bg-destructive hover:text-destructive-foreground",
-                        isStale && "opacity-50 cursor-not-allowed",
-                      )}
-                      disabled={isStale}
-                      aria-label="Delete role"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                      <span className="hidden sm:inline">Delete</span>
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>{isStale ? "Refresh required before deleting" : "Delete this role"}</TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
+            
+            {/* Action buttons for desktop */}
+            <div className="hidden sm:flex ml-auto">
+              {renderFullActionButtons()}
             </div>
           </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className={isMobile ? "p-3" : ""}>
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="grid grid-cols-2 mb-4">
               <TabsTrigger value="permissions">Permissions</TabsTrigger>
@@ -520,41 +668,45 @@ export function RoleCard({
             </Alert>
           )}
           <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="name" className="text-right">
+            <div className={cn("grid items-center gap-4", isMobile ? "grid-cols-1" : "grid-cols-4")}>
+              <Label htmlFor="name" className={cn(isMobile ? "" : "text-right")}>
                 Name
               </Label>
               <Input
                 id="name"
                 value={roleName}
                 onChange={(e) => setRoleName(e.target.value)}
-                className="col-span-3"
+                className={isMobile ? "col-span-1" : "col-span-3"}
                 disabled={isStale}
               />
             </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="description" className="text-right">
+            <div className={cn("grid items-center gap-4", isMobile ? "grid-cols-1" : "grid-cols-4")}>
+              <Label htmlFor="description" className={cn(isMobile ? "" : "text-right")}>
                 Description
               </Label>
               <Textarea
                 id="description"
                 value={roleDescription}
                 onChange={(e) => setRoleDescription(e.target.value)}
-                className="col-span-3"
+                className={isMobile ? "col-span-1" : "col-span-3"}
                 disabled={isStale}
               />
             </div>
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setUpdateDialogOpen(false)}>
+          <DialogFooter className={isMobile ? "flex-col space-y-2" : ""}>
+            <Button variant="outline" onClick={() => setUpdateDialogOpen(false)} className={isMobile ? "w-full" : ""}>
               Cancel
             </Button>
-            <Button onClick={handleUpdateRole} disabled={isStale || !roleName.trim()}>
+            <Button 
+              onClick={handleUpdateRole} 
+              disabled={isStale || !roleName.trim()}
+              className={isMobile ? "w-full" : ""}
+            >
               Save
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
     </>
-  )
+  );
 }
