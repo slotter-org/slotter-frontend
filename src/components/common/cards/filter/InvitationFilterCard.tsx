@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Search, Filter, Ticket } from 'lucide-react';
+import { Search, Filter, Ticket, List, Grid } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -30,6 +30,7 @@ export function InvitationFilterCard({
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [typeFilter, setTypeFilter] = useState<string>("all");
+  const [isGridView, setIsGridView] = useState(false);
   
   const statusOptions = useMemo(() => {
     const statuses = new Set<string>();
@@ -172,6 +173,16 @@ export function InvitationFilterCard({
               </SelectContent>
             </Select>
           </div>
+
+          <Button
+            variant="outline"
+            size="icon"
+            className="h-10 w-10"
+            onClick={() => setIsGridView(!isGridView)}
+            title={isGridView ? "Switch to List View" : "Switch to Grid View"}
+          >
+            {isGridView ? <List className="h-4 w-4" /> : <Grid className="h-4 w-4" />}
+          </Button>
         </div>
         
         {/* Active Filters Display */}
@@ -199,7 +210,10 @@ export function InvitationFilterCard({
         
         {/* Invitations List */}
         <ScrollArea className="flex-1 overflow-auto pr-4">
-          <div className="space-y-4">
+          <div className={isGridView
+            ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
+            : "space-y-4"
+          }>
             {finalInvitations.length > 0 ? (
               finalInvitations.map((invitation) => (
                 <InvitationCard
