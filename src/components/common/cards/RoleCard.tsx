@@ -1,9 +1,8 @@
-
 import { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { Pencil, Trash2, Save, KeyRound, RefreshCw, AlertTriangle, Users, ChevronDown, ChevronUp } from 'lucide-react';
+import { Pencil, Trash2, Save, KeyRound, RefreshCw, AlertTriangle, Users } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -29,92 +28,23 @@ interface RoleCardProps {
   allUsers?: User[]
 }
 
-// Add enhanced drop zone components that work with the original ones
-const EnhancedPermissionDropZone = ({ 
-  title, 
-  selectedPermissions, 
-  onPermissionDrop, 
-  onPermissionRemove, 
-  isEditing, 
-  allPermissions,
-  isOpen,
-  onToggle
-}) => {
-  return (
-    <div className="border rounded-md overflow-hidden">
-      <div 
-        className={`flex items-center justify-between p-3 border-b cursor-pointer bg-slate-50 dark:bg-slate-900 ${isOpen ? 'border-b' : ''}`}
-        onClick={onToggle}
-      >
-        <h3 className="font-medium">{title}</h3>
-        {isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-      </div>
-      
-      <div className={`overflow-hidden transition-all duration-300 ease-in-out ${isOpen ? 'max-h-[1000px] opacity-100' : 'max-h-0 opacity-0'}`}>
-        <PermissionDropZone
-          title=""
-          selectedPermissions={selectedPermissions}
-          onPermissionDrop={onPermissionDrop}
-          onPermissionRemove={onPermissionRemove}
-          isEditing={isEditing}
-          allPermissions={allPermissions}
-        />
-      </div>
-    </div>
-  );
-};
-
-const EnhancedUserDropZone = ({ 
-  title, 
-  selectedUsers, 
-  onUserDrop, 
-  onUserRemove, 
-  isEditing, 
-  allUsers,
-  isOpen,
-  onToggle
-}) => {
-  return (
-    <div className="border rounded-md overflow-hidden">
-      <div 
-        className={`flex items-center justify-between p-3 border-b cursor-pointer bg-slate-50 dark:bg-slate-900 ${isOpen ? 'border-b' : ''}`}
-        onClick={onToggle}
-      >
-        <h3 className="font-medium">{title}</h3>
-        {isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-      </div>
-      
-      <div className={`overflow-hidden transition-all duration-300 ease-in-out ${isOpen ? 'max-h-[1000px] opacity-100' : 'max-h-0 opacity-0'}`}>
-        <UserDropZone
-          title=""
-          selectedUsers={selectedUsers}
-          onUserDrop={onUserDrop}
-          onUserRemove={onUserRemove}
-          isEditing={isEditing}
-          allUsers={allUsers}
-        />
-      </div>
-    </div>
-  );
-};
-
-const deepClone = <T,>(obj: T): T => JSON.parse(JSON.stringify(obj));
+const deepClone = <T,>(obj: T): T => JSON.parse(JSON.stringify(obj))
 
 const arePermissionsEqual = (perms1: Permission[] = [], perms2: Permission[] = []) => {
-  if (perms1.length !== perms2.length) return false;
-  const ids1 = new Set(perms1.map((p) => p.id));
-  const ids2 = new Set(perms2.map((p) => p.id));
-  if (ids1.size !== ids2.size) return false;
-  return [...ids1].every((id) => ids2.has(id));
-};
+  if (perms1.length !== perms2.length) return false
+  const ids1 = new Set(perms1.map((p) => p.id))
+  const ids2 = new Set(perms2.map((p) => p.id))
+  if (ids1.size !== ids2.size) return false
+  return [...ids1].every((id) => ids2.has(id))
+}
 
 const areUsersEqual = (users1: User[] = [], users2: User[] = []) => {
-  if (users1.length !== users2.length) return false;
-  const ids1 = new Set(users1.map((u) => u.id));
-  const ids2 = new Set(users2.map((u) => u.id));
-  if (ids1.size !== ids2.size) return false;
-  return [...ids1].every((id) => ids2.has(id));
-};
+  if (users1.length !== users2.length) return false
+  const ids1 = new Set(users1.map((u) => u.id))
+  const ids2 = new Set(users2.map((u) => u.id))
+  if (ids1.size !== ids2.size) return false
+  return [...ids1].every((id) => ids2.has(id))
+}
 
 export function RoleCard({ 
   role, 
@@ -125,231 +55,203 @@ export function RoleCard({
   allPermissions = [], 
   allUsers = [] 
 }: RoleCardProps) {
-  const originalRoleRef = useRef<Role>(deepClone(role));
-  const [localRole, setLocalRole] = useState<Role>(deepClone(role));
-  const [selectedPermissions, setSelectedPermissions] = useState<Permission[]>(deepClone(role.permissions || []));
-  const [selectedUsers, setSelectedUsers] = useState<User[]>(deepClone(role.users || []));
+  const originalRoleRef = useRef<Role>(deepClone(role))
+  const [localRole, setLocalRole] = useState<Role>(deepClone(role))
+  const [selectedPermissions, setSelectedPermissions] = useState<Permission[]>(deepClone(role.permissions || []))
+  const [selectedUsers, setSelectedUsers] = useState<User[]>(deepClone(role.users || []))
   
-  const [isEditingPermissions, setIsEditingPermissions] = useState(false);
-  const [isEditingUsers, setIsEditingUsers] = useState(false);
-  const [isStalePermissions, setIsStalePermissions] = useState(false);
-  const [isStaleUsers, setIsStaleUsers] = useState(false);
-  const [activeTab, setActiveTab] = useState<string>("permissions"); // Default to permissions tab
-  
-  // New state for collapsible sections
-  const [isPermissionsOpen, setIsPermissionsOpen] = useState(true);
-  const [isUsersOpen, setIsUsersOpen] = useState(false);
+  const [isEditingPermissions, setIsEditingPermissions] = useState(false)
+  const [isEditingUsers, setIsEditingUsers] = useState(false)
+  const [isStalePermissions, setIsStalePermissions] = useState(false)
+  const [isStaleUsers, setIsStaleUsers] = useState(false)
+  const [activeTab, setActiveTab] = useState<string>("permissions") // Default to permissions tab
   
   // Update dialog
-  const [updateDialogOpen, setUpdateDialogOpen] = useState(false);
-  const [roleName, setRoleName] = useState(role.name);
-  const [roleDescription, setRoleDescription] = useState(role.description || "");
-  const [permissionsChanged, setPermissionsChanged] = useState(false);
-  const [usersChanged, setUsersChanged] = useState(false);
+  const [updateDialogOpen, setUpdateDialogOpen] = useState(false)
+  const [roleName, setRoleName] = useState(role.name)
+  const [roleDescription, setRoleDescription] = useState(role.description || "")
+  const [permissionsChanged, setPermissionsChanged] = useState(false)
+  const [usersChanged, setUsersChanged] = useState(false)
   
   // Log allPermissions when the component mounts or when it changes
   useEffect(() => {
     console.log("RoleCard received allPermissions:", {
       count: allPermissions.length,
       sample: allPermissions.slice(0, 3),
-    });
-  }, [allPermissions]);
+    })
+  }, [allPermissions])
   
   useEffect(() => {
     console.log("RoleCard received allUsers:", {
       count: allUsers.length,
       sample: allUsers.slice(0, 3),
-    });
-  }, [allUsers]);
-  
-  // New effect to automatically open the relevant section when tab changes
-  useEffect(() => {
-    if (activeTab === "permissions" && !isPermissionsOpen) {
-      setIsPermissionsOpen(true);
-    } else if (activeTab === "users" && !isUsersOpen) {
-      setIsUsersOpen(true);
-    }
-  }, [activeTab]);
-  
-  // New effect to automatically open the relevant section when entering edit mode
-  useEffect(() => {
-    if (isEditingPermissions && !isPermissionsOpen) {
-      setIsPermissionsOpen(true);
-    }
-  }, [isEditingPermissions]);
-  
-  useEffect(() => {
-    if (isEditingUsers && !isUsersOpen) {
-      setIsUsersOpen(true);
-    }
-  }, [isEditingUsers]);
+    })
+  }, [allUsers])
   
   // If new data arrives from the parent
   useEffect(() => {
-    const prev = originalRoleRef.current;
-    const incoming = role;
+    const prev = originalRoleRef.current
+    const incoming = role
     const basicPropsChanged =
-      prev.name !== incoming.name || prev.description !== incoming.description || prev.avatarURL !== incoming.avatarURL;
-    const permsChanged = !arePermissionsEqual(prev.permissions || [], incoming.permissions || []);
-    const usersChanged = !areUsersEqual(prev.users || [], incoming.users || []);
+      prev.name !== incoming.name || prev.description !== incoming.description || prev.avatarURL !== incoming.avatarURL
+    const permsChanged = !arePermissionsEqual(prev.permissions || [], incoming.permissions || [])
+    const usersChanged = !areUsersEqual(prev.users || [], incoming.users || [])
     
     if (basicPropsChanged || permsChanged) {
-      setIsStalePermissions(true);
+      setIsStalePermissions(true)
     }
     
     if (basicPropsChanged || usersChanged) {
-      setIsStaleUsers(true);
+      setIsStaleUsers(true)
     }
     
     // if not editing permissions or users (and no open update dialog), re-sync
     if (!isEditingPermissions && !isEditingUsers && !updateDialogOpen) {
-      setLocalRole(deepClone(incoming));
-      setSelectedPermissions(deepClone(incoming.permissions || []));
-      setSelectedUsers(deepClone(incoming.users || []));
-      setRoleName(incoming.name);
-      setRoleDescription(incoming.description || "");
+      setLocalRole(deepClone(incoming))
+      setSelectedPermissions(deepClone(incoming.permissions || []))
+      setSelectedUsers(deepClone(incoming.users || []))
+      setRoleName(incoming.name)
+      setRoleDescription(incoming.description || "")
       
       if (isStalePermissions) {
-        setIsStalePermissions(false);
+        setIsStalePermissions(false)
       }
       
       if (isStaleUsers) {
-        setIsStaleUsers(false);
+        setIsStaleUsers(false)
       }
       
-      originalRoleRef.current = deepClone(incoming);
+      originalRoleRef.current = deepClone(incoming)
     }
-  }, [role, isEditingPermissions, isEditingUsers, updateDialogOpen, isStalePermissions, isStaleUsers]);
+  }, [role, isEditingPermissions, isEditingUsers, updateDialogOpen, isStalePermissions, isStaleUsers])
   
   // Whenever selectedPermissions changes, check if it differs from original
   useEffect(() => {
-    const origPerms = originalRoleRef.current.permissions || [];
-    setPermissionsChanged(!arePermissionsEqual(selectedPermissions, origPerms));
-  }, [selectedPermissions]);
+    const origPerms = originalRoleRef.current.permissions || []
+    setPermissionsChanged(!arePermissionsEqual(selectedPermissions, origPerms))
+  }, [selectedPermissions])
   
   // Whenever selectedUsers changes, check if it differs from original
   useEffect(() => {
-    const origUsers = originalRoleRef.current.users || [];
-    setUsersChanged(!areUsersEqual(selectedUsers, origUsers));
-  }, [selectedUsers]);
+    const origUsers = originalRoleRef.current.users || []
+    setUsersChanged(!areUsersEqual(selectedUsers, origUsers))
+  }, [selectedUsers])
   
   // Called by PermissionDropZone
   const handlePermissionDrop = (permission: Permission) => {
-    console.log("Permission received in RoleCard:", permission);
+    console.log("Permission received in RoleCard:", permission)
     // Check if this permission is already in the role
     if (!selectedPermissions.some((p) => p.id === permission.id)) {
-      const newPerms = [...selectedPermissions, deepClone(permission)];
-      console.log("Updated permissions:", newPerms);
-      setSelectedPermissions(newPerms);
-      setLocalRole((prev) => ({ ...prev, permissions: newPerms }));
-      setPermissionsChanged(true); // Explicitly mark as changed
+      const newPerms = [...selectedPermissions, deepClone(permission)]
+      console.log("Updated permissions:", newPerms)
+      setSelectedPermissions(newPerms)
+      setLocalRole((prev) => ({ ...prev, permissions: newPerms }))
+      setPermissionsChanged(true) // Explicitly mark as changed
     } else {
-      console.log("Permission already exists in role");
+      console.log("Permission already exists in role")
     }
-  };
+  }
   
   // Called by UserDropZone
   const handleUserDrop = (user: User) => {
-    console.log("User received in RoleCard:", user);
+    console.log("User received in RoleCard:", user)
     if (!selectedUsers.some((u) => u.id === user.id)) {
-      const newUsers = [...selectedUsers, deepClone(user)];
-      console.log("Updated users:", newUsers);
-      setSelectedUsers(newUsers);
-      setLocalRole((prev) => ({ ...prev, users: newUsers }));
-      setUsersChanged(true);
+      const newUsers = [...selectedUsers, deepClone(user)]
+      console.log("Updated users:", newUsers)
+      setSelectedUsers(newUsers)
+      setLocalRole((prev) => ({ ...prev, users: newUsers }))
+      setUsersChanged(true)
     } else {
-      console.log("User already exists in role");
+      console.log("User already exists in role")
     }
-  };
+  }
   
   const handlePermissionRemove = (permission: Permission) => {
-    const newPerms = selectedPermissions.filter((p) => p.id !== permission.id);
-    setSelectedPermissions(newPerms);
-    setLocalRole((prev) => ({ ...prev, permissions: newPerms }));
-  };
+    const newPerms = selectedPermissions.filter((p) => p.id !== permission.id)
+    setSelectedPermissions(newPerms)
+    setLocalRole((prev) => ({ ...prev, permissions: newPerms }))
+  }
   
   const handleUserRemove = (user: User) => {
-    const newUsers = selectedUsers.filter((u) => u.id !== user.id);
-    setSelectedUsers(newUsers);
-    setLocalRole((prev) => ({ ...prev, users: newUsers }));
-  };
+    const newUsers = selectedUsers.filter((u) => u.id !== user.id)
+    setSelectedUsers(newUsers)
+    setLocalRole((prev) => ({ ...prev, users: newUsers }))
+  }
   
   // Toggle permission edit mode
   const handleTogglePermissionsEditMode = () => {
-    if (isStalePermissions) return;
+    if (isStalePermissions) return
     
     if (isEditingPermissions && permissionsChanged) {
-      console.log("Saving permissions:", selectedPermissions);
-      onSavePermissions?.(localRole.id, selectedPermissions);
-      originalRoleRef.current = { ...deepClone(localRole), permissions: deepClone(selectedPermissions) };
-      setPermissionsChanged(false);
+      console.log("Saving permissions:", selectedPermissions)
+      onSavePermissions?.(localRole.id, selectedPermissions)
+      originalRoleRef.current = { ...deepClone(localRole), permissions: deepClone(selectedPermissions) }
+      setPermissionsChanged(false)
     }
     
-    setIsEditingPermissions(!isEditingPermissions);
+    setIsEditingPermissions(!isEditingPermissions)
     
-    // If enabling edit mode, switch to permissions tab and ensure it's open
+    // If enabling edit mode, switch to permissions tab
     if (!isEditingPermissions) {
-      setActiveTab("permissions");
-      setIsPermissionsOpen(true);
+      setActiveTab("permissions")
     }
-  };
+  }
   
   // Toggle users edit mode
   const handleToggleUsersEditMode = () => {
-    if (isStaleUsers) return;
+    if (isStaleUsers) return
     
     if (isEditingUsers && usersChanged) {
-      console.log("Saving users:", selectedUsers);
-      onSaveUsers?.(localRole.id, selectedUsers);
-      originalRoleRef.current = { ...deepClone(localRole), users: deepClone(selectedUsers) };
-      setUsersChanged(false);
+      console.log("Saving users:", selectedUsers)
+      onSaveUsers?.(localRole.id, selectedUsers)
+      originalRoleRef.current = { ...deepClone(localRole), users: deepClone(selectedUsers) }
+      setUsersChanged(false)
     }
     
-    setIsEditingUsers(!isEditingUsers);
+    setIsEditingUsers(!isEditingUsers)
     
-    // If enabling edit mode, switch to users tab and ensure it's open
+    // If enabling edit mode, switch to users tab
     if (!isEditingUsers) {
-      setActiveTab("users");
-      setIsUsersOpen(true);
+      setActiveTab("users")
     }
-  };
+  }
   
   const handleOpenUpdateDialog = () => {
-    if (isStalePermissions || isStaleUsers) return;
-    setRoleName(localRole.name);
-    setRoleDescription(localRole.description || "");
-    setUpdateDialogOpen(true);
-  };
+    if (isStalePermissions || isStaleUsers) return
+    setRoleName(localRole.name)
+    setRoleDescription(localRole.description || "")
+    setUpdateDialogOpen(true)
+  }
   
   const handleDelete = () => {
-    if (isStalePermissions || isStaleUsers) return;
-    onDelete?.(localRole.id);
-  };
+    if (isStalePermissions || isStaleUsers) return
+    onDelete?.(localRole.id)
+  }
   
   // Revert everything
   const handleRefresh = () => {
-    const fresh = deepClone(role);
-    setLocalRole(fresh);
-    setSelectedPermissions(deepClone(fresh.permissions || []));
-    setSelectedUsers(deepClone(fresh.users || []));
-    setRoleName(fresh.name);
-    setRoleDescription(fresh.description || "");
-    originalRoleRef.current = deepClone(fresh);
-    setIsStalePermissions(false);
-    setIsStaleUsers(false);
-    setIsEditingPermissions(false);
-    setIsEditingUsers(false);
-    setUpdateDialogOpen(false);
-  };
+    const fresh = deepClone(role)
+    setLocalRole(fresh)
+    setSelectedPermissions(deepClone(fresh.permissions || []))
+    setSelectedUsers(deepClone(fresh.users || []))
+    setRoleName(fresh.name)
+    setRoleDescription(fresh.description || "")
+    originalRoleRef.current = deepClone(fresh)
+    setIsStalePermissions(false)
+    setIsStaleUsers(false)
+    setIsEditingPermissions(false)
+    setIsEditingUsers(false)
+    setUpdateDialogOpen(false)
+  }
   
   const handleUpdateRole = async () => {
     if (!onUpdateRole || (isStalePermissions || isStaleUsers) || !roleName.trim()) {
-      setUpdateDialogOpen(false);
-      return;
+      setUpdateDialogOpen(false)
+      return
     }
     
-    const changedName = roleName.trim() !== originalRoleRef.current.name;
-    const changedDesc = roleDescription.trim() !== (originalRoleRef.current.description || "");
+    const changedName = roleName.trim() !== originalRoleRef.current.name
+    const changedDesc = roleDescription.trim() !== (originalRoleRef.current.description || "")
     
     if (changedName || changedDesc) {
       try {
@@ -357,15 +259,15 @@ export function RoleCard({
           role_id: localRole.id,
           name: changedName ? roleName.trim() : undefined,
           description: changedDesc ? roleDescription.trim() : undefined,
-        });
-        onUpdateRole(localRole.id, roleName.trim(), roleDescription.trim());
+        })
+        onUpdateRole(localRole.id, roleName.trim(), roleDescription.trim())
       } catch (error) {
-        console.error("Error updating role:", error);
+        console.error("Error updating role:", error)
       }
     }
     
-    setUpdateDialogOpen(false);
-  };
+    setUpdateDialogOpen(false)
+  }
   
   const getInitials = (name: string) =>
     name
@@ -373,9 +275,9 @@ export function RoleCard({
       .map((n) => n[0])
       .join("")
       .toUpperCase()
-      .substring(0, 2);
+      .substring(0, 2)
       
-  const isStale = isStalePermissions || isStaleUsers;
+  const isStale = isStalePermissions || isStaleUsers
   
   return (
     <>
@@ -546,15 +448,13 @@ export function RoleCard({
             </TabsList>
             
             <TabsContent value="permissions">
-              <EnhancedPermissionDropZone
+              <PermissionDropZone
                 title={isEditingPermissions ? "Editing Role Permissions..." : "Role Permissions"}
                 selectedPermissions={selectedPermissions}
                 onPermissionDrop={isEditingPermissions && !isStalePermissions ? handlePermissionDrop : undefined}
                 onPermissionRemove={isEditingPermissions && !isStalePermissions ? handlePermissionRemove : undefined}
                 isEditing={isEditingPermissions}
                 allPermissions={allPermissions}
-                isOpen={isPermissionsOpen}
-                onToggle={() => setIsPermissionsOpen(!isPermissionsOpen)}
               />
               
               {/* If stale while editing permissions */}
@@ -576,15 +476,13 @@ export function RoleCard({
             </TabsContent>
             
             <TabsContent value="users">
-              <EnhancedUserDropZone
+              <UserDropZone
                 title={isEditingUsers ? "Editing Role Users..." : "Role Users"}
                 selectedUsers={selectedUsers}
                 onUserDrop={isEditingUsers && !isStaleUsers ? handleUserDrop : undefined}
                 onUserRemove={isEditingUsers && !isStaleUsers ? handleUserRemove : undefined}
                 isEditing={isEditingUsers}
                 allUsers={allUsers}
-                isOpen={isUsersOpen}
-                onToggle={() => setIsUsersOpen(!isUsersOpen)}
               />
               
               {/* If stale while editing users */}
@@ -658,5 +556,5 @@ export function RoleCard({
         </DialogContent>
       </Dialog>
     </>
-  );
+  )
 }
