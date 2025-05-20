@@ -91,7 +91,8 @@ export function RoleCardFilter({
   //const LG_BREAKPOINT = 1024;
   //const XL_BREAKPOINT = 1280;
   //const XXL_BREAKPOINT = 1536;
-  //
+  
+
   useEffect(() => {
     if (isBelowSm) {
       setRolesCompact(false);
@@ -151,7 +152,7 @@ export function RoleCardFilter({
   
   const gridColumns = useMemo(() => {
     return 2;
-  }, [isBelowMd, isBelowLg]);
+  }, [isBelowMd, isBelowLg, isBelowXl, isBelowXxl]);
   
   return (
     <Card className={`${className ?? ''} h-full flex flex-col`}>
@@ -242,7 +243,7 @@ export function RoleCardFilter({
         {/* Roles List */}
         <ScrollArea className="flex-1 overflow-auto pr-4">
           <div className={isGridView
-            ? `grid grid-cols-1 ${gridColumns > 1 ? 'md:grid-cols-2' : ''} ${gridColumns > 2 ? 'lg:grid-cols-3' : ''} gap-4`
+            ? `grid grid-cols-1 ${gridColumns > 1 ? 'sm:grid-cols-2' : ''} ${gridColumns > 2 ? 'lg:grid-cols-3' : ''} gap-4`
             : "space-y-4"
           }>
             {finalRoles.length > 0 ? (
