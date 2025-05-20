@@ -104,7 +104,7 @@ export function RoleCardFilter({
       if (isGridView) {
         setRolesCompact(true);
         setRoleButtonTitles(true);
-        setshowGridButton(true);
+        setShowGridButton(true);
       }
       setRolesCompact(false);
       setRoleButtonTitles(false);
