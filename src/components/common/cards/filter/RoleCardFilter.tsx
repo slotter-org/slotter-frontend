@@ -94,16 +94,20 @@ export function RoleCardFilter({
   //
   useEffect(() => {
     if (isBelowSm) {
-      setRolesCompact(true);
+      setRolesCompact(false);
       setIsGridView(false);
       setRoleButtonTitles(false);
       setShowGridButton(false);
     }
-    else if (isBelowMd && !isBelowSm) {
-      setRolesCompact(true);
-      setIsGridView(true);
+    else if (isBelowMd) {
+      if (isGridView) {
+        setRolesCompact(true);
+        setRoleButtonTitles(true);
+        setshowGridButton(true);
+      }
+      setRolesCompact(false);
       setRoleButtonTitles(false);
-      setShowGridButton(false);
+      setShowGridButton(true);
     }
     else if (isBelowLg && !isBelowMd) {
       if (isGridView) {
@@ -127,9 +131,9 @@ export function RoleCardFilter({
         setShowGridButton(true);
       }
     }
-    else {
+    else if (!isBelowXl) {
       if (isGridView) {
-        setRolesCompact(true);
+        setRolesCompact(false);
         setRoleButtonTitles(false);
         setShowGridButton(true);
       }
