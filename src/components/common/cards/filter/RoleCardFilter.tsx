@@ -150,8 +150,6 @@ export function RoleCardFilter({
   };
   
   const gridColumns = useMemo(() => {
-    if (isBelowMd) return 1;
-    if (isBelowLg) return 2;
     return 2;
   }, [isBelowMd, isBelowLg]);
   
@@ -179,7 +177,7 @@ export function RoleCardFilter({
         </div>
         {/* Filter Dropdowns */}
         <div className="flex items-center space-x-4 mb-4 shrink-0">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 flex-1">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 flex-1">
             {/* Category Filter */}
             <div>
               <Select value={categoryFilter} onValueChange={setCategoryFilter}>
