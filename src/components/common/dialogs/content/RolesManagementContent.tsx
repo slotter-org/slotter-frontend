@@ -28,7 +28,6 @@ export function RolesManagementContent() {
       })
       // Refresh roles after update
       console.log("Permissions updated successfully, refreshing roles")
-      fetchMyRoles()
     } catch (error) {
       console.error("[handleSaveRolePermissions] Error:", error)
     }
@@ -47,7 +46,6 @@ export function RolesManagementContent() {
         users: updatedUsers,
       })
       console.log("Users updated successfully, refreshing roles")
-      fetchMyRoles()
     } catch (error) {
       console.error("[handleSaveRoleUsers] Error:", error)
     }

@@ -19,7 +19,6 @@ export function InvitationManagementContent() {
         invitation_id: invitationId
       });
       console.log("Invitation resent successfully, refreshing invitations");
-      fetchMyInvitations();
     } catch (error) {
       console.error("[handleResendInvitation] Error:", error);
     }
